@@ -16,7 +16,7 @@
 #include <atlctrlw.h>
 #include <atlctrlx.h>
 #include <atltypes.h>
-
+#include <commoncontrols.h>
 #include <vector>
 #include <memory>
 #include <ranges>

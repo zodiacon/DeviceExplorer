@@ -4,8 +4,6 @@
 
 #pragma comment(lib, "setupapi")
 
-using namespace WinSys;
-
 SP_CLASSIMAGELIST_DATA g_ClassImageList;
 
 std::unique_ptr<DeviceManager> DeviceManager::Create(const wchar_t* computerName, const GUID* classGuid, const wchar_t* enumerator, InfoSetOptions options) {
@@ -16,7 +14,7 @@ std::unique_ptr<DeviceManager> DeviceManager::Create(const wchar_t* computerName
 	return nullptr;
 }
 
-std::wstring WinSys::DeviceManager::GetDeviceClassDescription(GUID const& guid, const wchar_t* computerName) {
+std::wstring DeviceManager::GetDeviceClassDescription(GUID const& guid, const wchar_t* computerName) {
 	wchar_t desc[256];
 	if (::SetupDiGetClassDescriptionEx(&guid, desc, _countof(desc), nullptr, computerName, nullptr)) {
 		return desc;
@@ -24,7 +22,7 @@ std::wstring WinSys::DeviceManager::GetDeviceClassDescription(GUID const& guid, 
 	return L"";
 }
 
-HIMAGELIST WinSys::DeviceManager::GetClassImageList() {
+HIMAGELIST DeviceManager::GetClassImageList() {
 	if (g_ClassImageList.ImageList == nullptr) {
 		g_ClassImageList.cbSize = sizeof(g_ClassImageList);
 		::SetupDiGetClassImageList(&g_ClassImageList);
@@ -32,7 +30,7 @@ HIMAGELIST WinSys::DeviceManager::GetClassImageList() {
 	return g_ClassImageList.ImageList;
 }
 
-int WinSys::DeviceManager::GetClassImageIndex(const GUID* guid) {
+int DeviceManager::GetClassImageIndex(const GUID* guid) {
 	int index = -1;
 	::SetupDiGetClassImageIndex(&g_ClassImageList, guid, &index);
 	return index;
@@ -49,7 +47,7 @@ std::vector<DEVPROPKEY> DeviceManager::GetClassPropertyKeys(GUID const& guid) {
 	return keys;
 }
 
-std::vector<HardwareProfile> WinSys::DeviceManager::EnumHardwareProfiles(PCWSTR computerName) {
+std::vector<HardwareProfile> DeviceManager::EnumHardwareProfiles(PCWSTR computerName) {
 	std::vector<HardwareProfile> hwprofiles;
 	DWORD size;
 	if (!::SetupDiGetHwProfileListEx(nullptr, 0, &size, nullptr, computerName, nullptr) && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
@@ -69,6 +67,11 @@ std::vector<HardwareProfile> WinSys::DeviceManager::EnumHardwareProfiles(PCWSTR 
 	return hwprofiles;
 }
 
+DeviceNode DeviceManager::GetRootDeviceNode() {
+	DEVINST inst;
+	return CR_SUCCESS == ::CM_Locate_DevNode(&inst, nullptr, CM_LOCATE_DEVNODE_NORMAL) ? inst : 0;
+}
+
 std::wstring DeviceManager::GetDeviceRegistryPropertyString(const DeviceInfo& di, DeviceRegistryPropertyType type) const {
 	std::wstring result;
 	result.resize(256);
@@ -82,7 +85,7 @@ std::wstring DeviceManager::GetDeviceRegistryPropertyString(const DeviceInfo& di
 	return L"";
 }
 
-std::vector<std::wstring> WinSys::DeviceManager::GetDeviceRegistryPropertyMultiString(const DeviceInfo& di, DeviceRegistryPropertyType type) const {
+std::vector<std::wstring> DeviceManager::GetDeviceRegistryPropertyMultiString(const DeviceInfo& di, DeviceRegistryPropertyType type) const {
 	std::vector<std::wstring> result;
 	WCHAR buffer[1 << 11];
 	DWORD regType;
@@ -98,14 +101,14 @@ std::vector<std::wstring> WinSys::DeviceManager::GetDeviceRegistryPropertyMultiS
 	return result;
 }
 
-HICON WinSys::DeviceManager::GetDeviceIcon(const DeviceInfo& di, bool big) const {
+HICON DeviceManager::GetDeviceIcon(const DeviceInfo& di, bool big) const {
 	HICON hIcon = nullptr;
 	auto size = big ? 32 : 16;
 	::SetupDiLoadDeviceIcon(_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, size, size, 0, &hIcon);
 	return hIcon;
 }
 
-std::wstring WinSys::DeviceManager::GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type) {
+std::wstring DeviceManager::GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type) {
 	DWORD regType;
 	std::wstring result;
 	result.resize(256);
@@ -132,7 +135,7 @@ std::vector<std::wstring> DeviceManager::GetDeviceClassRegistryPropertyMultiStri
 	return result;
 }
 
-std::vector<std::wstring> WinSys::DeviceManager::EnumDeviceClasses() {
+std::vector<std::wstring> DeviceManager::EnumDeviceClasses() {
 	CRegKey key;
 	std::vector<std::wstring> classes;
 	classes.reserve(128);

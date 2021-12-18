@@ -211,7 +211,6 @@
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="DevExp.cpp" />
-    <ClCompile Include="DeviceInterfacesView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -219,22 +218,25 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="View.cpp" />
+    <ClCompile Include="DevNodeView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
-    <ClInclude Include="DeviceInterfacesView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="View.h" />
+    <ClInclude Include="DevNodeView.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DevExp.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\copy.ico" />
+    <Image Include="res\delete.ico" />
     <Image Include="res\DevExp.ico" />
-    <Image Include="res\toolbar.bmp" />
+    <Image Include="res\find.ico" />
+    <Image Include="res\Properties.ico" />
+    <Image Include="res\refresh.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

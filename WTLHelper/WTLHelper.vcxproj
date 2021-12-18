@@ -232,7 +232,6 @@
   <ItemGroup>
     <ClInclude Include="ClipboardHelper.h" />
     <ClInclude Include="ColumnManager.h" />
-    <ClInclude Include="ComBase.h" />
     <ClInclude Include="CompoundFile.h" />
     <ClInclude Include="CompoundFileReaderWriter.h" />
     <ClInclude Include="CustomButton.h" />
@@ -242,12 +241,14 @@
     <ClInclude Include="CustomRebar.h" />
     <ClInclude Include="CustomStatusBar.h" />
     <ClInclude Include="DialogHelper.h" />
+    <ClInclude Include="FrameworkListView.h" />
     <ClInclude Include="IconHelper.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="ListViewhelper.h" />
     <ClInclude Include="OwnerDrawnMenu.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="TreeViewHelper.h" />
     <ClInclude Include="UIFramework.h" />
     <ClInclude Include="VirtualListView.h" />
   </ItemGroup>

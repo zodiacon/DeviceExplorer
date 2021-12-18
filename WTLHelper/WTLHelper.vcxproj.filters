@@ -22,6 +22,9 @@
     <Filter Include="CompoundFiles">
       <UniqueIdentifier>{5a1add79-de8b-4a79-bc69-5c48b7f56917}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Framework">
+      <UniqueIdentifier>{0ae6aa24-94fe-44c3-9719-aa32a000f39b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -78,10 +81,13 @@
     <ClInclude Include="CompoundFileReaderWriter.h">
       <Filter>CompoundFiles</Filter>
     </ClInclude>
-    <ClInclude Include="ComBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UIFramework.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameworkListView.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeViewHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

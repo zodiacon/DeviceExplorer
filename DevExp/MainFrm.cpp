@@ -4,10 +4,12 @@
 
 #include "pch.h"
 #include "resource.h"
-
 #include "aboutdlg.h"
-#include "View.h"
+#include "DevNodeView.h"
 #include "MainFrm.h"
+#include "IconHelper.h"
+
+const int WINDOW_MENU_POSITION = 4;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -23,29 +25,35 @@ BOOL CMainFrame::OnIdle() {
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	// create command bar window
-	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-	// attach menu
+	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+	m_CmdBar.SetAlphaImages(true);
 	m_CmdBar.AttachMenu(GetMenu());
-	// load command bar images
-	m_CmdBar.LoadImages(IDR_MAINFRAME);
-	// remove old menu
-	SetMenu(NULL);
+	SetMenu(nullptr);
+	InitCommandBar();
 
-	HWND hWndToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
+	CToolBarCtrl tb;
+	tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
+	InitToolBar(tb, 24);
+
+	UIAddToolBar(tb);
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-	AddSimpleReBarBand(hWndCmdBar);
-	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
+	AddSimpleReBarBand(m_CmdBar);
+	AddSimpleReBarBand(tb, nullptr, TRUE);
 
 	CreateSimpleStatusBar();
 
-	m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	m_view.m_bTabCloseButton = false;
 
-	UIAddToolBar(hWndToolBar);
+	auto images = IconHelper::CreateImageList();
+	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
-	// register object for message filtering and idle updates
+	CReBarCtrl rb(m_hWndToolBar);
+	rb.LockBands(true);
+
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->AddMessageFilter(this);
@@ -53,6 +61,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CMenuHandle menuMain = m_CmdBar.GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
+
+	auto pView = new CDevNodeView;
+	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView->m_hWnd, _T("Device Nodes"), -1, pView);
 
 	return 0;
 }
@@ -70,16 +82,6 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	PostMessage(WM_CLOSE);
-	return 0;
-}
-
-LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CView* pView = new CView;
-	pView->Create(m_view, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
-	m_view.AddPage(pView->m_hWnd, _T("Document"));
-
-	// TODO: add code to initialize document
-
 	return 0;
 }
 
@@ -129,4 +131,43 @@ LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 	m_view.SetActivePage(nPage);
 
 	return 0;
+}
+
+void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
+	CImageList tbImages;
+	tbImages.Create(size, size, ILC_COLOR32, 8, 4);
+	tb.SetImageList(tbImages);
+
+	const struct {
+		UINT id;
+		int image;
+		BYTE style = BTNS_BUTTON;
+		PCWSTR text = nullptr;
+	} buttons[] = {
+		{ ID_VIEW_REFRESH, IDI_REFRESH },
+	};
+	for (auto& b : buttons) {
+		if (b.id == 0)
+			tb.AddSeparator(0);
+		else {
+			auto hIcon = AtlLoadIconImage(b.image, 0, size, size);
+			ATLASSERT(hIcon);
+			int image = tbImages.AddIcon(hIcon);
+			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, b.text, 0);
+		}
+	}
+}
+
+void CMainFrame::InitCommandBar() {
+	struct {
+		UINT id, icon;
+		HICON hIcon = nullptr;
+	} cmds[] = {
+		{ ID_VIEW_REFRESH, IDI_REFRESH },
+		{ ID_EDIT_COPY, IDI_COPY },
+		{ ID_EDIT_DELETE, IDI_CANCEL },
+	};
+	for (auto& cmd : cmds) {
+		m_CmdBar.AddIcon(cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon, cmd.id);
+	}
 }
