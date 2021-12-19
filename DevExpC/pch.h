@@ -15,5 +15,6 @@
 #include <SetupAPI.h>
 #include <vector>
 #include <string>
+#include <assert.h>
 
 #endif //PCH_H

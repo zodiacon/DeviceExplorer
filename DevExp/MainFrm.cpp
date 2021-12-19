@@ -64,7 +64,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	auto pView = new CDevNodeView;
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_view.AddPage(pView->m_hWnd, _T("Device Nodes"), -1, pView);
+	m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), -1, pView);
 
 	return 0;
 }
@@ -166,6 +166,7 @@ void CMainFrame::InitCommandBar() {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_EDIT_DELETE, IDI_CANCEL },
+		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 	};
 	for (auto& cmd : cmds) {
 		m_CmdBar.AddIcon(cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon, cmd.id);

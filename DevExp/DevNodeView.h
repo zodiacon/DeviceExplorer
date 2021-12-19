@@ -6,6 +6,9 @@
 
 #include "VirtualListView.h"
 #include "TreeViewHelper.h"
+#include "DeviceManager.h"
+
+class DeviceNode;
 
 class CDevNodeView : 
 	public CFrameWindowImpl<CDevNodeView, CWindow, CControlWinTraits>,
@@ -14,6 +17,16 @@ class CDevNodeView :
 public:
 	using BaseFrame = CFrameWindowImpl<CDevNodeView, CWindow, CControlWinTraits>;
 	DECLARE_WND_CLASS(nullptr)
+
+	//
+	// list view callbacks
+	//
+	CString GetColumnText(HWND, int row, int col);
+
+	//
+	// tree view callbacks
+	//
+	void OnTreeSelChanged(HTREEITEM hOld, HTREEITEM hNew);
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 
@@ -34,7 +47,23 @@ public:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 private:
+	struct Property {
+		DEVPROPKEY Key;
+		DEVPROPTYPE Type;
+		CString Name;
+		CString ValueAsString;
+		std::unique_ptr<BYTE[]> Value;
+		ULONG ValueSize;
+	};
+
+	void BuildDevNodeTree();
+	void BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node);
+	void BuildSiblingDevNodes(HTREEITEM hParent, DeviceNode const& node);
+
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
 	CSplitterWindow m_Splitter;
+	std::unique_ptr<DeviceManager> m_DevMgr;
+	std::vector<DeviceInfo> m_Devices;
+	std::vector<Property> m_Items;
 };

@@ -6,7 +6,7 @@
 #define INITGUID
 #include <devpkey.h>
 
-#pragma comment(lib, "cfgmgr32")
+
 
 std::wstring GuidToString(GUID const& guid) {
 	WCHAR name[64];

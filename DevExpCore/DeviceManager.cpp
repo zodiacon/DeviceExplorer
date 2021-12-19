@@ -3,6 +3,7 @@
 #include <RegStr.h>
 
 #pragma comment(lib, "setupapi")
+#pragma comment(lib, "cfgmgr32")
 
 SP_CLASSIMAGELIST_DATA g_ClassImageList;
 

@@ -15,6 +15,11 @@ struct CTreeViewHelper {
 		return InsertTreeItem(tree, text, image, image, data, hParent, hAfter);
 	}
 
+	template<typename TData>
+	TData GetItemData(CTreeViewCtrl& tree, HTREEITEM hItem) const {
+		return static_cast<TData>(tree.GetItemData(hItem));
+	}
+
 protected:
 	BEGIN_MSG_MAP(CTreeViewHelper)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnSelChanged)
