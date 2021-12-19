@@ -17,7 +17,7 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_Device_DeviceDesc, L"Description" },
 		{ DEVPKEY_Device_HardwareIds, L"Hardware IDs" },
 		{ DEVPKEY_Device_CompatibleIds, L"Compatible IDs" },
-		{ DEVPKEY_Device_Service, L"Setvice" },
+		{ DEVPKEY_Device_Service, L"Service" },
 		{ DEVPKEY_Device_Class, L"Class" },
 		{ DEVPKEY_Device_ClassGuid, L"Class GUID" },
 		{ DEVPKEY_Device_Driver, L"Driver" },
@@ -85,7 +85,7 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_Device_DriverProblemDesc, L"Problem Description" },
 		{ DEVPKEY_Device_DebuggerSafe, L"Debugger Safe" },
 		{ DEVPKEY_Device_PostInstallInProgress, L"Post Install in Progress" },
-		{ DEVPKEY_Device_Stack, L"Stack" },
+		{ DEVPKEY_Device_Stack, L"Device Stack" },
 		{ DEVPKEY_Device_ExtendedConfigurationIds, L"Extended Configuration IDs" },
 		{ DEVPKEY_Device_IsRebootRequired, L"Reboot Required" },
 		{ DEVPKEY_Device_FirmwareDate, L"Firmware Date" },
@@ -153,7 +153,7 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 	if (auto it = properties.find(key); it != properties.end())
 		return it->second;
 
-	return GuidToString(key.fmtid) + L"/" + std::to_wstring(key.pid).c_str();
+	return GuidToString(key.fmtid) + L"[" + std::to_wstring(key.pid).c_str() + L"]";
 }
 
 CString Helpers::GuidToString(GUID const& guid) {
@@ -175,6 +175,9 @@ CString Helpers::GetPropertyValueAsString(DEVPROPKEY const& key, DeviceNode cons
 CString Helpers::GetPropertyValueAsString(PBYTE value, DEVPROPTYPE type, ULONG size, PCWSTR sep) {
 	CString text;
 	switch (type) {
+		case DEVPROP_TYPE_NULL:
+			return L"";
+
 		case DEVPROP_TYPE_SBYTE:
 			text.Format(L"%d (0x%X)", (int32_t)value[0], (int32_t)value[0]);
 			break;
@@ -193,6 +196,7 @@ CString Helpers::GetPropertyValueAsString(PBYTE value, DEVPROPTYPE type, ULONG s
 			break;
 
 		case DEVPROP_TYPE_INT64:
+		case DEVPROP_TYPE_CURRENCY:
 			text.Format(L"%lld (0x%llX)", *(int64_t*)value, *(int64_t*)value);
 			break;
 
@@ -247,9 +251,18 @@ CString Helpers::GetPropertyValueAsString(PBYTE value, DEVPROPTYPE type, ULONG s
 		case DEVPROP_TYPE_BINARY:
 			return FormatBytes(value, std::min(size, (ULONG)64));
 
-		default:
-			ATLASSERT(0);
+		case DEVPROP_TYPE_FLOAT:
+			text.Format(L"%.2f", *(float*)value);
 			break;
+
+		case DEVPROP_TYPE_DOUBLE:
+			text.Format(L"%.2lf", *(double*)value);
+			break;
+
+		case DEVPROP_TYPE_STRING_INDIRECT:
+			::SHLoadIndirectString((PCWSTR)value, text.GetBufferSetLength(512), 512, nullptr);
+			break;
+
 	}
 	return text;
 }
@@ -273,6 +286,8 @@ CString Helpers::GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG si
 	}
 	if (key == DEVPKEY_Device_InstallState)
 		return InstallStateToString(*(ULONG*)value);
+	if(key == DEVPKEY_Device_RemovalPolicy || key == DEVPKEY_Device_RemovalPolicyOverride || key == DEVPKEY_Device_RemovalPolicyDefault)
+		return RemovalPolicyToString(*(ULONG*)value);
 
 	return L"";
 }
@@ -285,4 +300,13 @@ PCWSTR Helpers::InstallStateToString(ULONG state) {
 		case 3: return L"Finish Install";
 	}
 	return L"";
+}
+
+PCWSTR Helpers::RemovalPolicyToString(ULONG policy) {
+	switch (policy) {
+		case CM_REMOVAL_POLICY_EXPECT_NO_REMOVAL: return L"None";
+		case CM_REMOVAL_POLICY_EXPECT_ORDERLY_REMOVAL: return L"Orderly";
+		case CM_REMOVAL_POLICY_EXPECT_SURPRISE_REMOVAL: return L"Surprise";
+	}
+	return L"(Unknown)";
 }

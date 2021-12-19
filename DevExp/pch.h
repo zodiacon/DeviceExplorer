@@ -31,6 +31,7 @@ extern CAppModule _Module;
 #include <vector>
 #include <memory>
 #include <utility>
+#include <algorithm>
 #include <strsafe.h>
 #include <dontuse.h>
 #include <commoncontrols.h>

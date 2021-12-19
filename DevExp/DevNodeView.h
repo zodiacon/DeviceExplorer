@@ -22,6 +22,10 @@ public:
 	// list view callbacks
 	//
 	CString GetColumnText(HWND, int row, int col);
+	bool CanSort(bool col) const {
+		return col == 0;
+	}
+	void DoSort(SortInfo* const);
 
 	//
 	// tree view callbacks

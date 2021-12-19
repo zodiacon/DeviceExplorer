@@ -10,4 +10,5 @@ struct Helpers final {
 	static CString FormatBytes(const PBYTE buffer, ULONG size);
 	static CString GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG size);
 	static PCWSTR InstallStateToString(ULONG state);
+	static PCWSTR RemovalPolicyToString(ULONG policy);
 };

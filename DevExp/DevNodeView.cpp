@@ -6,6 +6,7 @@
 #include "DevNodeView.h"
 #include "IconHelper.h"
 #include "Helpers.h"
+#include "SortHelper.h"
 
 CString CDevNodeView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
@@ -15,6 +16,14 @@ CString CDevNodeView::GetColumnText(HWND, int row, int col) {
 		case 2: return Helpers::GetPropertyDetails(item.Key, item.Value.get(), item.ValueSize);
 	}
 	return L"";
+}
+
+void CDevNodeView::DoSort(SortInfo* const si) {
+	auto compare = [&](auto const& n1, auto const& n2) {
+		return SortHelper::Sort(n1.Name, n2.Name, si->SortAscending);
+	};
+
+	std::sort(m_Items.begin(), m_Items.end(), compare);
 }
 
 void CDevNodeView::OnTreeSelChanged(HTREEITEM hOld, HTREEITEM hNew) {
@@ -37,6 +46,9 @@ void CDevNodeView::OnTreeSelChanged(HTREEITEM hOld, HTREEITEM hNew) {
 		m_Items.push_back(std::move(prop));
 	}
 
+	auto si = GetSortInfo(m_List);
+	if (si)
+		DoSort(si);
 	m_List.SetItemCount((int)keys.size());
 }
 
@@ -54,14 +66,20 @@ LRESULT CDevNodeView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
 		TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS);
 
+	CImageList images;
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 64, 64);
+	m_Tree.SetImageList(images);
+
+	images.AddIcon(IconHelper::GetStockIcon(SIID_DESKTOPPC));
+
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS);
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
 	auto cm = GetColumnManager(m_List);
-	cm->AddColumn(L"Property", LVCFMT_LEFT, 240, 0);
-	cm->AddColumn(L"Value", LVCFMT_LEFT, 300, 1);
-	cm->AddColumn(L"Details", LVCFMT_LEFT, 450, 2);
+	cm->AddColumn(L"Property", LVCFMT_LEFT, 250, 0);
+	cm->AddColumn(L"Value", LVCFMT_LEFT, 350, 1);
+	cm->AddColumn(L"Details", LVCFMT_LEFT, 550, 2);
 	cm->UpdateColumns();
 
 	m_Splitter.SetSplitterPosPct(30);
@@ -75,18 +93,13 @@ LRESULT CDevNodeView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 void CDevNodeView::BuildDevNodeTree() {
 	m_Tree.SetRedraw(FALSE);
 
-	auto images = DeviceManager::GetClassImageList();
-	m_Tree.SetImageList(images, TVSIL_NORMAL);
-	auto computerImage = ImageList_AddIcon(images, IconHelper::GetStockIcon(SIID_DESKTOPPC));
-
 	m_DevMgr = DeviceManager::Create();
 	m_Devices = m_DevMgr->EnumDevices();
 	auto root = DeviceManager::GetRootDeviceNode();
 	WCHAR name[MAX_COMPUTERNAME_LENGTH + 1];
 	DWORD size = _countof(name);
 	auto ok = ::GetComputerName(name, &size);
-	int image = computerImage;
-	auto hRoot = InsertTreeItem(m_Tree, ok ? name : L"This PC", image, root);
+	auto hRoot = InsertTreeItem(m_Tree, ok ? name : L"This PC", 0, root);
 	BuildChildDevNodes(hRoot, root);
 	m_Tree.Expand(hRoot, TVE_EXPAND);
 
