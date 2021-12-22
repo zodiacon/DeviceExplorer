@@ -84,11 +84,11 @@
     <ClInclude Include="UIFramework.h">
       <Filter>Framework</Filter>
     </ClInclude>
-    <ClInclude Include="FrameworkListView.h">
-      <Filter>Framework</Filter>
-    </ClInclude>
     <ClInclude Include="TreeViewHelper.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeListViewCtrl.h">
+      <Filter>Controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="CompoundFileReaderWriter.cpp">
       <Filter>CompoundFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeListViewCtrl.cpp">
+      <Filter>Controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

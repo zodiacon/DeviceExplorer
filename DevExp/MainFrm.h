@@ -4,11 +4,14 @@
 
 #pragma once
 
+#include "Interfaces.h"
+
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
 	public CAutoUpdateUI<CMainFrame>,
-	public CMessageFilter, public CIdleHandler
-{
+	public IMainFrame,
+	public CMessageFilter, 
+	public CIdleHandler {
 public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 
@@ -29,6 +32,11 @@ protected:
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE, OnWindowClose)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE_ALL, OnWindowCloseAll)
 		COMMAND_RANGE_HANDLER(ID_WINDOW_TABFIRST, ID_WINDOW_TABLAST, OnWindowActivate)
+		if (uMsg == WM_COMMAND) {
+			auto page = m_view.GetActivePage();
+			if (page >= 0 && ((CWindowImplBase*)m_view.GetPageData(page))->ProcessWindowMessage(hWnd, WM_COMMAND, wParam, lParam, lResult, 1))
+				return TRUE;
+		}
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()
@@ -41,6 +49,10 @@ protected:
 private:
 	void InitToolBar(CToolBarCtrl& tb, int size);
 	void InitCommandBar();
+
+	// IMainFrame
+	HWND GetHwnd() const override;
+	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) override;
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);

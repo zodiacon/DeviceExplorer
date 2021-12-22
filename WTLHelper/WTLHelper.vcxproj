@@ -241,13 +241,13 @@
     <ClInclude Include="CustomRebar.h" />
     <ClInclude Include="CustomStatusBar.h" />
     <ClInclude Include="DialogHelper.h" />
-    <ClInclude Include="FrameworkListView.h" />
     <ClInclude Include="IconHelper.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="ListViewhelper.h" />
     <ClInclude Include="OwnerDrawnMenu.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="TreeListViewCtrl.h" />
     <ClInclude Include="TreeViewHelper.h" />
     <ClInclude Include="UIFramework.h" />
     <ClInclude Include="VirtualListView.h" />
@@ -274,6 +274,7 @@
     <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="Theme.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
+    <ClCompile Include="TreeListViewCtrl.cpp" />
     <ClCompile Include="VersionResourceHelper.cpp" />
     <ClCompile Include="WTLHelper.cpp" />
   </ItemGroup>

@@ -8,6 +8,7 @@
 #include "DevNodeView.h"
 #include "MainFrm.h"
 #include "IconHelper.h"
+#include "DevNodeListView.h"
 
 const int WINDOW_MENU_POSITION = 4;
 
@@ -62,9 +63,13 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CMenuHandle menuMain = m_CmdBar.GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 
-	auto pView = new CDevNodeView;
+	auto pView = new CDevNodeView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), -1, pView);
+
+	auto pView2 = new CDevNodeListView(this);
+	pView2->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView2->m_hWnd, _T("Device Node List"), -1, pView2);
 
 	return 0;
 }
@@ -171,4 +176,12 @@ void CMainFrame::InitCommandBar() {
 	for (auto& cmd : cmds) {
 		m_CmdBar.AddIcon(cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon, cmd.id);
 	}
+}
+
+HWND CMainFrame::GetHwnd() const {
+	return m_hWnd;
+}
+
+BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) {
+	return m_CmdBar.TrackPopupMenu(hMenu, flags, x, y);
 }

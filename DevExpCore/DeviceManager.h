@@ -93,7 +93,8 @@ public:
 	static std::unique_ptr<DeviceManager> Create(const wchar_t* computerName = nullptr, const GUID* classGuid = nullptr, const wchar_t* enumerator = nullptr,
 		InfoSetOptions options = InfoSetOptions::Present | InfoSetOptions::AllClasses);
 
-	std::vector<DeviceInfo> EnumDevices();
+	template<typename T = DeviceInfo> requires (std::is_base_of_v<DeviceInfo, T>)
+	std::vector<T> EnumDevices();
 	static std::wstring GetDeviceClassDescription(GUID const& guid, const wchar_t* computerName = nullptr);
 	static HIMAGELIST GetClassImageList();
 	static int GetClassImageIndex(const GUID* guid);
@@ -147,4 +148,29 @@ inline T DeviceManager::GetDeviceClassRegistryProperty(const GUID* guid, DeviceC
 		(BYTE*)&result, sizeof(T), nullptr, nullptr, nullptr)) {
 	}
 	return result;
+}
+
+template<typename T> requires (std::is_base_of_v<DeviceInfo, T>)
+std::vector<T> DeviceManager::EnumDevices() {
+	std::vector<T> devices;
+	SP_DEVINFO_DATA data = { sizeof(data) };
+	wchar_t name[512];
+
+	for (DWORD i = 0; ; i++) {
+		if (!::SetupDiEnumDeviceInfo(_hInfoSet.get(), i, &data))
+			break;
+
+		T di;
+		di.Data = data;
+		if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), &data, SPDRP_FRIENDLYNAME, nullptr, (BYTE*)name, sizeof(name), nullptr)) {
+			di.Description = name;
+		}
+		if (di.Description.empty()) {
+			if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), &data, SPDRP_DEVICEDESC, nullptr, (BYTE*)name, sizeof(name), nullptr)) {
+				di.Description = name;
+			}
+		}
+		devices.push_back(std::move(di));
+	}
+	return devices;
 }

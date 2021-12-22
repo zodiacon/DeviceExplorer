@@ -11,4 +11,6 @@ struct Helpers final {
 	static CString GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG size);
 	static PCWSTR InstallStateToString(ULONG state);
 	static PCWSTR RemovalPolicyToString(ULONG policy);
+	static CString DevNodeStatusToString(DeviceNodeStatus status, PCWSTR sep = L", ");
+	static PCWSTR PciDeviceTypeToString(ULONG type);
 };

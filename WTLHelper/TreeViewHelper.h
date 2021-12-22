@@ -34,21 +34,42 @@ protected:
 	LRESULT OnSelChanged(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
 		auto pT = static_cast<T*>(this);
 		auto tv = (NMTREEVIEW*)hdr;
-		pT->OnTreeSelChanged(tv->itemOld.hItem, tv->itemNew.hItem);
+		pT->OnTreeSelChanged(hdr->hwndFrom, tv->itemOld.hItem, tv->itemNew.hItem);
 		return 0;
 	}
 
 	LRESULT OnRightClick(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
+		CPoint pt;
+		::GetCursorPos(&pt);
+		CPoint pt2(pt);
+		CTreeViewCtrl tv(hdr->hwndFrom);
+		tv.ScreenToClient(&pt);
+		auto hItem = tv.HitTest(pt, nullptr);
+		if (hItem)
+			return static_cast<T*>(this)->OnTreeRightClick(tv, hItem, pt2);
 		return 0;
 	}
 
 	LRESULT OnDoubleClick(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
+		CPoint pt;
+		::GetCursorPos(&pt);
+		CTreeViewCtrl tv(hdr->hwndFrom);
+		tv.ScreenToClient(&pt);
+		auto hItem = tv.HitTest(pt, nullptr);
+		if (hItem)
+			return static_cast<T*>(this)->OnTreeDoubleClick(tv, hItem);
 		return 0;
 	}
-
 
 private:
 	// overridables
 
-	void OnTreeSelChanged(HTREEITEM hOld, HTREEITEM hNew) {}
+	void OnTreeSelChanged(HWND tree, HTREEITEM hOld, HTREEITEM hNew) {}
+	bool OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT const& pt) {
+		return false;
+	}
+	bool OnTreeDoubleClick(HWND tree, HTREEITEM hItem) {
+		return false;
+	}
+
 };

@@ -207,26 +207,3 @@ DeviceManager::DeviceManager(const wchar_t* computerName, const GUID* classGuid,
 	_hInfoSet.reset(::SetupDiGetClassDevsEx(classGuid, enumerator, nullptr, static_cast<DWORD>(options), nullptr, computerName, nullptr));
 }
 
-std::vector<DeviceInfo> DeviceManager::EnumDevices() {
-	std::vector<DeviceInfo> devices;
-	SP_DEVINFO_DATA data = { sizeof(data) };
-	wchar_t name[512];
-
-	for (DWORD i = 0; ; i++) {
-		if (!::SetupDiEnumDeviceInfo(_hInfoSet.get(), i, &data))
-			break;
-
-		DeviceInfo di;
-		di.Data = data;
-		if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), &data, SPDRP_FRIENDLYNAME, nullptr, (BYTE*)name, sizeof(name), nullptr)) {
-			di.Description = name;
-		}
-		if (di.Description.empty()) {
-			if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), &data, SPDRP_DEVICEDESC, nullptr, (BYTE*)name, sizeof(name), nullptr)) {
-				di.Description = name;
-			}
-		}
-		devices.push_back(std::move(di));
-	}
-	return devices;
-}

@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Helpers.h"
+#include <pciprop.h>
+#include <functiondiscoverykeys.h>
 #include <sddl.h>
 
 namespace std {
@@ -148,6 +150,62 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_DeviceContainer_ModelName, L"Container Model Name" },
 		{ DEVPKEY_DeviceContainer_ModelNumber, L"Container Model Number" },
 
+		{ DEVPKEY_PciDevice_DeviceType, L"PCI Device Type" },
+		{ DEVPKEY_PciDevice_BaseClass, L"PCI Base Class" },
+		{ DEVPKEY_PciDevice_SubClass, L"PCI Subclass" },
+		{ DEVPKEY_PciDevice_ProgIf, L"PCI ProgIf" },
+		{ DEVPKEY_PciDevice_CurrentPayloadSize, L"PCI Current Payload Size" },
+		{ DEVPKEY_PciDevice_MaxPayloadSize, L"PCI Max Payload Size" },
+		{ DEVPKEY_PciDevice_MaxReadRequestSize, L"PCI Max Read Request Size" },
+		{ DEVPKEY_PciDevice_CurrentLinkSpeed, L"PCI Current Link Speed" },
+		{ DEVPKEY_PciDevice_CurrentLinkWidth, L"PCI Current Link Width" },
+		{ DEVPKEY_PciDevice_MaxLinkSpeed, L"PCI Max Link Speed" },
+		{ DEVPKEY_PciDevice_MaxLinkWidth, L"PCI Max Link Width" },
+		{ DEVPKEY_PciDevice_ExpressSpecVersion, L"PCIe Spec Version" },
+		{ DEVPKEY_PciDevice_InterruptSupport, L"PCI Interrupt Support" },
+		{ DEVPKEY_PciDevice_InterruptMessageMaximum, L"PCI Max Message Interrupts" },
+		{ DEVPKEY_PciDevice_BarTypes, L"PCI Bar Types" },
+		{ DEVPKEY_PciDevice_FirmwareErrorHandling, L"PCI Firmware Error Handling" },
+		{ DEVPKEY_PciDevice_Uncorrectable_Error_Mask, L"PCI Uncorrectable Error Mask" },
+		{ DEVPKEY_PciDevice_Uncorrectable_Error_Severity, L"PCI Uncorrectable Error Sevirity" },
+		{ DEVPKEY_PciDevice_Correctable_Error_Mask, L"PCI Correctable Error Mask" },
+		{ DEVPKEY_PciDevice_ECRC_Errors, L"PCI ECRC Errors" },
+		{ DEVPKEY_PciDevice_Error_Reporting, L"PCI Error Reporting" },
+		{ DEVPKEY_PciDevice_RootError_Reporting, L"PCI Root Error Reporting" },
+		{ DEVPKEY_PciDevice_S0WakeupSupported, L"PCI S0 Wakeup Supported" },
+		{ DEVPKEY_PciDevice_SriovSupport, L"PCI SRI-OV Support" },
+		{ DEVPKEY_PciDevice_Label_Id, L"PCI Label ID" },
+		{ DEVPKEY_PciDevice_Label_String, L"PCI Label String" },
+		{ DEVPKEY_PciDevice_AcsSupport, L"PCI ACS Support" },
+		{ DEVPKEY_PciDevice_AriSupport, L"PCI ARI Support" },
+		{ DEVPKEY_PciDevice_AcsCompatibleUpHierarchy, L"PCI ACS Compatible Up Hierarchy" },
+		{ DEVPKEY_PciDevice_AcsCapabilityRegister, L"PCI ACS Capability Register" },
+		{ DEVPKEY_PciDevice_AtsSupport, L"PCI ATS Support" },
+		{ DEVPKEY_PciDevice_RequiresReservedMemoryRegion, L"PCI Requires Reserved Memory Region" },
+		{ DEVPKEY_PciDevice_AtomicsSupported, L"PCI Atomics Supported" },
+		{ DEVPKEY_PciDevice_SupportedLinkSubState, L"PCI Supported Link Substate" },
+		{ DEVPKEY_PciDevice_OnPostPath, L"PCI On POST Path" },
+		{ DEVPKEY_PciDevice_D3ColdSupport, L"PCI D3 Cold Support" },
+
+		{ DEVPKEY_PciRootBus_SupportedSpeedsAndModes, L"PCI Supported Speeds and Modes" },
+		{ DEVPKEY_PciRootBus_DeviceIDMessagingCapable, L"PCI Device ID Message Capable" },
+		{ DEVPKEY_PciRootBus_SecondaryBusWidth, L"PCI Secondary Bus Width" },
+		{ DEVPKEY_PciRootBus_ExtendedConfigAvailable, L"PCI Extended Config Available" },
+		{ DEVPKEY_PciRootBus_ExtendedPCIConfigOpRegionSupport, L"PCI Extended Config OP Region Support" },
+		{ DEVPKEY_PciRootBus_ASPMSupport, L"PCI ASPM Support" },
+		{ DEVPKEY_PciRootBus_ClockPowerManagementSupport, L"PCI Clock Power Management Support" },
+		{ DEVPKEY_PciRootBus_PCISegmentGroupsSupport, L"PCI Segment Groups Support" },
+		{ DEVPKEY_PciRootBus_MSISupport, L"PCI MSI Support" },
+		{ DEVPKEY_PciRootBus_PCIExpressNativeHotPlugControl, L"PCIe Native Hotplug Control" },
+		{ DEVPKEY_PciRootBus_SHPCNativeHotPlugControl, L"PCI Native SHPC Hotplug Control" },
+
+		{ *(DEVPROPKEY*)&PKEY_PNPX_ID, L"PNP-X ID" },
+		{ *(DEVPROPKEY*)&PKEY_PNPX_FirmwareVersion, L"PNP-X Firmware Version" },
+		{ *(DEVPROPKEY*)&PKEY_PNPX_SerialNumber, L"PNP-X Serial Number" },
+		{ *(DEVPROPKEY*)&PKEY_PNPX_GlobalIdentity, L"PNP-X Global Identity" },
+		{ *(DEVPROPKEY*)&PKEY_PNPX_Types, L"PNP-X Types" },
+		{ *(DEVPROPKEY*)&PKEY_PNPX_RemoteAddress, L"PNP-X Remote Address" },
+		{ *(DEVPROPKEY*)&PKEY_PNPX_RootProxy, L"PNP-X Root Proxy" },
 	};
 
 	if (auto it = properties.find(key); it != properties.end())
@@ -217,7 +275,7 @@ CString Helpers::GetPropertyValueAsString(PBYTE value, DEVPROPTYPE type, ULONG s
 
 		case DEVPROP_TYPE_FILETIME:
 			auto ft = *(FILETIME*)value;
-			if(ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0)
+			if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0)
 				return L"";
 
 			::SHFormatDateTime(&ft, nullptr, text.GetBufferSetLength(64), 64);
@@ -279,15 +337,20 @@ CString Helpers::FormatBytes(const PBYTE buffer, ULONG size) {
 CString Helpers::GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG size) {
 	if (key == DEVPKEY_Device_Security) {
 		PWSTR sddl;
-		::ConvertSecurityDescriptorToStringSecurityDescriptor((PSECURITY_DESCRIPTOR)value, SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, nullptr);
+		::ConvertSecurityDescriptorToStringSecurityDescriptor((PSECURITY_DESCRIPTOR)value,
+			SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, nullptr);
 		CString text(sddl);
 		::LocalFree(sddl);
 		return text;
 	}
 	if (key == DEVPKEY_Device_InstallState)
 		return InstallStateToString(*(ULONG*)value);
-	if(key == DEVPKEY_Device_RemovalPolicy || key == DEVPKEY_Device_RemovalPolicyOverride || key == DEVPKEY_Device_RemovalPolicyDefault)
+	if (key == DEVPKEY_Device_RemovalPolicy || key == DEVPKEY_Device_RemovalPolicyOverride || key == DEVPKEY_Device_RemovalPolicyDefault)
 		return RemovalPolicyToString(*(ULONG*)value);
+	if (key == DEVPKEY_Device_DevNodeStatus)
+		return DevNodeStatusToString(*(DeviceNodeStatus*)value);
+	if (key == DEVPKEY_PciDevice_DeviceType)
+		return PciDeviceTypeToString(*(ULONG*)value);
 
 	return L"";
 }
@@ -309,4 +372,79 @@ PCWSTR Helpers::RemovalPolicyToString(ULONG policy) {
 		case CM_REMOVAL_POLICY_EXPECT_SURPRISE_REMOVAL: return L"Surprise";
 	}
 	return L"(Unknown)";
+}
+
+CString Helpers::DevNodeStatusToString(DeviceNodeStatus status, PCWSTR sep) {
+	static const struct {
+		DeviceNodeStatus Status;
+		PCWSTR Text;
+	} st[] = {
+		{ DeviceNodeStatus::RootEnumerated, L"Root Enumerated" },
+		{ DeviceNodeStatus::DriverLoaded, L"Driver Loaded" },
+		{ DeviceNodeStatus::EnumLoaded, L"Enum Loaded" },
+		{ DeviceNodeStatus::Started, L"Started" },
+		{ DeviceNodeStatus::Manual, L"Manual" },
+		{ DeviceNodeStatus::NeedToEnum, L"Need to Enum" },
+		{ DeviceNodeStatus::NotFirstTime, L"Not First Time" },
+		{ DeviceNodeStatus::HardwareEnum, L"Hardware Enum" },
+		{ DeviceNodeStatus::Liar, L"Liar" },
+		{ DeviceNodeStatus::HasMark, L"Has Mark" },
+		{ DeviceNodeStatus::HasProblem, L"Has Problem" },
+		{ DeviceNodeStatus::Filtered, L"Filtered" },
+		{ DeviceNodeStatus::Moved, L"Moved" },
+		{ DeviceNodeStatus::Disableable, L"Disableable" },
+		{ DeviceNodeStatus::Removable, L"Removable" },
+		{ DeviceNodeStatus::PrivateProblem, L"Private Problem" },
+		{ DeviceNodeStatus::MfParent, L"MF Parent" },
+		{ DeviceNodeStatus::MfChild, L"MF Child" },
+		{ DeviceNodeStatus::WillBeRmoved, L"Will Be Removed" },
+		{ DeviceNodeStatus::NotFirstTimeEnum, L"Not First Time Enum" },
+		{ DeviceNodeStatus::StopFreeResources, L"Stop Free Resources" },
+		{ DeviceNodeStatus::RealCandidate, L"Real Candidate" },
+		{ DeviceNodeStatus::BadPartial, L"Bad Prtial" },
+		{ DeviceNodeStatus::NtEnumerator, L"NT Enumerator" },
+		{ DeviceNodeStatus::NtDriver, L"NT Driver" },
+		{ DeviceNodeStatus::NeedsLocking, L"Needs Locking" },
+		{ DeviceNodeStatus::ArmWakeup, L"Arm Wakeup" },
+		{ DeviceNodeStatus::ApmEnumerator, L"APM Enumerator" },
+		{ DeviceNodeStatus::ApmDriver, L"APM Driver" },
+		{ DeviceNodeStatus::SilentInstall, L"Silent Install" },
+		{ DeviceNodeStatus::NoShowInDeviceManager, L"Don't Show" },
+		{ DeviceNodeStatus::BootLogProblem, L"Boot Log Problem" },
+	};
+
+	CString text;
+	for (auto& s : st) {
+		if (status == DeviceNodeStatus::None)
+			break;
+
+		if ((status & s.Status) == s.Status)
+			(text += s.Text) += sep;
+		status &= ~s.Status;
+	}
+
+	if (!text.IsEmpty())
+		text = text.Left(text.GetLength() - (int)wcslen(sep));
+	return text;
+}
+
+PCWSTR Helpers::PciDeviceTypeToString(ULONG type) {
+	static PCWSTR types[] = {
+		L"PCI Conventional",
+		L"PCI-X",
+		L"PCI Express Endpoint",
+		L"PCI Express Legacy Endpoint",
+		L"PCI Express Root Complex Integrated Endpoint",
+		L"PCI Express Treated As PCI ",
+		L"PCI Conventional (Bridge)",
+		L"PCI-X (Bridge)",
+		L"PCI Express Root Port (Bridge)",
+		L"PCI Express Upstream Switch Port (Bridge)",
+		L"PCI Express Downstream Switch Port (Bridge)",
+		L"PCI Express To PCI XBridge",
+		L"PCI-X To Express Bridge",
+		L"PCI Express Treated As PCI (Bridge)",
+		L"PCI Express Event Collector (Bridge)",
+	};
+	return types[type];
 }

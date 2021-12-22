@@ -38,7 +38,7 @@ bool ListViewHelper::SaveAll(PCWSTR path, CListViewCtrl& lv, bool includeHeaders
 	return true;
 }
 
-CString ListViewHelper::GetRowAsString(CListViewCtrl& lv, int row, WCHAR separator) {
+CString ListViewHelper::GetRowAsString(CListViewCtrl& lv, int row, PCWSTR separator) {
 	auto count = lv.GetHeader().GetItemCount();
 	if (count == 0)
 		return L"";

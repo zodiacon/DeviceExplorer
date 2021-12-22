@@ -7,7 +7,6 @@
 #include <devpkey.h>
 
 
-
 std::wstring GuidToString(GUID const& guid) {
 	WCHAR name[64];
 	return SUCCEEDED(::StringFromGUID2(guid, name, _countof(name))) ? name : L"";
@@ -78,6 +77,19 @@ void DisplayProperties(DEVINST inst) {
 	DEVPROPKEY keys[80];
 	ULONG count = _countof(keys);
 	::CM_Get_DevNode_Property_Keys(inst, keys, &count, 0);
+	LOG_CONF log = 0;
+	::CM_Get_First_Log_Conf(&log, inst, BASIC_LOG_CONF);
+	if (log) {
+		RES_DES rd;
+		RESOURCEID r;
+		while(CR_SUCCESS == CM_Get_Next_Res_Des(&rd, log, ResType_All, &r, 0)) {
+			BYTE buffer[1000];
+			CM_Get_Res_Des_Data(rd, buffer, 1000, 0);
+			auto io = (IRQ_RESOURCE*)buffer;
+		}
+		CM_Free_Log_Conf(log, 0);
+	}
+
 	DEVPROPTYPE type;
 	for (DWORD i = 0; i < count; i++) {
 		ULONG size = 2048;
@@ -156,8 +168,14 @@ int main() {
 	//DumpDeviceInterfaces();
 	//DumpHardwareProfiles();
 	//DumpDeviceClasses();
-	EnumDevNodes();
+	//EnumDevNodes();
+
 	//TestEnum();
+
+	auto dm = DeviceManager::Create();
+	for (auto& di : dm->EnumDevices()) {
+		DeviceNode(di.Data.DevInst).GetResources();
+	}
 
 	return 0;
 }

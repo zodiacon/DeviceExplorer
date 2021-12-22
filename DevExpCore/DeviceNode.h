@@ -39,63 +39,113 @@ DEFINE_ENUM_FLAG_OPERATORS(DeviceNodeStatus);
 
 enum class DeviceNodeProblem {
 	None = 0,
-	NOT_CONFIGURED			  ,
-	DEVLOADER_FAILED		  ,
-	OUT_OF_MEMORY			  ,
-	ENTRY_IS_WRONG_TYPE		  ,
-	LACKED_ARBITRATOR		  ,
-	BOOT_CONFIG_CONFLICT	  ,
-	FAILED_FILTER			  ,
-	DEVLOADER_NOT_FOUND		  ,
-	INVALID_DATA			  ,
-	FAILED_START			  ,
-	LIAR					  ,
-	NORMAL_CONFLICT			  ,
-	NOT_VERIFIED			  ,
-	NEED_RESTART			  ,
-	REENUMERATION			  ,
-	PARTIAL_LOG_CONF		  ,
-	UNKNOWN_RESOURCE		  ,
-	REINSTALL				  ,
-	REGISTRY				  ,
-	VXDLDR					  ,
-	WILL_BE_REMOVED			  ,
-	DISABLED				  ,
-	DEVLOADER_NOT_READY		  ,
-	DEVICE_NOT_THERE		  ,
-	MOVED					  ,
-	TOO_EARLY				  ,
-	NO_VALID_LOG_CONF		  ,
-	FAILED_INSTALL			  ,
-	HARDWARE_DISABLED		  ,
-	CANT_SHARE_IRQ			  ,
-	FAILED_ADD				  ,
-	DISABLED_SERVICE		  ,
-	TRANSLATION_FAILED		  ,
-	NO_SOFTCONFIG			  ,
-	BIOS_TABLE				  ,
-	IRQ_TRANSLATION_FAILED	  ,
-	FAILED_DRIVER_ENTRY		  ,
+	NotConfigured,
+	DEVLOADER_FAILED,
+	OUT_OF_MEMORY,
+	ENTRY_IS_WRONG_TYPE,
+	LACKED_ARBITRATOR,
+	BOOT_CONFIG_CONFLICT,
+	FAILED_FILTER,
+	DEVLOADER_NOT_FOUND,
+	INVALID_DATA,
+	FAILED_START,
+	LIAR,
+	NORMAL_CONFLICT,
+	NOT_VERIFIED,
+	NEED_RESTART,
+	REENUMERATION,
+	PARTIAL_LOG_CONF,
+	UNKNOWN_RESOURCE,
+	REINSTALL,
+	REGISTRY,
+	VXDLDR,
+	WILL_BE_REMOVED,
+	DISABLED,
+	DEVLOADER_NOT_READY,
+	DEVICE_NOT_THERE,
+	MOVED,
+	TOO_EARLY,
+	NO_VALID_LOG_CONF,
+	FAILED_INSTALL,
+	HARDWARE_DISABLED,
+	CANT_SHARE_IRQ,
+	FAILED_ADD,
+	DISABLED_SERVICE,
+	TRANSLATION_FAILED,
+	NO_SOFTCONFIG,
+	BIOS_TABLE,
+	IRQ_TRANSLATION_FAILED,
+	FAILED_DRIVER_ENTRY,
 	DRIVER_FAILED_PRIOR_UNLOAD,
-	DRIVER_FAILED_LOAD		  ,
+	DRIVER_FAILED_LOAD,
 	DRIVER_SERVICE_KEY_INVALID,
-	LEGACY_SERVICE_NO_DEVICES ,
-	DUPLICATE_DEVICE		  ,
-	FAILED_POST_START		  ,
-	HALTED					  ,
-	PHANTOM					  ,
-	SYSTEM_SHUTDOWN			  ,
-	HELD_FOR_EJECT			  ,
-	DRIVER_BLOCKED			  ,
-	REGISTRY_TOO_LARGE		  ,
-	SETPROPERTIES_FAILED	  ,
-	WAITING_ON_DEPENDENCY	  ,
-	UNSIGNED_DRIVER			  ,
-	USED_BY_DEBUGGER		  ,
-	DEVICE_RESET			  ,
-	CONSOLE_LOCKED			  ,
-	NEED_CLASS_CONFIG		  ,
-	GUEST_ASSIGNMENT_FAILED	  ,
+	LEGACY_SERVICE_NO_DEVICES,
+	DUPLICATE_DEVICE,
+	FAILED_POST_START,
+	HALTED,
+	PHANTOM,
+	SYSTEM_SHUTDOWN,
+	HELD_FOR_EJECT,
+	DRIVER_BLOCKED,
+	REGISTRY_TOO_LARGE,
+	SETPROPERTIES_FAILED,
+	WAITING_ON_DEPENDENCY,
+	UNSIGNED_DRIVER,
+	USED_BY_DEBUGGER,
+	DEVICE_RESET,
+	CONSOLE_LOCKED,
+	NEED_CLASS_CONFIG,
+	GUEST_ASSIGNMENT_FAILED,
+};
+
+enum class ResourceType {
+	Memory = ResType_Mem,
+	Interrupt = ResType_IRQ,
+	IO = ResType_IO,
+	LargeMemory = ResType_MemLarge,
+	BusNumber = ResType_BusNumber,
+	DMA = ResType_DMA,
+	Private = ResType_DevicePrivate,
+	PCCardConfig = ResType_PcCardConfig,
+	MFCardConfig = ResType_MfCardConfig
+};
+
+enum class LogicalConfigurationType {
+	Basic = BASIC_LOG_CONF,
+	Filtered = FILTERED_LOG_CONF,
+	Allocated = ALLOC_LOG_CONF,
+	Boot = BOOT_LOG_CONF,
+	Forced = FORCED_LOG_CONF,
+	Override = OVERRIDE_LOG_CONF,
+};
+
+struct DeviceResource {
+	ResourceType Type;
+	IO_RESOURCE& IO() const {
+		return *(IO_RESOURCE*)_buffer.get();
+	}
+	IRQ_RESOURCE& Interrupt() const {
+		return *(IRQ_RESOURCE*)_buffer.get();
+	}
+	MEM_RESOURCE& Memory() const {
+		return *(MEM_RESOURCE*)_buffer.get();
+	}
+	MEM_LARGE_RESOURCE& LargeMemory() const {
+		return *(MEM_LARGE_RESOURCE*)_buffer.get();
+	}
+	BUSNUMBER_RESOURCE& BusNumber() const {
+		return *(BUSNUMBER_RESOURCE*)_buffer.get();
+	}
+	BYTE* Buffer() const {
+		return _buffer.get();
+	}
+	ULONG Size() const {
+		return _size;
+	}
+private:
+	friend class DeviceNode;
+	std::unique_ptr<BYTE[]> _buffer;
+	ULONG _size;
 };
 
 class DeviceNode {
@@ -112,6 +162,9 @@ public:
 	std::vector<DeviceNode> GetChildren() const;
 	std::vector<DeviceNode> GetSiblings() const;
 	std::vector<DEVPROPKEY> GetPropertyKeys() const;
+	bool Enable();
+	bool Disable();
+	bool Uninstall();
 
 	std::unique_ptr<BYTE[]> GetPropertyValue(DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len = nullptr) const {
 		ULONG size = 0;
@@ -135,7 +188,9 @@ public:
 	std::wstring GetProperty(DEVPROPKEY const& key) const {
 		DEVPROPTYPE type;
 		ULONG size = 0;
-		::CM_Get_DevNode_Property(m_Inst, &key, &type, nullptr, &size, 0);
+		if (CR_BUFFER_SMALL != ::CM_Get_DevNode_Property(m_Inst, &key, &type, nullptr, &size, 0))
+			return L"";
+
 		assert(type == DEVPROP_TYPE_STRING);
 		if (type != DEVPROP_TYPE_STRING)
 			return L"";
@@ -167,6 +222,8 @@ public:
 	}
 
 	DeviceNodeStatus GetStatus(DeviceNodeProblem* problem = nullptr) const;
+
+	std::vector<DeviceResource> GetResources(LogicalConfigurationType type = LogicalConfigurationType::Basic);
 
 private:
 	DEVINST m_Inst;

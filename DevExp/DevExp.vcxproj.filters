@@ -42,6 +42,9 @@
     <ClCompile Include="Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DevNodeListView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -61,6 +64,15 @@
     </ClInclude>
     <ClInclude Include="Helpers.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="DevNodeListView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +97,9 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\refresh.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\devices.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

@@ -7,6 +7,9 @@
 #include "IconHelper.h"
 #include "Helpers.h"
 #include "SortHelper.h"
+#include "resource.h"
+#include "ClipboardHelper.h"
+#include "ListViewhelper.h"
 
 CString CDevNodeView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
@@ -26,7 +29,7 @@ void CDevNodeView::DoSort(SortInfo* const si) {
 	std::sort(m_Items.begin(), m_Items.end(), compare);
 }
 
-void CDevNodeView::OnTreeSelChanged(HTREEITEM hOld, HTREEITEM hNew) {
+void CDevNodeView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
 	auto inst = GetItemData<DEVINST>(m_Tree, hNew);
 	DeviceNode node(inst);
 	m_Items.clear();
@@ -52,6 +55,18 @@ void CDevNodeView::OnTreeSelChanged(HTREEITEM hOld, HTREEITEM hNew) {
 	m_List.SetItemCount((int)keys.size());
 }
 
+bool CDevNodeView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
+	m_Tree.SelectItem(hItem);
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y);
+	LRESULT result;
+	if (cmd) {
+		ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+	}
+	return false;
+}
+
 BOOL CDevNodeView::PreTranslateMessage(MSG* pMsg) {
 	pMsg;
 	return FALSE;
@@ -70,7 +85,7 @@ LRESULT CDevNodeView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 64, 64);
 	m_Tree.SetImageList(images);
 
-	images.AddIcon(IconHelper::GetStockIcon(SIID_DESKTOPPC));
+	images.AddIcon(AtlLoadIconImage(IDI_DEVICES, 0, 16, 16));
 
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS);
@@ -87,6 +102,38 @@ LRESULT CDevNodeView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	BuildDevNodeTree();
 
+	return 0;
+}
+
+LRESULT CDevNodeView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
+	if (m_Focus == nullptr)
+		m_Tree.SetFocus();
+	return 0;
+}
+
+LRESULT CDevNodeView::OnCopy(WORD, WORD, HWND, BOOL&) {
+	if (m_Focus == m_Tree) {
+		auto hItem = m_Tree.GetSelectedItem();
+		if (hItem) {
+			CString text;
+			m_Tree.GetItemText(hItem, text);
+			ClipboardHelper::CopyText(m_hWnd, text);
+			return 0;
+		}
+	}
+	else if (m_Focus == m_List) {
+		CString text;
+		for (auto i = m_List.GetNextItem(-1, LVIS_SELECTED); i >= 0; i = m_List.GetNextItem(i, LVIS_SELECTED)) {
+			text += ListViewHelper::GetRowAsString(m_List, i);
+			text += L"\n";
+		}
+		ClipboardHelper::CopyText(m_hWnd, text.Left(text.GetLength() - 1));
+	}
+	return 0;
+}
+
+LRESULT CDevNodeView::OnNotifySetFocus(int, LPNMHDR hdr, BOOL&) {
+	m_Focus = hdr->hwndFrom;
 	return 0;
 }
 
@@ -108,26 +155,25 @@ void CDevNodeView::BuildDevNodeTree() {
 
 void CDevNodeView::BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node) {
 	for (auto& dn : node.GetChildren()) {
-		if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::None) {
-			auto icon = m_DevMgr->GetDeviceIcon(m_Devices[dn - 1]);
-			int image = -1;
-			if (icon) {
-				image = m_Tree.GetImageList(TVSIL_NORMAL).AddIcon(icon);
-				::DestroyIcon(icon);
-			}
-			auto hItem = InsertTreeItem(m_Tree, dn.GetProperty<std::wstring>(DEVPKEY_NAME).c_str(), image, dn, hParent, TVI_SORT);
-			BuildChildDevNodes(hItem, dn);
+		auto icon = m_DevMgr->GetDeviceIcon(m_Devices[dn - 1]);
+		int image = -1;
+		if (icon) {
+			image = m_Tree.GetImageList(TVSIL_NORMAL).AddIcon(icon);
+			::DestroyIcon(icon);
 		}
+		auto hItem = InsertTreeItem(m_Tree, dn.GetProperty<std::wstring>(DEVPKEY_NAME).c_str(), image, dn, hParent, TVI_SORT);
+		if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
+			m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
+		BuildChildDevNodes(hItem, dn);
 	}
 }
 
 void CDevNodeView::BuildSiblingDevNodes(HTREEITEM hParent, DeviceNode const& node) {
 	for (auto& dn : node.GetSiblings()) {
 		if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::None) {
-			auto icons = dn.GetProperty<std::vector<std::wstring>>(DEVPKEY_DrvPkg_Icon);
-			if (!icons.empty())
-				DebugBreak();
 			auto hItem = InsertTreeItem(m_Tree, dn.GetProperty<std::wstring>(DEVPKEY_NAME).c_str(), -1, dn, hParent, TVI_SORT);
+			if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
+				m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
 			BuildChildDevNodes(hItem, dn);
 		}
 	}
