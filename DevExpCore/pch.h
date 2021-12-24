@@ -18,6 +18,7 @@
 #include <newdev.h>
 #include <atlbase.h>
 #include <assert.h>
+#include <unordered_map>
 #include <wil\resource.h>
 
 #endif //PCH_H

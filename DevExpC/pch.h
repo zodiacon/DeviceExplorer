@@ -16,5 +16,6 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include <unordered_map>
 
 #endif //PCH_H

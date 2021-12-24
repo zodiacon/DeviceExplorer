@@ -8,6 +8,7 @@
 #include "TreeViewHelper.h"
 #include "DeviceManager.h"
 #include "ViewBase.h"
+#include "resource.h"
 
 class DeviceNode;
 
@@ -39,6 +40,11 @@ public:
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 
+	//
+	// CViewBase overridables
+	//
+	void UpdateUI(CUpdateUIBase& ui);
+
 	virtual void OnFinalMessage(HWND /*hWnd*/);
 
 	BEGIN_MSG_MAP(CDevNodeView)
@@ -47,9 +53,12 @@ public:
 		NOTIFY_CODE_HANDLER(NM_SETFOCUS, OnNotifySetFocus)
 		CHAIN_MSG_MAP(CVirtualListView<CDevNodeView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CDevNodeView>)
+		CHAIN_MSG_MAP(CViewBase)
 		CHAIN_MSG_MAP(BaseFrame)
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
+		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
+		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -60,7 +69,9 @@ public:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNotifySetFocus(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	struct Property {
@@ -74,7 +85,6 @@ private:
 
 	void BuildDevNodeTree();
 	void BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node);
-	void BuildSiblingDevNodes(HTREEITEM hParent, DeviceNode const& node);
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
@@ -83,4 +93,5 @@ private:
 	std::vector<DeviceInfo> m_Devices;
 	std::vector<Property> m_Items;
 	HWND m_Focus{ nullptr };
+	bool m_ShowHiddenDevices{ false };
 };

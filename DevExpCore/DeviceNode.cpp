@@ -1,5 +1,10 @@
 #include "pch.h"
 #include "DeviceNode.h"
+#include <devpkey.h>
+
+std::wstring DeviceNode::GetName() const {
+    return GetProperty<std::wstring>(DEVPKEY_NAME);
+}
 
 std::vector<DeviceNode> DeviceNode::GetChildDevNodes(DeviceNode const& inst) {
     DEVINST child;
@@ -97,3 +102,4 @@ std::vector<DeviceResource> DeviceNode::GetResources(LogicalConfigurationType ty
 
     return resources;
 }
+

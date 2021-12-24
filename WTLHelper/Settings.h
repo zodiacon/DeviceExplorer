@@ -121,7 +121,7 @@ public:
 		auto it = _settings.find(name);
 		if (it == _settings.end())
 			return def;
-		ATLASSERT(it->second.Size == sizeof(T));
+		ATLASSERT(it->second.Size >= sizeof(T));
 		return *(T*)it->second.Buffer.get();
 	}
 

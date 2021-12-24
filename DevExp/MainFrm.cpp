@@ -9,8 +9,9 @@
 #include "MainFrm.h"
 #include "IconHelper.h"
 #include "DevNodeListView.h"
+#include "AppSettings.h"
 
-const int WINDOW_MENU_POSITION = 4;
+const int WINDOW_MENU_POSITION = 5;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -25,10 +26,14 @@ BOOL CMainFrame::OnIdle() {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	auto& settings = AppSettings::Get();
+	settings.LoadFromKey(L"ScorpioSoftware\\DeviceExplorer");
+
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	m_CmdBar.SetAlphaImages(true);
 	m_CmdBar.AttachMenu(GetMenu());
+	UIAddMenu(GetMenu());
 	SetMenu(nullptr);
 	InitCommandBar();
 
@@ -75,6 +80,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	AppSettings::Get().Save();
+
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -94,7 +101,7 @@ LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	static BOOL bVisible = TRUE;	// initially visible
 	bVisible = !bVisible;
 	CReBarCtrl rebar = m_hWndToolBar;
-	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
+	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);
 	rebar.ShowBand(nBandIndex, bVisible);
 	UISetCheck(ID_VIEW_TOOLBAR, bVisible);
 	UpdateLayout();
@@ -132,9 +139,9 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int nPage = wID - ID_WINDOW_TABFIRST;
-	m_view.SetActivePage(nPage);
-
+	int page = wID - ID_WINDOW_TABFIRST;
+	m_view.SetActivePage(page);
+	
 	return 0;
 }
 
@@ -184,4 +191,18 @@ HWND CMainFrame::GetHwnd() const {
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) {
 	return m_CmdBar.TrackPopupMenu(hMenu, flags, x, y);
+}
+
+CUpdateUIBase& CMainFrame::GetUI() {
+	return *this;
+}
+
+LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	int page = m_view.GetActivePage();
+	if (m_ActivePage >= 0 && m_ActivePage < m_view.GetPageCount())
+		::PostMessage(m_view.GetPageHWND(m_ActivePage), WM_PAGE_ACTIVATED, 0, 0);
+	m_ActivePage = page;
+	if(page < m_view.GetPageCount())
+		::PostMessage(m_view.GetPageHWND(page), WM_PAGE_ACTIVATED, 1, 0);
+	return 0;
 }

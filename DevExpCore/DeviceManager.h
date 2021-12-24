@@ -88,13 +88,22 @@ struct DeviceInfo {
 	SP_DEVINFO_DATA Data;
 };
 
+struct DriverInfo {
+	DWORD Type;
+	std::wstring Description;
+	std::wstring ManufactorName;
+	std::wstring ProviderName;
+	FILETIME  DriverDate;
+	DWORDLONG DriverVersion;
+};
+
 class DeviceManager final {
 public:
 	static std::unique_ptr<DeviceManager> Create(const wchar_t* computerName = nullptr, const GUID* classGuid = nullptr, const wchar_t* enumerator = nullptr,
 		InfoSetOptions options = InfoSetOptions::Present | InfoSetOptions::AllClasses);
 
 	template<typename T = DeviceInfo> requires (std::is_base_of_v<DeviceInfo, T>)
-	std::vector<T> EnumDevices();
+	std::vector<T> EnumDevices(bool includeHidden = false);
 	static std::wstring GetDeviceClassDescription(GUID const& guid, const wchar_t* computerName = nullptr);
 	static HIMAGELIST GetClassImageList();
 	static int GetClassImageIndex(const GUID* guid);
@@ -109,6 +118,8 @@ public:
 	template<typename T>
 	T GetDeviceRegistryProperty(const DeviceInfo& di, DeviceRegistryPropertyType type) const;
 	HICON GetDeviceIcon(const DeviceInfo& di, bool big = false) const;
+	std::vector<DriverInfo> EnumDrivers(DeviceInfo const& di, bool compat = false);
+	std::vector<DriverInfo> EnumDrivers();
 
 	// device class
 	static std::wstring GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type);
@@ -121,12 +132,15 @@ public:
 	bool EnumDeviceInterfaces(GUID const& guid, std::vector<DeviceInterfaceInfo>& vec);
 	static std::vector<DeviceInterfaceInfo> EnumDeviceInterfaces();
 
+	int GetDeviceIndex(DEVINST inst) const;
+
 private:
 	DeviceManager(const wchar_t* computerName = nullptr, const GUID* classGuid = nullptr, const wchar_t* enumerator = nullptr,
 		InfoSetOptions options = InfoSetOptions::Present | InfoSetOptions::AllClasses);
 
 private:
 	wil::unique_hinfoset _hInfoSet;
+	std::unordered_map<DEVINST, int> _devMap;
 };
 
 template<typename T>
@@ -151,25 +165,22 @@ inline T DeviceManager::GetDeviceClassRegistryProperty(const GUID* guid, DeviceC
 }
 
 template<typename T> requires (std::is_base_of_v<DeviceInfo, T>)
-std::vector<T> DeviceManager::EnumDevices() {
+std::vector<T> DeviceManager::EnumDevices(bool includeHidden) {
 	std::vector<T> devices;
 	SP_DEVINFO_DATA data = { sizeof(data) };
-	wchar_t name[512];
+	_devMap.clear();
 
 	for (DWORD i = 0; ; i++) {
 		if (!::SetupDiEnumDeviceInfo(_hInfoSet.get(), i, &data))
 			break;
 
+		if (!includeHidden && (DeviceNode(data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
+			continue;
+
 		T di;
+		di.Description = DeviceNode(data.DevInst).GetName();
 		di.Data = data;
-		if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), &data, SPDRP_FRIENDLYNAME, nullptr, (BYTE*)name, sizeof(name), nullptr)) {
-			di.Description = name;
-		}
-		if (di.Description.empty()) {
-			if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), &data, SPDRP_DEVICEDESC, nullptr, (BYTE*)name, sizeof(name), nullptr)) {
-				di.Description = name;
-			}
-		}
+		_devMap.insert({ data.DevInst, (int)devices.size() });
 		devices.push_back(std::move(di));
 	}
 	return devices;

@@ -2,12 +2,22 @@
 #include "DevNodeListView.h"
 #include "Helpers.h"
 #include "SortHelper.h"
+#include "AppSettings.h"
+#include "ListViewhelper.h"
+#include "ClipboardHelper.h"
 
 void CDevNodeListView::Refresh() {
-	m_dm = DeviceManager::Create();
-	m_Items = m_dm->EnumDevices<DeviceItem>();
+	bool first = m_Items.empty();
+	m_Items = m_dm->EnumDevices<DeviceItem>(m_ShowHiddenDevices);
 	m_List.GetImageList(LVSIL_SMALL).RemoveAll();
-	m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+	if (first) {
+		m_List.SetItemCount((int)m_Items.size());
+	}
+	else {
+		m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+		DoSort(GetSortInfo(m_List));
+		m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	}
 }
 
 CString CDevNodeListView::GetColumnText(HWND, int row, int col) {
@@ -48,6 +58,8 @@ LRESULT CDevNodeListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Enumerator", LVCFMT_LEFT, 120, ColumnType::Enumerator);
 	cm->AddColumn(L"Parent", LVCFMT_LEFT, 220, ColumnType::Parent);
 
+	m_dm = DeviceManager::Create();
+
 	Refresh();
 
     return 0;
@@ -82,6 +94,9 @@ int CDevNodeListView::GetRowImage(HWND, int row, int) {
 }
 
 void CDevNodeListView::DoSort(SortInfo* const si) {
+	if (si == nullptr)
+		return;
+
 	auto compare = [&](auto& d1, auto& d2) {
 		switch (GetColumnManager(m_List)->GetColumnTag<ColumnType>(si->SortColumn)) {
 			case ColumnType::Name: return SortHelper::Sort(d1.Description, d2.Description, si->SortAscending);
@@ -96,5 +111,31 @@ void CDevNodeListView::DoSort(SortInfo* const si) {
 	};
 
 	std::sort(m_Items.begin(), m_Items.end(), compare);
-	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+}
+
+LRESULT CDevNodeListView::OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	m_ShowHiddenDevices = !m_ShowHiddenDevices;
+	GetFrame()->GetUI().UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+
+	Refresh();
+	return 0;
+}
+
+LRESULT CDevNodeListView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
+	Refresh();
+	return 0;
+}
+
+LRESULT CDevNodeListView::OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CString text;
+	for (auto i = m_List.GetNextItem(-1, LVIS_SELECTED); i >= 0; i = m_List.GetNextItem(i, LVIS_SELECTED)) {
+		text += ListViewHelper::GetRowAsString(m_List, i);
+		text += L"\n";
+	}
+	ClipboardHelper::CopyText(m_hWnd, text.Left(text.GetLength() - 1));
+	return 0;
+}
+
+void CDevNodeListView::UpdateUI(CUpdateUIBase& ui) {
+	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 }

@@ -20,13 +20,14 @@
 #define ID_DEVICE_ENABLE                32778
 #define ID_DEVICE_UNINSTALL             32779
 #define ID_DEVICE_PROPERTIES            32780
+#define ID_VIEW_SHOWHIDDENDEVICES       32781
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        208
-#define _APS_NEXT_COMMAND_VALUE         32781
+#define _APS_NEXT_COMMAND_VALUE         32782
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

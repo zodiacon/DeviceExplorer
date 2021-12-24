@@ -3,6 +3,7 @@
 #include "VirtualListView.h"
 #include "DeviceManager.h"
 #include "ViewBase.h"
+#include "resource.h"
 
 class DeviceNode;
 
@@ -22,7 +23,12 @@ protected:
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CVirtualListView<CDevNodeListView>)
+		CHAIN_MSG_MAP(CViewBase)
 		CHAIN_MSG_MAP(BaseFrame)
+	ALT_MSG_MAP(1)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
+		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
+		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 	END_MSG_MAP()
 
 	CString GetColumnText(HWND, int row, int col);
@@ -39,7 +45,13 @@ protected:
 		Status, Instance, Driver, Enumerator, PDOName, Parent,
 	};
 
+	//
+	// CViewBase overridables
+	//
+	void UpdateUI(CUpdateUIBase& ui);
+
 private:
+
 	struct DeviceItem : DeviceInfo {
 		CString Class;
 		int Image{ -1 };
@@ -50,8 +62,12 @@ private:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<DeviceItem> m_Items;
 	std::unique_ptr<DeviceManager> m_dm;
+	bool m_ShowHiddenDevices{ false };
 };

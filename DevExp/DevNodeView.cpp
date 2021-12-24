@@ -10,6 +10,7 @@
 #include "resource.h"
 #include "ClipboardHelper.h"
 #include "ListViewhelper.h"
+#include "AppSettings.h"
 
 CString CDevNodeView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
@@ -70,6 +71,10 @@ bool CDevNodeView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
 BOOL CDevNodeView::PreTranslateMessage(MSG* pMsg) {
 	pMsg;
 	return FALSE;
+}
+
+void CDevNodeView::UpdateUI(CUpdateUIBase& ui) {
+	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 }
 
 void CDevNodeView::OnFinalMessage(HWND /*hWnd*/) {
@@ -137,11 +142,25 @@ LRESULT CDevNodeView::OnNotifySetFocus(int, LPNMHDR hdr, BOOL&) {
 	return 0;
 }
 
+LRESULT CDevNodeView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
+	BuildDevNodeTree();
+	return 0;
+}
+
+LRESULT CDevNodeView::OnShowHiddenDevices(WORD, WORD, HWND, BOOL&) {
+	m_ShowHiddenDevices = !m_ShowHiddenDevices;
+	GetFrame()->GetUI().UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+
+	BuildDevNodeTree();
+	return 0;
+}
+
 void CDevNodeView::BuildDevNodeTree() {
 	m_Tree.SetRedraw(FALSE);
 
+	m_Tree.DeleteAllItems();
 	m_DevMgr = DeviceManager::Create();
-	m_Devices = m_DevMgr->EnumDevices();
+	m_Devices = m_DevMgr->EnumDevices(m_ShowHiddenDevices);
 	auto root = DeviceManager::GetRootDeviceNode();
 	WCHAR name[MAX_COMPUTERNAME_LENGTH + 1];
 	DWORD size = _countof(name);
@@ -154,27 +173,25 @@ void CDevNodeView::BuildDevNodeTree() {
 }
 
 void CDevNodeView::BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node) {
+	auto showHidden = m_ShowHiddenDevices;
+
 	for (auto& dn : node.GetChildren()) {
-		auto icon = m_DevMgr->GetDeviceIcon(m_Devices[dn - 1]);
+		int index = m_DevMgr->GetDeviceIndex(dn);
+		if (index < 0)
+			continue;
+		auto icon = m_DevMgr->GetDeviceIcon(m_Devices[index]);
 		int image = -1;
 		if (icon) {
 			image = m_Tree.GetImageList(TVSIL_NORMAL).AddIcon(icon);
 			::DestroyIcon(icon);
 		}
-		auto hItem = InsertTreeItem(m_Tree, dn.GetProperty<std::wstring>(DEVPKEY_NAME).c_str(), image, dn, hParent, TVI_SORT);
-		if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
-			m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
-		BuildChildDevNodes(hItem, dn);
-	}
-}
-
-void CDevNodeView::BuildSiblingDevNodes(HTREEITEM hParent, DeviceNode const& node) {
-	for (auto& dn : node.GetSiblings()) {
-		if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::None) {
-			auto hItem = InsertTreeItem(m_Tree, dn.GetProperty<std::wstring>(DEVPKEY_NAME).c_str(), -1, dn, hParent, TVI_SORT);
-			if ((dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
+		auto isHidden = (dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
+		if (showHidden || !isHidden) {
+			auto hItem = InsertTreeItem(m_Tree, dn.GetName().c_str(), image, dn, hParent, TVI_SORT);
+			if(isHidden)
 				m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
 			BuildChildDevNodes(hItem, dn);
 		}
 	}
 }
+

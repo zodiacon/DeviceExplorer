@@ -351,6 +351,12 @@ CString Helpers::GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG si
 		return DevNodeStatusToString(*(DeviceNodeStatus*)value);
 	if (key == DEVPKEY_PciDevice_DeviceType)
 		return PciDeviceTypeToString(*(ULONG*)value);
+	if (key == DEVPKEY_Device_PowerData) {
+		auto data = (CM_POWER_DATA*)value;
+		CString text;
+		text.Format(L"Power State: %s", DevicePowerStateToString(data->PD_MostRecentPowerState));
+		return text;
+	}
 
 	return L"";
 }
@@ -447,4 +453,11 @@ PCWSTR Helpers::PciDeviceTypeToString(ULONG type) {
 		L"PCI Express Event Collector (Bridge)",
 	};
 	return types[type];
+}
+
+PCWSTR Helpers::DevicePowerStateToString(DEVICE_POWER_STATE state) {
+	static PCWSTR states[] = {
+		L"(Unspecified)", L"D0", L"D1", L"D2", L"D3"
+	};
+	return states[state];
 }

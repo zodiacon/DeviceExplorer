@@ -67,6 +67,8 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
+        MENUITEM "Show &Hidden Devices",        ID_VIEW_SHOWHIDDENDEVICES
+        MENUITEM SEPARATOR
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END

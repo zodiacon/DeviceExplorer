@@ -207,3 +207,9 @@ DeviceManager::DeviceManager(const wchar_t* computerName, const GUID* classGuid,
 	_hInfoSet.reset(::SetupDiGetClassDevsEx(classGuid, enumerator, nullptr, static_cast<DWORD>(options), nullptr, computerName, nullptr));
 }
 
+int DeviceManager::GetDeviceIndex(DEVINST inst) const {
+	if (auto it = _devMap.find(inst); it != _devMap.end())
+		return it->second;
+	return -1;
+}
+

@@ -13,4 +13,5 @@ struct Helpers final {
 	static PCWSTR RemovalPolicyToString(ULONG policy);
 	static CString DevNodeStatusToString(DeviceNodeStatus status, PCWSTR sep = L", ");
 	static PCWSTR PciDeviceTypeToString(ULONG type);
+	static PCWSTR DevicePowerStateToString(DEVICE_POWER_STATE state);
 };

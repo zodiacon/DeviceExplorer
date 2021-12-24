@@ -162,6 +162,8 @@ public:
 	std::vector<DeviceNode> GetChildren() const;
 	std::vector<DeviceNode> GetSiblings() const;
 	std::vector<DEVPROPKEY> GetPropertyKeys() const;
+	std::wstring GetName() const;
+
 	bool Enable();
 	bool Disable();
 	bool Uninstall();

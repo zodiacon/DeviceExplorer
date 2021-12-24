@@ -30,6 +30,7 @@ extern CAppModule _Module;
 #include <atlgdi.h>
 #include <vector>
 #include <memory>
+#include <map>
 #include <utility>
 #include <algorithm>
 #include <strsafe.h>
