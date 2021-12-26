@@ -5,6 +5,7 @@
 #include "AppSettings.h"
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
+#include "SecurityHelper.h"
 
 void CDevNodeListView::Refresh() {
 	bool first = m_Items.empty();
@@ -139,15 +140,16 @@ LRESULT CDevNodeListView::OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 void CDevNodeListView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	int selected = m_List.GetSelectionMark();
-	if (selected >= 0 && m_List.GetSelectedCount() == 1) {
+	if (SecurityHelper::IsRunningElevated() && m_List.GetSelectedCount() == 1) {
 		DeviceNode dn(m_Items[selected].Data.DevInst);
 		bool enabled = dn.IsEnabled();
-		ui.UIEnable(ID_DEVICE_ENABLE, true);
-		ui.UISetText(ID_DEVICE_ENABLE, enabled ? L"&Disable" : L"&Enable");
-		//ui.UIEnable(ID_DEVICE_UNINSTALL, !dn.IsEnabled());
+		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
+		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, true);
 	}
 	else {
 		ui.UIEnable(ID_DEVICE_ENABLE, false);
+		ui.UIEnable(ID_DEVICE_DISABLE, false);
 		ui.UIEnable(ID_DEVICE_UNINSTALL, false);
 	}
 }
@@ -157,7 +159,7 @@ void CDevNodeListView::OnPageActivated(bool active) {
 		Refresh();
 }
 
-LRESULT CDevNodeListView::OnEnableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CDevNodeListView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto& item = m_Items[m_List.GetSelectionMark()];
 	DeviceNode dn(item.Data.DevInst);
 	auto result = dn.IsEnabled() ? dn.Disable() : dn.Enable();

@@ -94,6 +94,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pView2->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView2->m_hWnd, _T("Device Node List"), 1, pView2);
 
+	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 
 	return 0;
 }
@@ -168,36 +169,49 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 	CImageList tbImages;
 	tbImages.Create(size, size, ILC_COLOR32, 8, 4);
 	tb.SetImageList(tbImages);
+	auto elevated = SecurityHelper::IsRunningElevated();
 
 	const struct {
 		UINT id;
 		int image;
-		BYTE style = BTNS_BUTTON;
+		WORD style = BTNS_BUTTON;
 		PCWSTR text = nullptr;
 	} buttons[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
+		{ ID_EDIT_COPY, IDI_COPY },
+		{ 0, 0, 0x8000 },
+		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE, 0x8000 },
+		{ ID_DEVICE_DISABLE, IDI_DISABLE_DEVICE, 0x8000 },
+		{ 0, 0, 0x8000 },
+		{ ID_DEVICE_SCANFORHARDWARECHANGES, IDI_RESCAN, 0x8000 },
 	};
 	for (auto& b : buttons) {
+		if (!elevated && (b.style & 0x8000))
+			continue;
+
 		if (b.id == 0)
 			tb.AddSeparator(0);
 		else {
 			auto hIcon = AtlLoadIconImage(b.image, 0, size, size);
 			ATLASSERT(hIcon);
 			int image = tbImages.AddIcon(hIcon);
-			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, b.text, 0);
+			tb.AddButton(b.id, (BYTE)b.style, TBSTATE_ENABLED, image, b.text, 0);
 		}
 	}
 }
 
 void CMainFrame::InitCommandBar() {
 	struct {
-		UINT id, icon;
+		int id, icon;
 		HICON hIcon = nullptr;
 	} cmds[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_EDIT_DELETE, IDI_CANCEL },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
+		{ ID_DEVICE_SCANFORHARDWARECHANGES, IDI_RESCAN },
+		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE },
+		{ ID_DEVICE_DISABLE, IDI_DISABLE_DEVICE },
 	};
 	for (auto& cmd : cmds) {
 		m_CmdBar.AddIcon(cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon, cmd.id);

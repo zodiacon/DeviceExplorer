@@ -75,6 +75,7 @@ BEGIN
     POPUP "&Device"
     BEGIN
         MENUITEM "&Enable",                     ID_DEVICE_ENABLE
+        MENUITEM "&Disable",                    ID_DEVICE_DISABLE
         MENUITEM "&Uninstall",                  ID_DEVICE_UNINSTALL
         MENUITEM SEPARATOR
         MENUITEM "&Scan for Hardware Changes",  ID_DEVICE_SCANFORHARDWARECHANGES
@@ -102,6 +103,7 @@ BEGIN
     POPUP "device"
     BEGIN
         MENUITEM "&Enable",                     ID_DEVICE_ENABLE
+        MENUITEM "&Disable",                    ID_DEVICE_DISABLE
         MENUITEM "&Uninstall",                  ID_DEVICE_UNINSTALL
         MENUITEM SEPARATOR
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
@@ -135,6 +137,12 @@ IDI_LIST                ICON                    "res\\list.ico"
 IDI_MEMORY              ICON                    "res\\memory.ico"
 
 IDI_TREE                ICON                    "res\\tree.ico"
+
+IDI_RESCAN              ICON                    "res\\gear_refresh.ico"
+
+IDI_DISABLE_DEVICE      ICON                    "res\\disable.ico"
+
+IDI_ENABLE_DEVICE       ICON                    "res\\enable.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

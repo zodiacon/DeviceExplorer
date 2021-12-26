@@ -46,7 +46,7 @@ public:
 	void UpdateUI(CUpdateUIBase& ui);
 	void OnPageActivated(bool active);
 
-	virtual void OnFinalMessage(HWND /*hWnd*/);
+	void OnFinalMessage(HWND /*hWnd*/) override;
 
 	BEGIN_MSG_MAP(CDevNodeView)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
@@ -60,6 +60,8 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
+		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
+		COMMAND_ID_HANDLER(ID_DEVICE_DISABLE, OnEnableDisableDevice)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -73,6 +75,7 @@ public:
 	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNotifySetFocus(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	struct Property {

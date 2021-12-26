@@ -123,6 +123,15 @@
     <Image Include="res\list.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\gear_refresh.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\disable.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\enable.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

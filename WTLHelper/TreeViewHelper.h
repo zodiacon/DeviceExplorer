@@ -20,6 +20,67 @@ struct CTreeViewHelper {
 		return static_cast<TData>(tree.GetItemData(hItem));
 	}
 
+	HTREEITEM FindItem(CTreeViewCtrl& tree, HTREEITEM hParent, PCWSTR path) {
+		int start = 0;
+		CString spath(path);
+		if (spath[0] == L'\\') {
+			// skip first
+			spath = spath.Mid(spath.Find(L'\\', 1));
+		}
+		HTREEITEM hItem = nullptr;
+		while (hParent) {
+			auto name = spath.Tokenize(L"\\", start);
+			if (name.IsEmpty())
+				break;
+			tree.Expand(hParent, TVE_EXPAND);
+			hItem = FindChild(hParent, name);
+			if (!hItem)
+				break;
+			hParent = hItem;
+		}
+		return hItem;
+	}
+
+	HTREEITEM FindChild(CTreeViewCtrl& tree, HTREEITEM item, PCWSTR name) const {
+		item = tree.GetChildItem(item);
+		while (item) {
+			CString text;
+			tree.GetItemText(item, text);
+			if (text.CompareNoCase(name) == 0)
+				return item;
+			item = tree.GetNextSiblingItem(item);
+		}
+		return nullptr;
+	}
+
+	template<typename TData>
+	HTREEITEM FindChildByData(CTreeViewCtrl& tree, HTREEITEM item, TData const& data) const {
+		item = tree.GetChildItem(item);
+		while (item) {
+			if (GetItemData<TData>(tree, item) == data)
+				return item;
+
+			auto item2 = FindChildByData(tree, item, data);
+			if (item2)
+				return item2;
+			item = tree.GetNextSiblingItem(item);
+		}
+		return nullptr;
+	}
+
+	template<typename TData>
+	HTREEITEM FindItemByData(CTreeViewCtrl& tree, HTREEITEM hParent, TData const& data) const {
+		int start = 0;
+		HTREEITEM hItem = nullptr;
+		while (hParent) {
+			hItem = FindChildByData(tree, hParent, data);
+			if (hItem)
+				break;
+			hParent = tree.GetNextSiblingItem(hParent);
+		}
+		return hItem;
+	}
+
 protected:
 	BEGIN_MSG_MAP(CTreeViewHelper)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnSelChanged)

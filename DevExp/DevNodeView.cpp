@@ -11,6 +11,7 @@
 #include "ClipboardHelper.h"
 #include "ListViewhelper.h"
 #include "AppSettings.h"
+#include "SecurityHelper.h"
 
 CString CDevNodeView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
@@ -76,6 +77,19 @@ BOOL CDevNodeView::PreTranslateMessage(MSG* pMsg) {
 
 void CDevNodeView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+	int selected = m_List.GetSelectionMark();
+	if (SecurityHelper::IsRunningElevated()) {
+		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));
+		bool enabled = dn.IsEnabled();
+		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
+		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, true);
+	}
+	else {
+		ui.UIEnable(ID_DEVICE_ENABLE, false);
+		ui.UIEnable(ID_DEVICE_DISABLE, false);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, false);
+	}
 }
 
 void CDevNodeView::OnPageActivated(bool active) {
@@ -149,7 +163,14 @@ LRESULT CDevNodeView::OnNotifySetFocus(int, LPNMHDR hdr, BOOL&) {
 }
 
 LRESULT CDevNodeView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
+	auto node = (DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem());
 	BuildDevNodeTree();
+	auto hItem = FindItemByData(m_Tree, m_Tree.GetRootItem(), node);
+	if (hItem) {
+		m_Tree.SelectItem(hItem);
+		m_Tree.EnsureVisible(hItem);
+		m_Tree.SetFocus();
+	}
 	return 0;
 }
 
@@ -201,3 +222,8 @@ void CDevNodeView::BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node)
 	}
 }
 
+LRESULT CDevNodeView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DeviceNode dn((DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem()));
+	auto result = dn.IsEnabled() ? dn.Disable() : dn.Enable();
+	return 0;
+}
