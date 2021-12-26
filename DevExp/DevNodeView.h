@@ -44,6 +44,7 @@ public:
 	// CViewBase overridables
 	//
 	void UpdateUI(CUpdateUIBase& ui);
+	void OnPageActivated(bool active);
 
 	virtual void OnFinalMessage(HWND /*hWnd*/);
 

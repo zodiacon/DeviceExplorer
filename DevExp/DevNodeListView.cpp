@@ -62,13 +62,13 @@ LRESULT CDevNodeListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	Refresh();
 
-    return 0;
+	return 0;
 }
 
 LRESULT CDevNodeListView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
-    m_List.SetFocus();
+	m_List.SetFocus();
 
-    return 0;
+	return 0;
 }
 
 CString CDevNodeListView::GetStringProperty(DeviceItem& item, DEVPROPKEY const& key) {
@@ -138,4 +138,34 @@ LRESULT CDevNodeListView::OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 void CDevNodeListView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+	int selected = m_List.GetSelectionMark();
+	if (selected >= 0 && m_List.GetSelectedCount() == 1) {
+		DeviceNode dn(m_Items[selected].Data.DevInst);
+		bool enabled = dn.IsEnabled();
+		ui.UIEnable(ID_DEVICE_ENABLE, true);
+		ui.UISetText(ID_DEVICE_ENABLE, enabled ? L"&Disable" : L"&Enable");
+		//ui.UIEnable(ID_DEVICE_UNINSTALL, !dn.IsEnabled());
+	}
+	else {
+		ui.UIEnable(ID_DEVICE_ENABLE, false);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, false);
+	}
 }
+
+void CDevNodeListView::OnPageActivated(bool active) {
+	if (active && IsRefreshNeeded())
+		Refresh();
+}
+
+LRESULT CDevNodeListView::OnEnableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto& item = m_Items[m_List.GetSelectionMark()];
+	DeviceNode dn(item.Data.DevInst);
+	auto result = dn.IsEnabled() ? dn.Disable() : dn.Enable();
+	return 0;
+}
+
+LRESULT CDevNodeListView::OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	UpdateUI(GetFrame()->GetUI());
+	return 0;
+}
+

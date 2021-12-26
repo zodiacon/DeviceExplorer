@@ -54,6 +54,7 @@ void CDevNodeView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
 	if (si)
 		DoSort(si);
 	m_List.SetItemCount((int)keys.size());
+	UpdateUI(GetFrame()->GetUI());
 }
 
 bool CDevNodeView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
@@ -75,6 +76,11 @@ BOOL CDevNodeView::PreTranslateMessage(MSG* pMsg) {
 
 void CDevNodeView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+}
+
+void CDevNodeView::OnPageActivated(bool active) {
+	if (active && IsRefreshNeeded())
+		BuildDevNodeTree();
 }
 
 void CDevNodeView::OnFinalMessage(HWND /*hWnd*/) {

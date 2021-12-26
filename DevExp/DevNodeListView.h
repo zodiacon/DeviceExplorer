@@ -21,6 +21,7 @@ public:
 protected:
 	BEGIN_MSG_MAP(CDevNodeListView)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
+		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CVirtualListView<CDevNodeListView>)
 		CHAIN_MSG_MAP(CViewBase)
@@ -29,6 +30,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
+		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDevice)
 	END_MSG_MAP()
 
 	CString GetColumnText(HWND, int row, int col);
@@ -49,6 +51,7 @@ protected:
 	// CViewBase overridables
 	//
 	void UpdateUI(CUpdateUIBase& ui);
+	void OnPageActivated(bool activate);
 
 private:
 
@@ -65,6 +68,8 @@ private:
 	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEnableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<DeviceItem> m_Items;

@@ -167,6 +167,8 @@ public:
 	bool Enable();
 	bool Disable();
 	bool Uninstall();
+	bool Rescan();
+	bool IsEnabled() const;
 
 	std::unique_ptr<BYTE[]> GetPropertyValue(DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len = nullptr) const {
 		ULONG size = 0;

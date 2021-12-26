@@ -48,6 +48,9 @@
     <ClCompile Include="AboutDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="SecurityHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -80,6 +83,9 @@
     <ClInclude Include="ViewBase.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="SecurityHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DevExp.rc">
@@ -106,6 +112,15 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\devices.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\tree.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\memory.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\list.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

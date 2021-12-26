@@ -77,6 +77,8 @@ BEGIN
         MENUITEM "&Enable",                     ID_DEVICE_ENABLE
         MENUITEM "&Uninstall",                  ID_DEVICE_UNINSTALL
         MENUITEM SEPARATOR
+        MENUITEM "&Scan for Hardware Changes",  ID_DEVICE_SCANFORHARDWARECHANGES
+        MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_DEVICE_PROPERTIES
     END
     POPUP "&Options"
@@ -127,6 +129,12 @@ IDI_PROPS               ICON                    "res\\Properties.ico"
 IDI_REFRESH             ICON                    "res\\refresh.ico"
 
 IDI_DEVICES             ICON                    "res\\devices.ico"
+
+IDI_LIST                ICON                    "res\\list.ico"
+
+IDI_MEMORY              ICON                    "res\\memory.ico"
+
+IDI_TREE                ICON                    "res\\tree.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

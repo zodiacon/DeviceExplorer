@@ -64,6 +64,14 @@ bool DeviceNode::Uninstall() {
     return ::CM_Uninstall_DevNode(m_Inst, 0) == CR_SUCCESS;
 }
 
+bool DeviceNode::Rescan() {
+    return ::CM_Reenumerate_DevInst(m_Inst, CM_REENUMERATE_NORMAL) == CR_SUCCESS;
+}
+
+bool DeviceNode::IsEnabled() const {
+    return (GetStatus() & DeviceNodeStatus::Started) == DeviceNodeStatus::Started;
+}
+
 DeviceNodeStatus DeviceNode::GetStatus(DeviceNodeProblem* pProblem) const {
     ULONG status, problem;
     if (CR_SUCCESS == ::CM_Get_DevNode_Status(&status, &problem, m_Inst, 0)) {

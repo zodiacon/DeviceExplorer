@@ -12,6 +12,10 @@
 #define IDI_REFRESH                     205
 #define IDI_DEVICES                     206
 #define IDR_CONTEXT                     207
+#define IDI_LIST                        208
+#define IDI_MEMORY                      209
+#define IDI_ICON3                       210
+#define IDI_TREE                        210
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_FILE_RUNASADMINISTRATOR      32775
@@ -21,13 +25,14 @@
 #define ID_DEVICE_UNINSTALL             32779
 #define ID_DEVICE_PROPERTIES            32780
 #define ID_VIEW_SHOWHIDDENDEVICES       32781
+#define ID_DEVICE_SCANFORHARDWARECHANGES 32782
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        208
-#define _APS_NEXT_COMMAND_VALUE         32782
+#define _APS_NEXT_RESOURCE_VALUE        211
+#define _APS_NEXT_COMMAND_VALUE         32783
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

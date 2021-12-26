@@ -10,6 +10,7 @@
 #include "IconHelper.h"
 #include "DevNodeListView.h"
 #include "AppSettings.h"
+#include "SecurityHelper.h"
 
 const int WINDOW_MENU_POSITION = 5;
 
@@ -32,8 +33,14 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	m_CmdBar.SetAlphaImages(true);
-	m_CmdBar.AttachMenu(GetMenu());
-	UIAddMenu(GetMenu());
+	auto hMenu = GetMenu();
+	if (SecurityHelper::IsRunningElevated()) {
+		auto h = CMenuHandle(hMenu).GetSubMenu(0);
+		h.DeleteMenu(0, MF_BYPOSITION);
+		h.DeleteMenu(0, MF_BYPOSITION);
+	}
+	m_CmdBar.AttachMenu(hMenu);
+	UIAddMenu(hMenu);
 	SetMenu(nullptr);
 	InitCommandBar();
 
@@ -51,8 +58,13 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	m_view.m_bTabCloseButton = false;
 
-	auto images = IconHelper::CreateImageList();
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	CImageList images;
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
+	images.AddIcon(AtlLoadIconImage(IDI_TREE, 0, 16, 16));
+	images.AddIcon(AtlLoadIconImage(IDI_LIST, 0, 16, 16));
+
+	m_view.SetImageList(images);
 
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
@@ -65,16 +77,23 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
+	if (SecurityHelper::IsRunningElevated()) {
+		CString text;
+		GetWindowText(text);
+		SetWindowText(text + L" (Administrator)");
+	}
+
 	CMenuHandle menuMain = m_CmdBar.GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 
 	auto pView = new CDevNodeView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), -1, pView);
+	m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), 0, pView);
 
 	auto pView2 = new CDevNodeListView(this);
 	pView2->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_view.AddPage(pView2->m_hWnd, _T("Device Node List"), -1, pView2);
+	m_view.AddPage(pView2->m_hWnd, _T("Device Node List"), 1, pView2);
+
 
 	return 0;
 }
@@ -206,3 +225,26 @@ LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bH
 		::PostMessage(m_view.GetPageHWND(page), WM_PAGE_ACTIVATED, 1, 0);
 	return 0;
 }
+
+LRESULT CMainFrame::OnRescanHardware(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
+	auto node = DeviceManager::GetRootDeviceNode();
+	CWaitCursor wait;
+	node.Rescan();
+	PostMessageToAllTabs(WM_NEED_REFRESH);
+	
+	return 0;
+}
+
+void CMainFrame::PostMessageToAllTabs(UINT msg, WPARAM wp, LPARAM lp) {
+	auto count = m_view.GetPageCount();
+	for (int i = 0; i < count; i++)
+		::PostMessage(m_view.GetPageHWND(i), msg, wp, lp);
+}
+
+LRESULT CMainFrame::OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	AppSettings::Get().Save();
+	if (SecurityHelper::RunElevated())
+		PostMessage(WM_CLOSE);
+	return 0;
+}
+
