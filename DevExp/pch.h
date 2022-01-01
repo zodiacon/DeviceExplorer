@@ -5,13 +5,20 @@
 
 #pragma once
 
-// Change these values to use different versions
-#define WINVER		0x0603
+#define WINVER		0x0A00
 #define _WIN32_WINNT	0x0603
 #define _WIN32_IE	0x0700
 #define _RICHEDIT_VER	0x0500
 #define NOMINMAX
 
+#include <Windows.h>
+#include <initguid.h>
+
+#include <ShlGuid.h>
+#include <batclass.h>
+#include <pciprop.h>
+#include <functiondiscoverykeys.h>
+#include <shobjidl_core.h>
 #include <atlbase.h>
 #include <atlapp.h>
 
@@ -39,11 +46,11 @@ extern CAppModule _Module;
 #include <string>
 #include <unordered_map>
 #include <assert.h>
+#include <wil\resource.h>
+
 #include <SetupAPI.h>
 #include <cfgmgr32.h>
-#define INITGUID
 #include <devpkey.h>
-#include <wil\resource.h>
 
 #if defined _M_IX86
   #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")

@@ -12,13 +12,6 @@ std::wstring GuidToString(GUID const& guid) {
 	return SUCCEEDED(::StringFromGUID2(guid, name, _countof(name))) ? name : L"";
 }
 
-void DumpDeviceInterfaces() {
-	for (auto& di : DeviceManager::EnumDeviceInterfaces()) {
-		printf("%ws %ws (%ws) (%ws)\n", GuidToString(di.Guid).c_str(),
-			di.FriendlyName.c_str(), di.DeviceFriendlyName.c_str(), di.DeviceDescription.c_str());
-	}
-}
-
 void DumpHardwareProfiles() {
 	for (auto& profile : DeviceManager::EnumHardwareProfiles()) {
 		printf("Profile %u: %ws\n", profile.Index, profile.FriendlyName.c_str());

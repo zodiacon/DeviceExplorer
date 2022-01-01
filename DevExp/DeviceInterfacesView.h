@@ -6,32 +6,30 @@
 #include "DeviceManager.h"
 #include "TreeViewHelper.h"
 
-class CDeviceClassesView :
-	public CFrameWindowImpl<CDeviceClassesView, CWindow, CControlWinTraits>,
-	public CTreeViewHelper<CDeviceClassesView>,
-	public CViewBase<CDeviceClassesView>,
-	public CVirtualListView<CDeviceClassesView> {
+class CDeviceInterfacesView :
+	public CFrameWindowImpl<CDeviceInterfacesView, CWindow, CControlWinTraits>,
+	public CTreeViewHelper<CDeviceInterfacesView>,
+	public CViewBase<CDeviceInterfacesView>,
+	public CVirtualListView<CDeviceInterfacesView> {
 public:
-	using BaseFrame = CFrameWindowImpl<CDeviceClassesView, CWindow, CControlWinTraits>;
+	using BaseFrame = CFrameWindowImpl<CDeviceInterfacesView, CWindow, CControlWinTraits>;
 	using CViewBase::CViewBase;
 	DECLARE_WND_CLASS(nullptr)
 
-	void Refresh();
-
 	CString GetColumnText(HWND h, int row, int col);
-	int GetRowImage(HWND h, int row, int col);
+	//int GetRowImage(HWND h, int row, int col);
 	void DoSort(SortInfo* const si);
 
 protected:
-	BEGIN_MSG_MAP(CDeviceClassesView)
+	BEGIN_MSG_MAP(CDeviceInterfacesView)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(BaseFrame)
-		CHAIN_MSG_MAP(CVirtualListView<CDeviceClassesView>)
-		CHAIN_MSG_MAP(CTreeViewHelper<CDeviceClassesView>)
+		CHAIN_MSG_MAP(CVirtualListView<CDeviceInterfacesView>)
+		CHAIN_MSG_MAP(CTreeViewHelper<CDeviceInterfacesView>)
 		CHAIN_MSG_MAP(CViewBase)
-	ALT_MSG_MAP(1)
+		ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
@@ -55,6 +53,9 @@ private:
 		ULONG ValueSize;
 	};
 
+	void Refresh();
+	static CString GetInterfaceName(GUID const& info);
+
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -70,7 +71,7 @@ private:
 	std::unique_ptr<DeviceManager> m_DevMgr;
 	std::vector<DeviceInfo> m_Devices;
 	std::unordered_map<GUID, HTREEITEM> m_Guids;
-	std::vector<GUID> m_Classes;
+	std::vector<GUID> m_Interfaces;
 	bool m_ShowHiddenDevices{ false };
 	bool m_ShowEmptyClasses{ false };
 };

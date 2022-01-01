@@ -12,6 +12,7 @@
 #include "AppSettings.h"
 #include "SecurityHelper.h"
 #include "DeviceClassesView.h"
+#include "DeviceInterfacesView.h"
 
 const int WINDOW_MENU_POSITION = 5;
 
@@ -99,9 +100,14 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		m_view.AddPage(pView->m_hWnd, _T("Device Node List"), 1, pView);
 	}
 	{
-		auto pView = new CDeviceClassesView(this, true);
+		auto pView = new CDeviceClassesView(this);
 		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 		m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
+	}
+	{
+		auto pView = new CDeviceInterfacesView(this);
+		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+		m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 2, pView);
 	}
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 

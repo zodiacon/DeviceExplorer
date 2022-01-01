@@ -5,14 +5,6 @@
 #include "SortHelper.h"
 
 CString CDeviceClassesView::GetColumnText(HWND, int row, int col) {
-	return GetDeviceClassColunnText(row, col);
-}
-
-int CDeviceClassesView::GetRowImage(HWND h, int row, int col) {
-	return 0;
-}
-
-CString CDeviceClassesView::GetDeviceClassColunnText(int row, int col) {
 	auto& item = m_Items[row];
 	switch (static_cast<ColumnType>(GetColumnManager(m_List)->GetColumnTag(col))) {
 		case ColumnType::Name: return item.Name;
@@ -23,8 +15,8 @@ CString CDeviceClassesView::GetDeviceClassColunnText(int row, int col) {
 	return L"";
 }
 
-CString CDeviceClassesView::GetDeviceInfoColumnText(int row, int col) {
-	return CString();
+int CDeviceClassesView::GetRowImage(HWND h, int row, int col) {
+	return 0;
 }
 
 void CDeviceClassesView::DoSort(SortInfo* const si) {
@@ -45,7 +37,7 @@ LRESULT CDeviceClassesView::OnShowHiddenDevices(WORD, WORD, HWND, BOOL&) {
 
 void CDeviceClassesView::Refresh() {
 	m_Tree.SetRedraw(FALSE);
-	
+
 	CImageList images(DeviceManager::GetClassImageList());
 	auto images2 = images.Duplicate();
 	int computerIcon = images2.AddIcon(AtlLoadIconImage(IDI_DEVICES, 0, 16, 16));
@@ -60,41 +52,43 @@ void CDeviceClassesView::Refresh() {
 	auto ok = ::GetComputerName(name, &size);
 	auto hRoot = InsertTreeItem(m_Tree, ok ? name : L"This PC", computerIcon, root);
 
-	if (m_IsClasses) {
-		m_Guids.clear();
-		m_Guids.reserve(64);
-		m_Classes = DeviceManager::EnumDeviceClasses();
-		int c = 0;
-		for (auto& dc : m_Classes) {
-			auto hItem = InsertTreeItem<int>(m_Tree, DeviceManager::GetDeviceClassDescription(dc.Guid).c_str(), 
-				DeviceManager::GetClassImageIndex(dc.Guid), 0x8000 + c, hRoot, TVI_SORT);
-			c++;
-			m_Guids.insert({ dc.Guid, hItem });
-		}
-		for (auto& di : m_Devices) {
-			if (auto it = m_Guids.find(di.Data.ClassGuid); it != m_Guids.end()) {
-				int image = images2.AddIcon(m_DevMgr->GetDeviceIcon(di));
-				auto isHidden = (DeviceNode(di.Data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
-				if (!isHidden || m_ShowHiddenDevices) {
-					auto hItem = InsertTreeItem(m_Tree, di.Description.c_str(), image, di.Data.DevInst, it->second, TVI_SORT);
-					if (isHidden)
-						m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
-				}
-			}
-		}
-		if (!m_ShowEmptyClasses) {
-			//
-			// delete classes with no devices
-			//
-			for (auto& [_, hItem] : m_Guids) {
-				if (m_Tree.GetChildItem(hItem) == nullptr)
-					m_Tree.DeleteItem(hItem);
-			}
-		}
+	m_Guids.clear();
+	m_Guids.reserve(64);
+	m_Classes = DeviceManager::EnumDeviceClassesGuids();
+	int c = 0;
+	for (auto& guid : m_Classes) {
+		auto hItem = InsertTreeItem<int>(m_Tree,
+			DeviceManager::GetDeviceClassDescription(guid).c_str(),
+			DeviceManager::GetClassImageIndex(guid), 0x8000 + c, hRoot, TVI_SORT);
+		c++;
+		m_Guids.insert({ guid, hItem });
 	}
-	else {
+	for (auto& di : m_Devices) {
+		if (auto it = m_Guids.find(di.Data.ClassGuid); it != m_Guids.end()) {
+			auto hIcon = m_DevMgr->GetDeviceIcon(di);
+			int image = -1;
+			if (hIcon) {
+				image = images2.AddIcon(hIcon);
+				::DestroyIcon(hIcon);
+			}
+			auto isHidden = (DeviceNode(di.Data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
+			if (!isHidden || m_ShowHiddenDevices) {
+				auto hItem = InsertTreeItem(m_Tree, di.Description.c_str(), image, di.Data.DevInst, it->second, TVI_SORT);
+				if (isHidden)
+					m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
+			}
+		}
 	}
 
+	if (!m_ShowEmptyClasses) {
+		//
+		// delete classes with no devices
+		//
+		for (auto& [_, hItem] : m_Guids) {
+			if (m_Tree.GetChildItem(hItem) == nullptr)
+				m_Tree.DeleteItem(hItem);
+		}
+	}
 	m_Tree.Expand(hRoot, TVE_EXPAND);
 	m_Tree.SetRedraw(TRUE);
 }
@@ -129,7 +123,7 @@ void CDeviceClassesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) 
 	DeviceNode node(inst);
 	bool device = inst < 0x8000;
 	std::vector<DEVPROPKEY> keys;
-	GUID* classGuid{ nullptr };
+	GUID classGuid{ GUID_NULL };
 	if (device) {	// device instance
 		keys = node.GetPropertyKeys();
 	}
@@ -137,8 +131,8 @@ void CDeviceClassesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) 
 		//
 		//device class
 		//
-		classGuid = &m_Classes[inst - 0x8000].Guid;
-		keys = DeviceManager::GetDeviceClassPropertyKeys(*classGuid);
+		classGuid = m_Classes[inst - 0x8000];
+		keys = DeviceManager::GetDeviceClassPropertyKeys(classGuid);
 	}
 
 	m_Items.reserve(keys.size() + 1);
@@ -155,7 +149,7 @@ void CDeviceClassesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) 
 		if (device)
 			prop.Value = node.GetPropertyValue(key, prop.Type, &prop.ValueSize);
 		else
-			prop.Value = DeviceManager::GetClassPropertyValue(*classGuid, key, prop.Type, &prop.ValueSize);
+			prop.Value = DeviceManager::GetClassPropertyValue(classGuid, key, prop.Type, &prop.ValueSize);
 
 		prop.ValueAsString = Helpers::GetPropertyValueAsString(prop.Value.get(), prop.Type, prop.ValueSize);
 		prop.Name = Helpers::GetPropertyName(key);
@@ -167,6 +161,17 @@ void CDeviceClassesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) 
 		DoSort(si);
 	m_List.SetItemCount((int)keys.size());
 	UpdateUI(GetFrame()->GetUI());
+}
+
+void CDeviceClassesView::OnPageActivated(bool active) {
+	GetFrame()->GetUI().UIEnable(ID_VIEW_SHOWEMPTYCLASSES, active);
+}
+
+LRESULT CDeviceClassesView::OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	m_ShowEmptyClasses = !m_ShowEmptyClasses;
+	GetFrame()->GetUI().UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
+	Refresh();
+	return 0;
 }
 
 LRESULT CDeviceClassesView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {

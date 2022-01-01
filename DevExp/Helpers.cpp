@@ -1,8 +1,19 @@
 #include "pch.h"
 #include "Helpers.h"
-#include <pciprop.h>
-#include <functiondiscoverykeys.h>
 #include <sddl.h>
+#include <wiaintfc.h>
+#include <Ntddmou.h>
+#include <Ntddkbd.h>
+#include <ntddvdeo.h>
+#include <ntddcdvd.h>
+#include <ndisguid.h>
+#include <usbiodef.h>
+#include <Ntddpar.h>
+#include <hidclass.h>
+#include <ntddmodm.h>
+#include <Portabledevice.h>
+
+//#include <winsmcrd.h>
 
 namespace std {
 	template<>
@@ -11,7 +22,21 @@ namespace std {
 			return p.pid ^ p.fmtid.Data1 ^ (p.fmtid.Data2 << 16);
 		}
 	};
+
+	template<>
+	struct hash<GUID> {
+		size_t operator()(GUID const& g) const {
+			return *(size_t*)&g.Data4 ^ g.Data2 ^ ((size_t)g.Data3 << 16) | g.Data1;
+		}
+	};
 }
+
+#pragma region From WDK
+
+DEFINE_GUID(GUID_DEVINTERFACE_BRIGHTNESS, 0xFDE5BBA4, 0xB3F9, 0x46FB, 0xBD, 0xAA, 0x07, 0x28, 0xCE, 0x31, 0x00, 0xB4);
+DEFINE_GUID(GUID_DEVINTERFACE_I2C, 0x2564AA4F, 0xDDDB, 0x4495, 0xB4, 0x97, 0x6A, 0xD4, 0xA8, 0x41, 0x63, 0xD7);
+
+#pragma endregion
 
 DEFINE_DEVPROPKEY(DEVPKEY_Device_IsConnected, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 15);
 DEFINE_DEVPROPKEY(DEVPKEY_Device_DriverNodeStrongName, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 3);
@@ -22,6 +47,9 @@ DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_FSFilterClass, 0x259abffc, 0x50a7, 0x47ce,
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_CompoundUpperFilters, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 20);
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_CompoundLowerFilters, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 21);
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_LowerLogoVersion, 0x259abffc, 0x50a7, 0x47ce, 0xaf, 0x8, 0x68, 0xc9, 0xa7, 0xd7, 0x33, 0x66, 13);
+
+DEFINE_GUID(GUID_DEVINTERFACE_SMARTCARD_READER,
+	0x50DD5230, 0xBA8A, 0x11D1, 0xBF, 0x5D, 0x00, 0x00, 0xF8, 0x05, 0xF5, 0x30);
 
 CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 	static const std::unordered_map<DEVPROPKEY, CString> properties{
@@ -171,8 +199,11 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_DeviceClass_NoUseClass, L"No Use Class" },
 		{ DEVPKEY_DeviceClass_LowerLogoVersion, L"Lower Logo Version" },
 
-		{ DEVPKEY_DeviceInterface_FriendlyName, L"Device Interface Name" },
-		{ DEVPKEY_DeviceInterface_Enabled, L"Device Interface Enabled" },
+		{ DEVPKEY_DeviceInterface_FriendlyName, L"Friendly Name" },
+		{ DEVPKEY_DeviceInterface_Enabled, L"Enabled" },
+		{ DEVPKEY_DeviceInterface_SchematicName, L"Semantic Name" },
+		{ DEVPKEY_DeviceInterfaceClass_Name, L"Class Name" },
+		{ DEVPKEY_DeviceInterfaceClass_DefaultInterface, L"Default Interface" },
 
 		{ DEVPKEY_DeviceContainer_FriendlyName, L"Container Name" },
 		{ DEVPKEY_DeviceContainer_Manufacturer, L"Container Manufacturer" },
@@ -235,6 +266,7 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ *(DEVPROPKEY*)&PKEY_PNPX_Types, L"PNP-X Types" },
 		{ *(DEVPROPKEY*)&PKEY_PNPX_RemoteAddress, L"PNP-X Remote Address" },
 		{ *(DEVPROPKEY*)&PKEY_PNPX_RootProxy, L"PNP-X Root Proxy" },
+		{ *(DEVPROPKEY*)&PKEY_DeviceInterface_DevicePath, L"Device Path" },
 	};
 
 	if (auto it = properties.find(key); it != properties.end())
@@ -244,8 +276,9 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 }
 
 CString Helpers::GuidToString(GUID const& guid) {
-	WCHAR sguid[64];
+	WCHAR sguid[68];
 	auto hr = ::StringFromGUID2(guid, sguid, _countof(sguid));
+	ATLASSERT(SUCCEEDED(hr));
 	return SUCCEEDED(hr) ? sguid : L"";
 }
 
@@ -364,7 +397,7 @@ CString Helpers::FormatBytes(const PBYTE buffer, ULONG size) {
 }
 
 CString Helpers::GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG size) {
-	if (key == DEVPKEY_Device_Security) {
+	if (key == DEVPKEY_Device_Security || key == DEVPKEY_DeviceClass_Security) {
 		PWSTR sddl;
 		::ConvertSecurityDescriptorToStringSecurityDescriptor((PSECURITY_DESCRIPTOR)value,
 			SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, nullptr);
@@ -386,7 +419,6 @@ CString Helpers::GetPropertyDetails(DEVPROPKEY const& key, PBYTE value, ULONG si
 		text.Format(L"Power State: %s", DevicePowerStateToString(data->PD_MostRecentPowerState));
 		return text;
 	}
-
 	return L"";
 }
 
@@ -489,4 +521,49 @@ PCWSTR Helpers::DevicePowerStateToString(DEVICE_POWER_STATE state) {
 		L"(Unspecified)", L"D0", L"D1", L"D2", L"D3"
 	};
 	return states[state];
+}
+
+CString Helpers::DeviceInterfaceToString(GUID const& guid) {
+	static const std::unordered_map<GUID, PCWSTR> map = {
+		{ GUID_DEVICE_BATTERY, L"Battery" },
+		{ GUID_DEVICE_APPLICATIONLAUNCH_BUTTON, L"App Launch Button" },
+		{ GUID_DEVINTERFACE_CDROM, L"CD-ROM" },
+		{ GUID_DEVINTERFACE_DISK, L"Disk" },
+		{ GUID_DEVINTERFACE_PARTITION, L"Partition" },
+		{ GUID_DEVINTERFACE_VOLUME, L"Volume" },
+		{ GUID_DEVINTERFACE_IMAGE, L"Image" },
+		{ GUID_DEVINTERFACE_KEYBOARD, L"Keyboard" },
+		{ GUID_DEVINTERFACE_MOUSE, L"Mouse" },
+		{ GUID_DEVINTERFACE_MONITOR, L"Monitor" },
+		{ GUID_DEVINTERFACE_SMARTCARD_READER, L"Smart Card Reader" },
+		{ GUID_DEVINTERFACE_NET, L"Net" },
+		{ GUID_DEVINTERFACE_USB_DEVICE, L"USB Device" },
+		{ GUID_DEVINTERFACE_USB_HOST_CONTROLLER, L"USB Host Controller" },
+		{ GUID_DEVINTERFACE_USB_HUB, L"USB Hub" },
+		{ GUID_DEVINTERFACE_TAPE, L"Tape" },
+		{ GUID_DEVINTERFACE_COMPORT, L"COM Port" },
+		{ GUID_DEVINTERFACE_CDCHANGER, L"CD Changer" },
+		{ GUID_DEVINTERFACE_DISPLAY_ADAPTER, L"Display Adapter" },
+		{ GUID_DEVINTERFACE_HIDDEN_VOLUME, L"Hidden Volume" },
+		{ GUID_DEVINTERFACE_NETUIO, L"Net UIO" },
+		{ GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR, L"Serial Bus Enumerator" },
+		{ GUID_DEVINTERFACE_STORAGEPORT, L"Storage Port" },
+		{ GUID_DEVINTERFACE_PARCLASS, L"Parallel Port" },
+		{ GUID_DEVINTERFACE_HID, L"Human Interface Device" },
+		{ GUID_DEVINTERFACE_BRIGHTNESS, L"Brightness" },
+		{ GUID_DEVINTERFACE_I2C, L"WDDM Display Adapter" },
+		{ GUID_DEVICE_PROCESSOR, L"Processor" },
+		{ GUID_DEVICE_MEMORY, L"Memory" },
+		{ GUID_DEVICE_LID, L"Lid" },
+		{ GUID_DEVINTERFACE_MODEM, L"Modem" },
+		{ GUID_DEVINTERFACE_WPD, L"Windows Portable Devices" },
+		{ GUID_DEVINTERFACE_WPD_PRIVATE, L"Private Windows Portable Devices" },
+		{ GUID_DEVINTERFACE_VIDEO_OUTPUT_ARRIVAL, L"Display Device Children" },
+		{ GUID_DEVINTERFACE_WRITEONCEDISK, L"Write Once Disks" },
+	};
+
+	if (auto it = map.find(guid); it != map.end())
+		return it->second;
+
+	return GuidToString(guid);
 }

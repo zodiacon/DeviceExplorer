@@ -116,7 +116,7 @@ public:
 	static std::vector<HardwareProfile> EnumHardwareProfiles(PCWSTR computerName = nullptr);
 	static std::vector<DEVPROPKEY> GetDeviceClassPropertyKeys(GUID const& guid);
 	static std::vector<DEVPROPKEY> GetDeviceInterfacePropertyKeys(GUID const& guid);
-	static std::unique_ptr<BYTE[]> GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len);
+	static std::unique_ptr<BYTE[]> GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len, bool iface = false);
 
 	static DeviceNode GetRootDeviceNode();
 
@@ -133,12 +133,44 @@ public:
 	static std::wstring GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type);
 	static std::vector<std::wstring> GetDeviceClassRegistryPropertyMultiString(const GUID* guid, DeviceClassRegistryPropertyType type);
 	static std::vector<DeviceClassInfo> EnumDeviceClasses();
+	static std::vector<GUID> EnumDeviceClassesGuids();
 
 	template<typename T>
 	static T GetDeviceClassRegistryProperty(const GUID* guid, DeviceClassRegistryPropertyType type);
 
 	bool EnumDeviceInterfaces(GUID const& guid, std::vector<DeviceInterfaceInfo>& vec);
 	static std::vector<DeviceInterfaceInfo> EnumDeviceInterfaces();
+	static std::vector<GUID> EnumDeviceInterfacesGuids();
+	static std::wstring GetDeviceInterfaceName(GUID const& guid);
+
+	template<typename T>
+	static T GetDeviceInterfaceProperty(GUID const& guid, DEVPROPKEY const& key) {
+		T value{};
+		ULONG size = sizeof(T);
+		WCHAR sguid[64];
+		::StringFromGUID2(guid, sguid, _countof(sguid));
+		DEVPROPTYPE type;
+		::CM_Get_Device_Interface_Property(sguid, &key, &type, &value, &size, 0);
+		return value;
+	}
+
+	template<>
+	static std::wstring GetDeviceInterfaceProperty(GUID const& guid, DEVPROPKEY const& key) {
+		DEVPROPTYPE type;
+		ULONG size = 0;
+		WCHAR sguid[64];
+		::StringFromGUID2(guid, sguid, _countof(sguid));
+		if (CR_BUFFER_SMALL != ::CM_Get_Device_Interface_Property(sguid, &key, &type, nullptr, &size, 0))
+			return L"";
+
+		assert(type == DEVPROP_TYPE_STRING);
+		if (type != DEVPROP_TYPE_STRING)
+			return L"";
+		std::wstring value;
+		value.resize(size / sizeof(WCHAR));
+		::CM_Get_Device_Interface_Property(sguid, &key, &type, (PBYTE)value.data(), &size, 0);
+		return value;
+	}
 
 	int GetDeviceIndex(DEVINST inst) const;
 

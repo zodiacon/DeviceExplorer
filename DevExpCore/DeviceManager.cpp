@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "DeviceManager.h"
 #include <RegStr.h>
+#include <devpkey.h>
 
 #pragma comment(lib, "setupapi")
 #pragma comment(lib, "cfgmgr32")
@@ -152,6 +153,19 @@ std::vector<DeviceClassInfo> DeviceManager::EnumDeviceClasses() {
 	return classes;
 }
 
+std::vector<GUID> DeviceManager::EnumDeviceClassesGuids() {
+	GUID guid;
+	std::vector<GUID> classes;
+	classes.reserve(64);
+	for (DWORD i = 0;; i++) {
+		if (CR_NO_SUCH_VALUE == ::CM_Enumerate_Classes(i, &guid, CM_ENUMERATE_CLASSES_INSTALLER))
+			break;
+
+		classes.push_back(guid);
+	}
+	return classes;
+}
+
 bool DeviceManager::EnumDeviceInterfaces(GUID const& guid, std::vector<DeviceInterfaceInfo>& vec) {
 	SP_DEVICE_INTERFACE_DATA data = { sizeof(data) };
 	auto buffer = std::make_unique<BYTE[]>(2048);
@@ -187,18 +201,17 @@ bool DeviceManager::EnumDeviceInterfaces(GUID const& guid, std::vector<DeviceInt
 	return i > 0;
 }
 
-std::vector<DeviceInterfaceInfo> DeviceManager::EnumDeviceInterfaces() {
+std::vector<GUID> DeviceManager::EnumDeviceInterfacesGuids() {
 	GUID guid;
-	std::vector<DeviceInterfaceInfo> data;
-	data.reserve(32);
+	std::vector<GUID> guids;
+	guids.reserve(64);
 	for (DWORD i = 0;; i++) {
 		if (CR_NO_SUCH_VALUE == ::CM_Enumerate_Classes(i, &guid, CM_ENUMERATE_CLASSES_INTERFACE))
 			break;
-		DeviceManager dm(nullptr, &guid, nullptr, InfoSetOptions::DeviceInterface | InfoSetOptions::Present);
-		dm.EnumDeviceInterfaces(guid, data);
+		guids.push_back(guid);
 	}
 
-	return data;
+	return guids;
 }
 
 DeviceManager::DeviceManager(const wchar_t* computerName, const GUID* classGuid, const wchar_t* enumerator, InfoSetOptions options) {
@@ -223,12 +236,28 @@ int DeviceManager::GetDeviceIndex(DEVINST inst) const {
 	return -1;
 }
 
-std::unique_ptr<BYTE[]> DeviceManager::GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len) {
+std::unique_ptr<BYTE[]> DeviceManager::GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len, bool iface) {
 	ULONG size = 0;
-	::CM_Get_Class_Property(&guid, &key, &type, nullptr, &size, CM_CLASS_PROPERTY_INSTALLER);
+	::CM_Get_Class_Property(&guid, &key, &type, nullptr, &size, iface ? CM_CLASS_PROPERTY_INTERFACE : CM_CLASS_PROPERTY_INSTALLER);
 	auto value = std::make_unique<BYTE[]>(size);
-	::CM_Get_Class_Property(&guid, &key, &type, value.get(), &size, CM_CLASS_PROPERTY_INSTALLER);
+	::CM_Get_Class_Property(&guid, &key, &type, value.get(), &size, iface ? CM_CLASS_PROPERTY_INTERFACE : CM_CLASS_PROPERTY_INSTALLER);
 	if (len)
 		*len = size;
 	return value;
+}
+
+std::wstring DeviceManager::GetDeviceInterfaceName(GUID const& guid) {
+	auto name = GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_NAME);
+	if(name.empty())
+		name = GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterface_FriendlyName);
+	if (name.empty())
+		name = GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceClass_ClassName);
+	if (name.empty())
+		name = GetDeviceClassDescription(guid);
+	if (name.empty()) {
+		WCHAR sguid[64];
+		::StringFromGUID2(guid, sguid, _countof(sguid));
+		name = sguid;
+	}
+	return name;
 }
