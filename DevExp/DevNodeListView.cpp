@@ -42,6 +42,12 @@ CString CDevNodeListView::GetColumnText(HWND, int row, int col) {
 	return L"";
 }
 
+bool CDevNodeListView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	return GetFrame()->TrackPopupMenu(menu.GetSubMenu(0), TPM_RIGHTBUTTON, pt.x, pt.y);
+}
+
 LRESULT CDevNodeListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_List.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS);
@@ -77,8 +83,11 @@ CString CDevNodeListView::GetStringProperty(DeviceItem& item, DEVPROPKEY const& 
 }
 
 CString const& CDevNodeListView::GetDeviceClassName(DeviceItem& item) {
-	if (item.Class.IsEmpty())
-		item.Class = DeviceNode(item.Data.DevInst).GetProperty<std::wstring>(DEVPKEY_Device_Class).c_str();
+	if (item.Class.IsEmpty()) {
+		item.Class = DeviceManager::GetDeviceClassDescription(item.Data.ClassGuid).c_str();
+		if (item.Class.IsEmpty())
+			item.Class = DeviceNode(item.Data.DevInst).GetProperty<std::wstring>(DEVPKEY_Device_Class).c_str();
+	}
 	return item.Class;
 }
 

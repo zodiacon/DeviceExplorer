@@ -13,6 +13,16 @@ namespace std {
 	};
 }
 
+DEFINE_DEVPROPKEY(DEVPKEY_Device_IsConnected, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 15);
+DEFINE_DEVPROPKEY(DEVPKEY_Device_DriverNodeStrongName, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 3);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_Inbox, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 6);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_Configurable, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 4);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_BootCritical, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 3);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_FSFilterClass, 0x259abffc, 0x50a7, 0x47ce, 0xaf, 0x8, 0x68, 0xc9, 0xa7, 0xd7, 0x33, 0x66, 15);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_CompoundUpperFilters, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 20);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_CompoundLowerFilters, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 21);
+DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_LowerLogoVersion, 0x259abffc, 0x50a7, 0x47ce, 0xaf, 0x8, 0x68, 0xc9, 0xa7, 0xd7, 0x33, 0x66, 13);
+
 CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 	static const std::unordered_map<DEVPROPKEY, CString> properties{
 		{ DEVPKEY_NAME, L"Name" },
@@ -123,6 +133,8 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_Device_AdditionalSoftwareRequested, L"Additional Software Requested" },
 		{ DEVPKEY_Device_SafeRemovalRequired, L"Safe Removal Required" },
 		{ DEVPKEY_Device_SafeRemovalRequiredOverride, L"Safe Removal Override Required" },
+		{ DEVPKEY_Device_IsConnected, L"Is Connected" },
+		{ DEVPKEY_Device_DriverNodeStrongName, L"Strong Name" },
 
 		{ DEVPKEY_DrvPkg_Model, L"Package Model" },
 		{ DEVPKEY_DrvPkg_VendorWebSite, L"Vendor Website" },
@@ -131,16 +143,33 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_DrvPkg_Icon, L"Package Icon" },
 		{ DEVPKEY_DrvPkg_BrandingIcon, L"Branding Icon" },
 
-		{ DEVPKEY_DeviceClass_UpperFilters, L"Class Upper Filters" },
-		{ DEVPKEY_DeviceClass_LowerFilters, L"Class Lower Filters" },
-		{ DEVPKEY_DeviceClass_Security, L"Class Security" },
-		{ DEVPKEY_DeviceClass_SecuritySDS, L"Class Security SDDL" },
-		{ DEVPKEY_DeviceClass_DevType, L"Class Device Type" },
-		{ DEVPKEY_DeviceClass_Exclusive, L"Class Exclusive" },
-		{ DEVPKEY_DeviceClass_Characteristics, L"Class Characteristics" },
-		{ DEVPKEY_DeviceClass_Name, L"Class Name" },
+		{ DEVPKEY_DeviceClass_UpperFilters, L"Upper Filters" },
+		{ DEVPKEY_DeviceClass_LowerFilters, L"Lower Filters" },
+		{ DEVPKEY_DeviceClass_Security, L"Security" },
+		{ DEVPKEY_DeviceClass_SecuritySDS, L"Security SDDL" },
+		{ DEVPKEY_DeviceClass_DevType, L"Device Type" },
+		{ DEVPKEY_DeviceClass_Exclusive, L"Exclusive" },
+		{ DEVPKEY_DeviceClass_Characteristics, L"Characteristics" },
+		{ DEVPKEY_DeviceClass_Name, L"Description" },
 		{ DEVPKEY_DeviceClass_ClassName, L"Class Name" },
 		{ DEVPKEY_DeviceClass_ClassInstaller, L"Class Installer" },
+		{ DEVPKEY_DeviceClass_ClassCoInstallers, L"Class Co-Installers" },
+		{ DEVPKEY_DeviceClass_Icon, L"Icon" },
+		{ DEVPKEY_DeviceClass_NoDisplayClass, L"No Display Class" },
+		{ DEVPKEY_DeviceClass_SilentInstall, L"Silent Install" },
+		{ DEVPKEY_DeviceClass_NoUseClass, L"No Use Class" },
+		{ DEVPKEY_DeviceClass_DefaultService, L"Default Service" },
+		{ DEVPKEY_DeviceClass_PropPageProvider, L"Property Page Provider" },
+		{ DEVPKEY_DeviceClass_IconPath, L"Icon Path" },
+		{ DEVPKEY_DeviceClass_NoInstallClass, L"No Install Class" },
+		{ DEVPKEY_DeviceClass_Inbox, L"Inbox" },
+		{ DEVPKEY_DeviceClass_Configurable, L"Configurable" },
+		{ DEVPKEY_DeviceClass_BootCritical, L"Boot Critical" },
+		{ DEVPKEY_DeviceClass_FSFilterClass, L"FS Filter Class" },
+		{ DEVPKEY_DeviceClass_CompoundUpperFilters, L"Compound Upper Filters" },
+		{ DEVPKEY_DeviceClass_CompoundLowerFilters, L"Compound Lower Filters" },
+		{ DEVPKEY_DeviceClass_NoUseClass, L"No Use Class" },
+		{ DEVPKEY_DeviceClass_LowerLogoVersion, L"Lower Logo Version" },
 
 		{ DEVPKEY_DeviceInterface_FriendlyName, L"Device Interface Name" },
 		{ DEVPKEY_DeviceInterface_Enabled, L"Device Interface Enabled" },
@@ -415,7 +444,7 @@ CString Helpers::DevNodeStatusToString(DeviceNodeStatus status, PCWSTR sep) {
 		{ DeviceNodeStatus::ApmEnumerator, L"APM Enumerator" },
 		{ DeviceNodeStatus::ApmDriver, L"APM Driver" },
 		{ DeviceNodeStatus::SilentInstall, L"Silent Install" },
-		{ DeviceNodeStatus::NoShowInDeviceManager, L"Don't Show" },
+		{ DeviceNodeStatus::NoShowInDeviceManager, L"Hidden" },
 		{ DeviceNodeStatus::BootLogProblem, L"Boot Log Problem" },
 	};
 

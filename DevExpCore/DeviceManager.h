@@ -22,6 +22,11 @@ struct DeviceInterfaceInfo {
 	GUID Guid;
 };
 
+struct DeviceClassInfo {
+	GUID Guid;
+	std::wstring Name;
+};
+
 struct HardwareProfile {
 	uint32_t Index;
 	std::wstring FriendlyName;
@@ -106,9 +111,12 @@ public:
 	std::vector<T> EnumDevices(bool includeHidden = false);
 	static std::wstring GetDeviceClassDescription(GUID const& guid, const wchar_t* computerName = nullptr);
 	static HIMAGELIST GetClassImageList();
-	static int GetClassImageIndex(const GUID* guid);
+	static int GetClassImageIndex(GUID const& guid);
 	static std::vector<DEVPROPKEY> GetClassPropertyKeys(GUID const& guid);
 	static std::vector<HardwareProfile> EnumHardwareProfiles(PCWSTR computerName = nullptr);
+	static std::vector<DEVPROPKEY> GetDeviceClassPropertyKeys(GUID const& guid);
+	static std::vector<DEVPROPKEY> GetDeviceInterfacePropertyKeys(GUID const& guid);
+	static std::unique_ptr<BYTE[]> GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len);
 
 	static DeviceNode GetRootDeviceNode();
 
@@ -124,7 +132,7 @@ public:
 	// device class
 	static std::wstring GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type);
 	static std::vector<std::wstring> GetDeviceClassRegistryPropertyMultiString(const GUID* guid, DeviceClassRegistryPropertyType type);
-	static std::vector<std::wstring> EnumDeviceClasses();
+	static std::vector<DeviceClassInfo> EnumDeviceClasses();
 
 	template<typename T>
 	static T GetDeviceClassRegistryProperty(const GUID* guid, DeviceClassRegistryPropertyType type);
@@ -137,6 +145,8 @@ public:
 private:
 	DeviceManager(const wchar_t* computerName = nullptr, const GUID* classGuid = nullptr, const wchar_t* enumerator = nullptr,
 		InfoSetOptions options = InfoSetOptions::Present | InfoSetOptions::AllClasses);
+
+	static std::vector<DEVPROPKEY> GetDeviceClassPropertyKeysCommon(GUID const& guid, bool deviceClass);
 
 private:
 	wil::unique_hinfoset _hInfoSet;

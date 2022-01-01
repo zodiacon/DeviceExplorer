@@ -31,21 +31,10 @@ HIMAGELIST DeviceManager::GetClassImageList() {
 	return g_ClassImageList.ImageList;
 }
 
-int DeviceManager::GetClassImageIndex(const GUID* guid) {
+int DeviceManager::GetClassImageIndex(GUID const& guid) {
 	int index = -1;
-	::SetupDiGetClassImageIndex(&g_ClassImageList, guid, &index);
+	::SetupDiGetClassImageIndex(&g_ClassImageList, &guid, &index);
 	return index;
-}
-
-std::vector<DEVPROPKEY> DeviceManager::GetClassPropertyKeys(GUID const& guid) {
-	std::vector<DEVPROPKEY> keys;
-	DWORD count = 0;
-	::SetupDiGetClassPropertyKeys(&guid, nullptr, 0, &count, DICLASSPROP_INSTALLER);
-	if (count) {
-		keys.resize(count);
-		::SetupDiGetClassPropertyKeys(&guid, keys.data(), count, nullptr, DICLASSPROP_INSTALLER);
-	}
-	return keys;
 }
 
 std::vector<HardwareProfile> DeviceManager::EnumHardwareProfiles(PCWSTR computerName) {
@@ -66,6 +55,14 @@ std::vector<HardwareProfile> DeviceManager::EnumHardwareProfiles(PCWSTR computer
 		}
 	}
 	return hwprofiles;
+}
+
+std::vector<DEVPROPKEY> DeviceManager::GetDeviceClassPropertyKeys(GUID const& guid) {
+	return GetDeviceClassPropertyKeysCommon(guid, true);
+}
+
+std::vector<DEVPROPKEY> DeviceManager::GetDeviceInterfacePropertyKeys(GUID const& guid) {
+	return GetDeviceClassPropertyKeysCommon(guid, false);
 }
 
 DeviceNode DeviceManager::GetRootDeviceNode() {
@@ -136,17 +133,21 @@ std::vector<std::wstring> DeviceManager::GetDeviceClassRegistryPropertyMultiStri
 	return result;
 }
 
-std::vector<std::wstring> DeviceManager::EnumDeviceClasses() {
-	CRegKey key;
-	std::vector<std::wstring> classes;
-	classes.reserve(128);
+std::vector<DeviceClassInfo> DeviceManager::EnumDeviceClasses() {
+	GUID guid;
+	std::vector<DeviceClassInfo> classes;
+	classes.reserve(64);
 	WCHAR name[128];
-	if (ERROR_SUCCESS == key.Open(HKEY_LOCAL_MACHINE, REGSTR_PATH_CURRENTCONTROLSET L"\\Control\\Class", KEY_READ)) {
-		for (DWORD i = 0;; i++) {
-			if (ERROR_SUCCESS != ::RegEnumKey(key, i, name, _countof(name)))
-				break;
-			classes.push_back(name);
-		}
+	for (DWORD i = 0;; i++) {
+		if (CR_NO_SUCH_VALUE == ::CM_Enumerate_Classes(i, &guid, CM_ENUMERATE_CLASSES_INSTALLER))
+			break;
+
+		ULONG len = _countof(name);
+		::CM_Get_Class_Name(&guid, name, &len, 0);
+		DeviceClassInfo info;
+		info.Guid = guid;
+		info.Name = name;
+		classes.push_back(std::move(info));
 	}
 	return classes;
 }
@@ -187,24 +188,33 @@ bool DeviceManager::EnumDeviceInterfaces(GUID const& guid, std::vector<DeviceInt
 }
 
 std::vector<DeviceInterfaceInfo> DeviceManager::EnumDeviceInterfaces() {
-	CRegKey key;
+	GUID guid;
 	std::vector<DeviceInterfaceInfo> data;
-	WCHAR name[256];
-	if (ERROR_SUCCESS == key.Open(HKEY_LOCAL_MACHINE, REGSTR_PATH_DEVICE_CLASSES, KEY_READ)) {
-		data.reserve(128);
-		GUID guid;
-		for (DWORD i = 0; ::RegEnumKey(key, i, name, _countof(name)) == ERROR_SUCCESS; i++) {
-			if (FAILED(::CLSIDFromString(name, &guid)))
-				continue;
-			DeviceManager dm(nullptr, &guid, nullptr, InfoSetOptions::DeviceInterface | InfoSetOptions::Present);
-			dm.EnumDeviceInterfaces(guid, data);
-		}
+	data.reserve(32);
+	for (DWORD i = 0;; i++) {
+		if (CR_NO_SUCH_VALUE == ::CM_Enumerate_Classes(i, &guid, CM_ENUMERATE_CLASSES_INTERFACE))
+			break;
+		DeviceManager dm(nullptr, &guid, nullptr, InfoSetOptions::DeviceInterface | InfoSetOptions::Present);
+		dm.EnumDeviceInterfaces(guid, data);
 	}
+
 	return data;
 }
 
 DeviceManager::DeviceManager(const wchar_t* computerName, const GUID* classGuid, const wchar_t* enumerator, InfoSetOptions options) {
 	_hInfoSet.reset(::SetupDiGetClassDevsEx(classGuid, enumerator, nullptr, static_cast<DWORD>(options), nullptr, computerName, nullptr));
+}
+
+std::vector<DEVPROPKEY> DeviceManager::GetDeviceClassPropertyKeysCommon(GUID const& guid, bool deviceClass) {
+	ULONG count = 0;
+	::CM_Get_Class_Property_Keys(&guid, nullptr, &count, deviceClass ? CM_CLASS_PROPERTY_INSTALLER : CM_CLASS_PROPERTY_INTERFACE);
+	if (count == 0)
+		return {};
+
+	std::vector<DEVPROPKEY> keys;
+	keys.resize(count);
+	::CM_Get_Class_Property_Keys(&guid, keys.data(), &count, deviceClass ? CM_CLASS_PROPERTY_INSTALLER : CM_CLASS_PROPERTY_INTERFACE);
+	return keys;
 }
 
 int DeviceManager::GetDeviceIndex(DEVINST inst) const {
@@ -213,3 +223,12 @@ int DeviceManager::GetDeviceIndex(DEVINST inst) const {
 	return -1;
 }
 
+std::unique_ptr<BYTE[]> DeviceManager::GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len) {
+	ULONG size = 0;
+	::CM_Get_Class_Property(&guid, &key, &type, nullptr, &size, CM_CLASS_PROPERTY_INSTALLER);
+	auto value = std::make_unique<BYTE[]>(size);
+	::CM_Get_Class_Property(&guid, &key, &type, value.get(), &size, CM_CLASS_PROPERTY_INSTALLER);
+	if (len)
+		*len = size;
+	return value;
+}

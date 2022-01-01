@@ -19,17 +19,6 @@ void DumpDeviceInterfaces() {
 	}
 }
 
-void DumpDeviceClasses() {
-	GUID guid;
-	for (auto& name : DeviceManager::EnumDeviceClasses()) {
-		if (FAILED(::CLSIDFromString(name.c_str(), &guid)))
-			continue;
-		auto props = DeviceManager::GetClassPropertyKeys(guid);
-		for (auto& prop : props) {
-		}
-	}
-}
-
 void DumpHardwareProfiles() {
 	for (auto& profile : DeviceManager::EnumHardwareProfiles()) {
 		printf("Profile %u: %ws\n", profile.Index, profile.FriendlyName.c_str());

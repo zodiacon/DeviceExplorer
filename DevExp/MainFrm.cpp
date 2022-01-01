@@ -11,6 +11,7 @@
 #include "DevNodeListView.h"
 #include "AppSettings.h"
 #include "SecurityHelper.h"
+#include "DeviceClassesView.h"
 
 const int WINDOW_MENU_POSITION = 5;
 
@@ -61,8 +62,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
-	images.AddIcon(AtlLoadIconImage(IDI_TREE, 0, 16, 16));
-	images.AddIcon(AtlLoadIconImage(IDI_LIST, 0, 16, 16));
+	UINT icons[] = { IDI_TREE, IDI_LIST, IDI_DEVICES };
+	for(auto icon : icons)
+		images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
 
 	m_view.SetImageList(images);
 
@@ -86,14 +88,21 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CMenuHandle menuMain = m_CmdBar.GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 
-	auto pView = new CDevNodeView(this);
-	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), 0, pView);
-
-	auto pView2 = new CDevNodeListView(this);
-	pView2->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_view.AddPage(pView2->m_hWnd, _T("Device Node List"), 1, pView2);
-
+	{
+		auto pView = new CDevNodeView(this);
+		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+		m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), 0, pView);
+	}
+	{
+		auto pView = new CDevNodeListView(this);
+		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+		m_view.AddPage(pView->m_hWnd, _T("Device Node List"), 1, pView);
+	}
+	{
+		auto pView = new CDeviceClassesView(this, true);
+		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+		m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
+	}
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 
 	return 0;

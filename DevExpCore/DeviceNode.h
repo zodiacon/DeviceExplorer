@@ -170,15 +170,7 @@ public:
 	bool Rescan();
 	bool IsEnabled() const;
 
-	std::unique_ptr<BYTE[]> GetPropertyValue(DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len = nullptr) const {
-		ULONG size = 0;
-		::CM_Get_DevNode_Property(m_Inst, &key, &type, nullptr, &size, 0);
-		auto value = std::make_unique<BYTE[]>(size);
-		::CM_Get_DevNode_Property(m_Inst, &key, &type, value.get(), &size, 0);
-		if (len)
-			*len = size;
-		return value;
-	}
+	std::unique_ptr<BYTE[]> GetPropertyValue(DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len = nullptr) const;
 
 	template<typename T>
 	T GetProperty(DEVPROPKEY const& key) const {

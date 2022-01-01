@@ -51,6 +51,9 @@
     <ClCompile Include="SecurityHelper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="DeviceClassesView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -85,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="SecurityHelper.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceClassesView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
