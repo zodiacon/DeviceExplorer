@@ -38,6 +38,7 @@ CString CDevNodeListView::GetColumnText(HWND, int row, int col) {
 			return GetStringProperty(item, DEVPKEY_Device_Parent);
 		case ColumnType::Enumerator:
 			return GetStringProperty(item, DEVPKEY_Device_EnumeratorName);
+		case ColumnType::Depth: return std::to_wstring(DeviceNode(item.Data.DevInst).GetDepth()).c_str();
 	}
 	return L"";
 }
@@ -60,6 +61,7 @@ LRESULT CDevNodeListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Name", LVCFMT_LEFT, 250, ColumnType::Name);
 	cm->AddColumn(L"Instance", LVCFMT_RIGHT, 80, ColumnType::Instance);
 	cm->AddColumn(L"Class", LVCFMT_LEFT, 140, ColumnType::Class);
+	cm->AddColumn(L"Depth", LVCFMT_RIGHT, 60, ColumnType::Depth);
 	cm->AddColumn(L"Status", LVCFMT_LEFT, 240, ColumnType::Status);
 	cm->AddColumn(L"PDO Name", LVCFMT_LEFT, 160, ColumnType::PDOName);
 	cm->AddColumn(L"Enumerator", LVCFMT_LEFT, 120, ColumnType::Enumerator);
@@ -116,6 +118,7 @@ void CDevNodeListView::DoSort(SortInfo* const si) {
 			case ColumnType::Enumerator: return SortHelper::Sort(GetStringProperty(d1, DEVPKEY_Device_EnumeratorName), GetStringProperty(d2, DEVPKEY_Device_EnumeratorName), si->SortAscending);
 			case ColumnType::PDOName: return SortHelper::Sort(GetStringProperty(d1, DEVPKEY_Device_PDOName), GetStringProperty(d2, DEVPKEY_Device_PDOName), si->SortAscending);
 			case ColumnType::Parent: return SortHelper::Sort(GetStringProperty(d1, DEVPKEY_Device_Parent), GetStringProperty(d2, DEVPKEY_Device_Parent), si->SortAscending);
+			case ColumnType::Depth: return SortHelper::Sort(DeviceNode(d1.Data.DevInst).GetDepth(), DeviceNode(d2.Data.DevInst).GetDepth(), si->SortAscending);
 		}
 		return false;
 	};

@@ -120,3 +120,9 @@ std::unique_ptr<BYTE[]> DeviceNode::GetPropertyValue(DEVPROPKEY const& key, DEVP
 		*len = size;
 	return value;
 }
+
+ULONG DeviceNode::GetDepth() const {
+	ULONG depth = -1;
+	::CM_Get_Depth(&depth, m_Inst, 0);
+	return depth;
+}

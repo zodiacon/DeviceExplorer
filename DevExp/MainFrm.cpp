@@ -63,7 +63,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
-	UINT icons[] = { IDI_TREE, IDI_LIST, IDI_DEVICES };
+	UINT icons[] = { IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE };
 	for(auto icon : icons)
 		images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
 
@@ -107,7 +107,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	{
 		auto pView = new CDeviceInterfacesView(this);
 		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-		m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 2, pView);
+		m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 3, pView);
 	}
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 

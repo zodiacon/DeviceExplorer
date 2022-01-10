@@ -239,11 +239,14 @@ int DeviceManager::GetDeviceIndex(DEVINST inst) const {
 std::unique_ptr<BYTE[]> DeviceManager::GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len, bool iface) {
 	ULONG size = 0;
 	::CM_Get_Class_Property(&guid, &key, &type, nullptr, &size, iface ? CM_CLASS_PROPERTY_INTERFACE : CM_CLASS_PROPERTY_INSTALLER);
-	auto value = std::make_unique<BYTE[]>(size);
-	::CM_Get_Class_Property(&guid, &key, &type, value.get(), &size, iface ? CM_CLASS_PROPERTY_INTERFACE : CM_CLASS_PROPERTY_INSTALLER);
-	if (len)
-		*len = size;
-	return value;
+	if (size) {
+		auto value = std::make_unique<BYTE[]>(size);
+		::CM_Get_Class_Property(&guid, &key, &type, value.get(), &size, iface ? CM_CLASS_PROPERTY_INTERFACE : CM_CLASS_PROPERTY_INSTALLER);
+		if (len)
+			*len = size;
+		return value;
+	}
+	return nullptr;
 }
 
 std::wstring DeviceManager::GetDeviceInterfaceName(GUID const& guid) {

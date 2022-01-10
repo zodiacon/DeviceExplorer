@@ -159,7 +159,9 @@ public:
 		DEVPROPTYPE type;
 		ULONG size = 0;
 		WCHAR sguid[64];
-		::StringFromGUID2(guid, sguid, _countof(sguid));
+		if (0 == ::StringFromGUID2(guid, sguid, _countof(sguid)))
+			return L"";
+
 		if (CR_BUFFER_SMALL != ::CM_Get_Device_Interface_Property(sguid, &key, &type, nullptr, &size, 0))
 			return L"";
 

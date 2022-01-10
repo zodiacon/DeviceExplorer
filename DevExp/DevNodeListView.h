@@ -46,7 +46,7 @@ protected:
 
 	enum class ColumnType {
 		Name, Class, ClassGuid,
-		Status, Instance, Driver, Enumerator, PDOName, Parent,
+		Status, Instance, Driver, Enumerator, PDOName, Parent, Depth
 	};
 
 	//

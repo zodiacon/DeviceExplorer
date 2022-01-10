@@ -169,6 +169,7 @@ public:
 	bool Uninstall();
 	bool Rescan();
 	bool IsEnabled() const;
+	ULONG GetDepth() const;
 
 	std::unique_ptr<BYTE[]> GetPropertyValue(DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len = nullptr) const;
 

@@ -36,12 +36,19 @@ void CDevNodeView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
 	DeviceNode node(inst);
 	m_Items.clear();
 	auto keys = node.GetPropertyKeys();
-	m_Items.reserve(keys.size() + 1);
-	Property p{};
-	p.ValueAsString = std::to_wstring(inst).c_str();
-	p.Name = L"Index";
-	m_Items.push_back(std::move(p));
-
+	m_Items.reserve(keys.size() + 2);
+	{
+		Property p{};
+		p.ValueAsString = std::to_wstring(inst).c_str();
+		p.Name = L"Index";
+		m_Items.push_back(std::move(p));
+	}
+	{
+		Property p{};
+		p.Name = L"Depth";
+		p.ValueAsString = std::to_wstring(node.GetDepth()).c_str();
+		m_Items.push_back(std::move(p));
+	}
 	for (auto& key : keys) {
 		Property prop;
 		prop.Key = key;

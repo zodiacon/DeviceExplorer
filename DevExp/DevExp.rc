@@ -145,6 +145,8 @@ IDI_DISABLE_DEVICE      ICON                    "res\\disable.ico"
 
 IDI_ENABLE_DEVICE       ICON                    "res\\enable.ico"
 
+IDI_INTERFACE           ICON                    "res\\interface.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

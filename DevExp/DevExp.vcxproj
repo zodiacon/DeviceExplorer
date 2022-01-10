@@ -256,6 +256,7 @@
     <Image Include="res\enable.ico" />
     <Image Include="res\find.ico" />
     <Image Include="res\gear_refresh.ico" />
+    <Image Include="res\interface.ico" />
     <Image Include="res\list.ico" />
     <Image Include="res\memory.ico" />
     <Image Include="res\Properties.ico" />

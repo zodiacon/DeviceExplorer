@@ -12,8 +12,9 @@
 #include <hidclass.h>
 #include <ntddmodm.h>
 #include <Portabledevice.h>
-
-//#include <winsmcrd.h>
+#include <ioevent.h>
+#include <bthdef.h>
+#include "DeviceManager.h"
 
 namespace std {
 	template<>
@@ -22,19 +23,16 @@ namespace std {
 			return p.pid ^ p.fmtid.Data1 ^ (p.fmtid.Data2 << 16);
 		}
 	};
-
-	template<>
-	struct hash<GUID> {
-		size_t operator()(GUID const& g) const {
-			return *(size_t*)&g.Data4 ^ g.Data2 ^ ((size_t)g.Data3 << 16) | g.Data1;
-		}
-	};
 }
 
 #pragma region From WDK
 
 DEFINE_GUID(GUID_DEVINTERFACE_BRIGHTNESS, 0xFDE5BBA4, 0xB3F9, 0x46FB, 0xBD, 0xAA, 0x07, 0x28, 0xCE, 0x31, 0x00, 0xB4);
 DEFINE_GUID(GUID_DEVINTERFACE_I2C, 0x2564AA4F, 0xDDDB, 0x4495, 0xB4, 0x97, 0x6A, 0xD4, 0xA8, 0x41, 0x63, 0xD7);
+DEFINE_GUID(GUID_VIRTUAL_AVC_CLASS, 0x616ef4d0, 0x23ce, 0x446d, 0xa5, 0x68, 0xc3, 0x1e, 0xb0, 0x19, 0x13, 0xd0);
+DEFINE_GUID(GUID_AVC_CLASS, 0x095780c3, 0x48a1, 0x4570, 0xbd, 0x95, 0x46, 0x70, 0x7f, 0x78, 0xc2, 0xdc);
+DEFINE_GUID(GUID_61883_CLASS, 0x7ebefbc0, 0x3200, 0x11d2, 0xb4, 0xc2, 0x0, 0xa0, 0xc9, 0x69, 0x7d, 0x7);
+DEFINE_GUID(BUS1394_CLASS_GUID, 0x6BDD1FC1, 0x810F, 0x11d0, 0xBE, 0xC7, 0x08, 0x00, 0x2B, 0xE2, 0x09, 0x2F);
 
 #pragma endregion
 
@@ -132,7 +130,7 @@ CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 		{ DEVPKEY_Device_FirmwareVersion, L"Firmware Version" },
 		{ DEVPKEY_Device_FirmwareRevision, L"Firmware Revision" },
 		{ DEVPKEY_Device_DependencyProviders, L"Dependency Providers" },
-		{ DEVPKEY_Device_DependencyDependents, L"Depenedents" },
+		{ DEVPKEY_Device_DependencyDependents, L"Dependents" },
 		{ DEVPKEY_Device_SoftRestartSupported, L"Soft Restart Supported" },
 		{ DEVPKEY_Device_ExtendedAddress, L"Extended Address" },
 		{ DEVPKEY_Device_AssignedToGuest, L"Assigned to Guest" },
@@ -560,10 +558,27 @@ CString Helpers::DeviceInterfaceToString(GUID const& guid) {
 		{ GUID_DEVINTERFACE_WPD_PRIVATE, L"Private Windows Portable Devices" },
 		{ GUID_DEVINTERFACE_VIDEO_OUTPUT_ARRIVAL, L"Display Device Children" },
 		{ GUID_DEVINTERFACE_WRITEONCEDISK, L"Write Once Disks" },
+		{ GUID_AVC_CLASS, L"Audio/Video Control" },
+		{ GUID_VIRTUAL_AVC_CLASS, L"Virtual Audio/Video Control" },
+		{ GUID_IO_VOLUME_DEVICE_INTERFACE, L"Volume" },
+		{ GUID_BTHPORT_DEVICE_INTERFACE, L"Bluetooth Radio" },
+		{ GUID_61883_CLASS, L"61883" },
+		{ BUS1394_CLASS_GUID, L"Firewire (1394)" },
 	};
 
 	if (auto it = map.find(guid); it != map.end())
 		return it->second;
+
+	auto name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_NAME);
+	if(name.empty())
+		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterfaceClass_Name);
+	if (name.empty())
+		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterface_FriendlyName);
+	if (name.empty())
+		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceClass_ClassName);
+
+	if (!name.empty())
+		return name.c_str();
 
 	return GuidToString(guid);
 }
