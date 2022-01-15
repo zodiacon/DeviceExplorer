@@ -2,7 +2,10 @@
 #include "DeviceClassesView.h"
 #include "Helpers.h"
 #include "resource.h"
+#include "SecurityHelper.h"
 #include "SortHelper.h"
+#include "ClipboardHelper.h"
+#include "ListViewhelper.h"
 
 CString CDeviceClassesView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
@@ -183,20 +186,80 @@ LRESULT CDeviceClassesView::OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*wID*
 }
 
 LRESULT CDeviceClassesView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
-	m_Tree.SetFocus();
+	if (m_Focus == nullptr)
+		m_Tree.SetFocus();
 
 	return 0;
 }
 
 LRESULT CDeviceClassesView::OnCopy(WORD, WORD, HWND, BOOL&) {
-	return LRESULT();
+	if (m_Focus == m_Tree) {
+		auto hItem = m_Tree.GetSelectedItem();
+		if (hItem) {
+			CString text;
+			m_Tree.GetItemText(hItem, text);
+			ClipboardHelper::CopyText(m_hWnd, text);
+			return 0;
+		}
+	}
+	else if (m_Focus == m_List) {
+		CString text;
+		for (auto i = m_List.GetNextItem(-1, LVIS_SELECTED); i >= 0; i = m_List.GetNextItem(i, LVIS_SELECTED)) {
+			text += ListViewHelper::GetRowAsString(m_List, i);
+			text += L"\n";
+		}
+		ClipboardHelper::CopyText(m_hWnd, text.Left(text.GetLength() - 1));
+	}
+	return 0;
 }
 
 LRESULT CDeviceClassesView::OnItemChanged(int, LPNMHDR, BOOL&) {
-	return LRESULT();
+	return 0;
+}
+
+LRESULT CDeviceClassesView::OnNotifySetFocus(int, LPNMHDR hdr, BOOL&) {
+	m_Focus = hdr->hwndFrom;
+	return 0;
 }
 
 LRESULT CDeviceClassesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 	Refresh();
 	return 0;
+}
+
+LRESULT CDeviceClassesView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DeviceNode dn((DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem()));
+	auto result = dn.IsEnabled() ? dn.Disable() : dn.Enable();
+	return 0;
+}
+
+bool CDeviceClassesView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
+	m_Tree.SelectItem(hItem);
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(m_Tree.GetItemData(hItem) < 0x8000 ? 0 : 1), 
+		TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y);
+	LRESULT result;
+	if (cmd) {
+		ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+	}
+	return false;
+}
+
+void CDeviceClassesView::UpdateUI(CUpdateUIBase& ui) {
+	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+	ui.UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
+	int selected = m_List.GetSelectionMark();
+	if (SecurityHelper::IsRunningElevated()) {
+		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));
+		bool enabled = dn.IsEnabled();
+		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
+		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, true);
+	}
+	else {
+		ui.UIEnable(ID_DEVICE_ENABLE, false);
+		ui.UIEnable(ID_DEVICE_DISABLE, false);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, false);
+	}
 }

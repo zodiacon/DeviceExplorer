@@ -58,10 +58,10 @@ public:
 		CHAIN_MSG_MAP(BaseFrame)
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
-		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
 		COMMAND_ID_HANDLER(ID_DEVICE_DISABLE, OnEnableDisableDevice)
+		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):

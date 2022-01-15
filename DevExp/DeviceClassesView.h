@@ -26,6 +26,7 @@ protected:
 	BEGIN_MSG_MAP(CDeviceClassesView)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
+		NOTIFY_CODE_HANDLER(NM_SETFOCUS, OnNotifySetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(BaseFrame)
 		CHAIN_MSG_MAP(CVirtualListView<CDeviceClassesView>)
@@ -36,12 +37,18 @@ protected:
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWEMPTYCLASSES, OnShowEmptyClasses)
+		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
+		COMMAND_ID_HANDLER(ID_DEVICE_DISABLE, OnEnableDisableDevice)
 	END_MSG_MAP()
 
 	void OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew);
+	bool OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt);
+
 	void OnPageActivated(bool active);
+	void UpdateUI(CUpdateUIBase& ui);
 
 private:
+
 	enum class ColumnType {
 		Name, Value, Details
 	};
@@ -59,9 +66,11 @@ private:
 	LRESULT OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnNotifySetFocus(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
@@ -71,6 +80,7 @@ private:
 	std::vector<DeviceInfo> m_Devices;
 	std::unordered_map<GUID, HTREEITEM> m_Guids;
 	std::vector<GUID> m_Classes;
+	HWND m_Focus{ nullptr };
 	bool m_ShowHiddenDevices{ false };
 	bool m_ShowEmptyClasses{ false };
 };

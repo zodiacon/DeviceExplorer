@@ -39,6 +39,7 @@ protected:
 
 	void OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew);
 	void OnPageActivated(bool active);
+	void UpdateUI(CUpdateUIBase& ui);
 
 private:
 	enum class ColumnType {

@@ -4,6 +4,7 @@
 #include "Helpers.h"
 #include "ClipboardHelper.h"
 #include "ListViewhelper.h"
+#include "SecurityHelper.h"
 
 void CDeviceInterfacesView::Refresh() {
 	m_Tree.SetRedraw(FALSE);
@@ -177,6 +178,24 @@ LRESULT CDeviceInterfacesView::OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*w
 	GetFrame()->GetUI().UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
 	Refresh();
 	return 0;
+}
+
+void CDeviceInterfacesView::UpdateUI(CUpdateUIBase& ui) {
+	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+	ui.UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
+	int selected = m_List.GetSelectionMark();
+	if (SecurityHelper::IsRunningElevated()) {
+		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));
+		bool enabled = dn.IsEnabled();
+		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
+		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, true);
+	}
+	else {
+		ui.UIEnable(ID_DEVICE_ENABLE, false);
+		ui.UIEnable(ID_DEVICE_DISABLE, false);
+		ui.UIEnable(ID_DEVICE_UNINSTALL, false);
+	}
 }
 
 LRESULT CDeviceInterfacesView::OnCopy(WORD, WORD, HWND, BOOL&) {

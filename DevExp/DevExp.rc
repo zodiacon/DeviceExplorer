@@ -92,8 +92,7 @@ BEGIN
     END
     POPUP "&Tab"
     BEGIN
-        MENUITEM "&Close\tCtrl+F4",             ID_WINDOW_CLOSE
-        MENUITEM "Close &All",                  ID_WINDOW_CLOSE_ALL
+        MENUITEM "&New Window",                 ID_TAB_NEWWINDOW
     END
     POPUP "&Help"
     BEGIN
@@ -110,6 +109,14 @@ BEGIN
         MENUITEM "&Uninstall",                  ID_DEVICE_UNINSTALL
         MENUITEM SEPARATOR
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_DEVICE_PROPERTIES
+    END
+    POPUP "class"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_DEVICE_PROPERTIES
     END
 END
 

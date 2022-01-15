@@ -102,6 +102,8 @@ void CDevNodeView::UpdateUI(CUpdateUIBase& ui) {
 void CDevNodeView::OnPageActivated(bool active) {
 	if (active && IsRefreshNeeded())
 		BuildDevNodeTree();
+	if (active && m_Focus)
+		::SetFocus(m_Focus);
 }
 
 void CDevNodeView::OnFinalMessage(HWND /*hWnd*/) {
