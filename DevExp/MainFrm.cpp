@@ -109,6 +109,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 		m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 3, pView);
 	}
+	m_view.SetActivePage(2);
+
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 
 	return 0;

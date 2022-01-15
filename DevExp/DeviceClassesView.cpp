@@ -137,10 +137,18 @@ void CDeviceClassesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) 
 
 	m_Items.reserve(keys.size() + 1);
 	if (device) {
-		Property p{};
-		p.ValueAsString = std::to_wstring(inst).c_str();
-		p.Name = L"Index";
-		m_Items.push_back(std::move(p));
+		{
+			Property p{};
+			p.ValueAsString = std::to_wstring(inst).c_str();
+			p.Name = L"Index";
+			m_Items.push_back(std::move(p));
+		}
+		{
+			Property p{};
+			p.ValueAsString = std::to_wstring(DeviceNode(inst).GetDepth()).c_str();
+			p.Name = L"Depth";
+			m_Items.push_back(std::move(p));
+		}
 	}
 
 	for (auto& key : keys) {

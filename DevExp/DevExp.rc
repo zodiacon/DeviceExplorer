@@ -70,6 +70,8 @@ BEGIN
         MENUITEM "Show &Hidden Devices",        ID_VIEW_SHOWHIDDENDEVICES
         MENUITEM "Show &Empty Classes/Interfaces", ID_VIEW_SHOWEMPTYCLASSES, INACTIVE
         MENUITEM SEPARATOR
+        MENUITEM "&Refresh",                    ID_VIEW_REFRESH
+        MENUITEM SEPARATOR
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
@@ -264,21 +266,15 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Device Explorer"
+    IDR_MAINFRAME           "Device Explorer v0.1 ©Pavel Yosifovich"
     IDS_TITLE               "Device Explorer"
 END
 
 STRINGTABLE
 BEGIN
-    ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
-    ID_FILE_CLOSE           "Close the active document\nClose"
     ID_FILE_SAVE            "Save the active document\nSave"
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
-    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
-    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
-    ID_FILE_PRINT           "Print the active document\nPrint"
-    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
 STRINGTABLE
@@ -311,7 +307,6 @@ BEGIN
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
     ID_EDIT_FIND            "Find the specified text\nFind"
     ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
-    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
     ID_EDIT_UNDO            "Undo the last action\nUndo"
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
@@ -321,6 +316,7 @@ STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+    ID_VIEW_REFRESH         "Refresh\nRefresh"
 END
 
 STRINGTABLE
@@ -349,6 +345,21 @@ END
 STRINGTABLE
 BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
+END
+
+STRINGTABLE
+BEGIN
+    ID_DEVICE_ENABLE        "Enable Device\nEnable Device"
+    ID_VIEW_SHOWHIDDENDEVICES "Show hidden devices\nShow Hidden Devices"
+    ID_DEVICE_SCANFORHARDWARECHANGES 
+                            "Scan for hardware changes\nScan for Hardware Changes"
+    ID_DEVICE_DISABLE       "Disable Device\nDisable Device"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_SHOWEMPTYCLASSES 
+                            "Show empty device classes/interfaces\nShowEmpty Classes/Interfaces"
 END
 
 #endif    // English (United States) resources
