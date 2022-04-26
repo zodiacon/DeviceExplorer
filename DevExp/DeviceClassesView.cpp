@@ -22,7 +22,7 @@ int CDeviceClassesView::GetRowImage(HWND h, int row, int col) {
 	return 0;
 }
 
-void CDeviceClassesView::DoSort(SortInfo* const si) {
+void CDeviceClassesView::DoSort(SortInfo const* si) {
 	auto compare = [&](auto const& n1, auto const& n2) {
 		return SortHelper::Sort(n1.Name, n2.Name, si->SortAscending);
 	};

@@ -36,7 +36,7 @@ protected:
 
 	CString GetColumnText(HWND, int row, int col);
 	int GetRowImage(HWND, int row, int col);
-	void DoSort(SortInfo* const si);
+	void DoSort(const SortInfo* si);
 	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
 
 	// Handler prototypes (uncomment arguments if needed):

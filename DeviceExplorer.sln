@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DevExpC", "DevExpC\DevExpC.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DevExp", "DevExp\DevExp.vcxproj", "{432E23FE-076E-497D-AB19-2DBCCB8028CD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WTLHelper", "WTLHelper\WTLHelper.vcxproj", "{AE53419F-A769-4548-8E15-E311904DF7DF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -29,10 +27,6 @@ Global
 		{432E23FE-076E-497D-AB19-2DBCCB8028CD}.Debug|x64.Build.0 = Debug|x64
 		{432E23FE-076E-497D-AB19-2DBCCB8028CD}.Release|x64.ActiveCfg = Release|x64
 		{432E23FE-076E-497D-AB19-2DBCCB8028CD}.Release|x64.Build.0 = Release|x64
-		{AE53419F-A769-4548-8E15-E311904DF7DF}.Debug|x64.ActiveCfg = Debug|x64
-		{AE53419F-A769-4548-8E15-E311904DF7DF}.Debug|x64.Build.0 = Debug|x64
-		{AE53419F-A769-4548-8E15-E311904DF7DF}.Release|x64.ActiveCfg = Release|x64
-		{AE53419F-A769-4548-8E15-E311904DF7DF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

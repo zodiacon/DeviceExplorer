@@ -30,7 +30,7 @@ public:
 	bool IsSortable(HWND, int col) const {
 		return col == 0;
 	}
-	void DoSort(SortInfo* const);
+	void DoSort(SortInfo const*);
 
 	//
 	// tree view callbacks

@@ -23,7 +23,7 @@ CString CDevNodeView::GetColumnText(HWND, int row, int col) {
 	return L"";
 }
 
-void CDevNodeView::DoSort(SortInfo* const si) {
+void CDevNodeView::DoSort(SortInfo const* si) {
 	auto compare = [&](auto const& n1, auto const& n2) {
 		return SortHelper::Sort(n1.Name, n2.Name, si->SortAscending);
 	};

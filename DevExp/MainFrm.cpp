@@ -14,6 +14,13 @@
 #include "DeviceClassesView.h"
 #include "DeviceInterfacesView.h"
 
+#ifdef _DEBUG
+#pragma comment(lib, "../WTLHelper/x64/Debug/WTLHelper.lib")
+#else
+#pragma comment(lib, "../WTLHelper/x64/Release/WTLHelper.lib")
+#endif
+
+
 const int WINDOW_MENU_POSITION = 5;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {

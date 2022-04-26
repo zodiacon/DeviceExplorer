@@ -105,7 +105,7 @@ int CDevNodeListView::GetRowImage(HWND, int row, int) {
 	return item.Image;
 }
 
-void CDevNodeListView::DoSort(SortInfo* const si) {
+void CDevNodeListView::DoSort(const SortInfo* si) {
 	if (si == nullptr)
 		return;
 

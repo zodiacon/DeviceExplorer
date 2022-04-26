@@ -18,7 +18,7 @@ public:
 
 	CString GetColumnText(HWND h, int row, int col);
 	//int GetRowImage(HWND h, int row, int col);
-	void DoSort(SortInfo* const si);
+	void DoSort(const SortInfo* si);
 
 protected:
 	BEGIN_MSG_MAP(CDeviceInterfacesView)

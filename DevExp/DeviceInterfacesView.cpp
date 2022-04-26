@@ -107,7 +107,7 @@ LRESULT CDeviceInterfacesView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
 	return 0;
 }
 
-void CDeviceInterfacesView::DoSort(SortInfo* const si) {
+void CDeviceInterfacesView::DoSort(const SortInfo* si) {
 	auto compare = [&](auto const& n1, auto const& n2) {
 		return SortHelper::Sort(n1.Name, n2.Name, si->SortAscending);
 	};
