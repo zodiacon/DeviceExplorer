@@ -117,8 +117,14 @@ public:
 	static std::vector<DEVPROPKEY> GetDeviceClassPropertyKeys(GUID const& guid);
 	static std::vector<DEVPROPKEY> GetDeviceInterfacePropertyKeys(GUID const& guid);
 	static std::unique_ptr<BYTE[]> GetClassPropertyValue(GUID const& guid, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len, bool iface = false);
+	static std::vector<GUID> BuildClassInfoList(DWORD flags = DIBCI_NOINSTALLCLASS | DIBCI_NODISPLAYCLASS);
+	static std::wstring GetSetupClassDescription(GUID const& guid);
 
 	static DeviceNode GetRootDeviceNode();
+
+	HDEVINFO InfoSet() {
+		return _hInfoSet.get();
+	}
 
 	// device
 	std::wstring GetDeviceRegistryPropertyString(const DeviceInfo& di, DeviceRegistryPropertyType type) const;

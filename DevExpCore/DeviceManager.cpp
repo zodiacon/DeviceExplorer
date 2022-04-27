@@ -249,6 +249,23 @@ std::unique_ptr<BYTE[]> DeviceManager::GetClassPropertyValue(GUID const& guid, D
 	return nullptr;
 }
 
+std::vector<GUID> DeviceManager::BuildClassInfoList(DWORD flags) {
+	DWORD count = 0;
+	::SetupDiBuildClassInfoList(flags, nullptr, 0, &count);
+	if (count > 0) {
+		std::vector<GUID> guids(count);
+		::SetupDiBuildClassInfoList(flags, guids.data(), count, &count);
+		return guids;
+	}
+	return {};
+}
+
+std::wstring DeviceManager::GetSetupClassDescription(GUID const& guid) {
+	WCHAR desc[256];
+	::SetupDiGetClassDescription(&guid, desc, _countof(desc), nullptr);
+	return desc;
+}
+
 std::wstring DeviceManager::GetDeviceInterfaceName(GUID const& guid) {
 	auto name = GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_NAME);
 	if(name.empty())

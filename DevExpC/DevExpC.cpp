@@ -147,6 +147,27 @@ void EnumDevNodes() {
 }
 
 int main() {
+	auto hinf = ::SetupOpenInfFile(LR"(d:\dev\temp\booster\x64\debug\booster.inf)", nullptr, INF_STYLE_WIN4, nullptr);
+	BYTE buffer[1024];
+	auto info = (PSP_INF_INFORMATION)buffer;
+	::SetupGetInfInformation(hinf, INFINFO_INF_SPEC_IS_HINF, info, sizeof(buffer), nullptr);
+	WCHAR version[1000];
+	::SetupQueryInfVersionInformation(info, 0, nullptr, version, _countof(version), nullptr);
+
+	//::SetupInstallFromInfSection(nullptr, hinf, , SPINST_ALL, 
+	::SetupCloseInfFile(hinf);
+
+	GUID clsGuid;
+	WCHAR className[MAX_CLASS_NAME_LEN];
+	SetupDiGetINFClass(LR"(d:\dev\temp\booster\x64\debug\booster.inf)", &clsGuid, className, _countof(className), nullptr);
+
+	auto dm = DeviceManager::Create();;
+	SetupDiCallClassInstaller(DIF_SELECTDEVICE, dm->InfoSet(), nullptr);
+
+	for (auto g : DeviceManager::BuildClassInfoList(0)) {
+		printf("%ws (%ws)\n", GuidToString(g).c_str(), DeviceManager::GetSetupClassDescription(g).c_str());
+	}
+
 	//DumpDeviceInterfaces();
 	//DumpHardwareProfiles();
 	//DumpDeviceClasses();
@@ -154,7 +175,6 @@ int main() {
 
 	//TestEnum();
 
-	auto dm = DeviceManager::Create();
 	for (auto& di : dm->EnumDevices()) {
 		DeviceNode(di.Data.DevInst).GetResources();
 	}
