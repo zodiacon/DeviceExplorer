@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Interfaces.h"
+#include <CustomTabView.h>
+#include "AppSettings.h"
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
@@ -17,7 +19,7 @@ public:
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
-	void PostMessageToAllTabs(UINT msg, WPARAM wp = 0, LPARAM lp = 0);
+	void PostMessageToAllTabs(UINT msg, WPARAM wp = 0, LPARAM lp = 0) const;
 
 protected:
 	BEGIN_MSG_MAP(CMainFrame)
@@ -31,7 +33,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_DEVICE_SCANFORHARDWARECHANGES, OnRescanHardware)
 		NOTIFY_CODE_HANDLER(TBVN_PAGEACTIVATED, OnPageActivated)
 		COMMAND_RANGE_HANDLER(ID_WINDOW_TABFIRST, ID_WINDOW_TABLAST, OnWindowActivate)
-		if (uMsg == WM_COMMAND) {
+		if (uMsg == WM_COMMAND && ::IsWindow(m_view.m_hWnd)) {
 			auto page = m_view.GetActivePage();
 			if (page >= 0 && ((CMessageMap*)m_view.GetPageData(page))->ProcessWindowMessage(hWnd, WM_COMMAND, wParam, lParam, lResult, 1))
 				return TRUE;
@@ -59,7 +61,7 @@ private:
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowActivate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -67,7 +69,8 @@ private:
 	LRESULT OnRescanHardware(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	CTabView m_view;
+	CCustomTabView m_view;
 	CCommandBarCtrl m_CmdBar;
+	inline static AppSettings s_Settings;
 	int m_ActivePage{ -1 };
 };

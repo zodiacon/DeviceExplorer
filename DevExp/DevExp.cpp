@@ -4,10 +4,9 @@
 #include "pch.h"
 #include "resource.h"
 #include "MainFrm.h"
-#include "AppSettings.h"
+#include <ThemeHelper.h>
 
 CAppModule _Module;
-AppSettings _Settings;
 
 int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	CMessageLoop theLoop;
@@ -36,6 +35,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
+
+	ThemeHelper::Init();
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 

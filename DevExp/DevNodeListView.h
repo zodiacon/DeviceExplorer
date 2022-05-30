@@ -8,13 +8,16 @@
 class DeviceNode;
 
 class CDevNodeListView :
-	public CFrameWindowImpl<CDevNodeListView, CWindow, CControlWinTraits>,
 	public CViewBase<CDevNodeListView>,
+	public CCustomDraw<CDevNodeListView>,
 	public CVirtualListView<CDevNodeListView> {
 public:
 	using CViewBase::CViewBase;
-	using BaseFrame = CFrameWindowImpl<CDevNodeListView, CWindow, CControlWinTraits>;
 	DECLARE_WND_CLASS(nullptr)
+
+	DWORD OnPrePaint(int, LPNMCUSTOMDRAW cd);
+	DWORD OnItemPrePaint(int, LPNMCUSTOMDRAW cd);
+	DWORD OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd);
 
 	void Refresh();
 
@@ -23,8 +26,8 @@ protected:
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		CHAIN_MSG_MAP(BaseFrame)
 		CHAIN_MSG_MAP(CVirtualListView<CDevNodeListView>)
+		CHAIN_MSG_MAP(CCustomDraw<CDevNodeListView>)
 		CHAIN_MSG_MAP(CViewBase)
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)

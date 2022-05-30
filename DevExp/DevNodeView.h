@@ -13,14 +13,13 @@
 class DeviceNode;
 
 class CDevNodeView : 
-	public CFrameWindowImpl<CDevNodeView, CWindow, CControlWinTraits>,
 	public CViewBase<CDevNodeView>,
 	public CVirtualListView<CDevNodeView>,
+	public CCustomDraw<CDevNodeView>,
 	public CTreeViewHelper<CDevNodeView> {
 public:
 	using CViewBase::CViewBase;
 
-	using BaseFrame = CFrameWindowImpl<CDevNodeView, CWindow, CControlWinTraits>;
 	DECLARE_WND_CLASS(nullptr)
 
 	//
@@ -46,16 +45,14 @@ public:
 	void UpdateUI(CUpdateUIBase& ui);
 	void OnPageActivated(bool active);
 
-	void OnFinalMessage(HWND /*hWnd*/) override;
-
 	BEGIN_MSG_MAP(CDevNodeView)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		NOTIFY_CODE_HANDLER(NM_SETFOCUS, OnNotifySetFocus)
 		CHAIN_MSG_MAP(CVirtualListView<CDevNodeView>)
+		CHAIN_MSG_MAP(CCustomDraw<CDevNodeView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CDevNodeView>)
 		CHAIN_MSG_MAP(CViewBase)
-		CHAIN_MSG_MAP(BaseFrame)
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)

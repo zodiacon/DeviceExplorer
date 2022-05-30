@@ -2,17 +2,15 @@
 
 #include "ViewBase.h"
 #include "resource.h"
-#include "VirtualListView.h"
+#include <VirtualListView.h>
 #include "DeviceManager.h"
-#include "TreeViewHelper.h"
+#include <TreeViewHelper.h>
 
 class CDeviceClassesView :
-	public CFrameWindowImpl<CDeviceClassesView, CWindow, CControlWinTraits>,
 	public CTreeViewHelper<CDeviceClassesView>,
 	public CViewBase<CDeviceClassesView>,
 	public CVirtualListView<CDeviceClassesView> {
 public:
-	using BaseFrame = CFrameWindowImpl<CDeviceClassesView, CWindow, CControlWinTraits>;
 	using CViewBase::CViewBase;
 	DECLARE_WND_CLASS(nullptr)
 
@@ -28,7 +26,6 @@ protected:
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		NOTIFY_CODE_HANDLER(NM_SETFOCUS, OnNotifySetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		CHAIN_MSG_MAP(BaseFrame)
 		CHAIN_MSG_MAP(CVirtualListView<CDeviceClassesView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CDeviceClassesView>)
 		CHAIN_MSG_MAP(CViewBase)

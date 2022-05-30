@@ -3,14 +3,22 @@
 #include "Interfaces.h"
 
 template<typename T>
-struct CViewBase {
+struct CViewBase 	
+	: public CFrameWindowImpl<T, CWindow, CControlWinTraits> {
+	using BaseFrame = CFrameWindowImpl<T, CWindow, CControlWinTraits>;
+	
 	CViewBase(IMainFrame* frame) : m_pFrame(frame) {}
 
 protected:
 	BEGIN_MSG_MAP(CViewBase)
 		MESSAGE_HANDLER(WM_PAGE_ACTIVATED, OnPageActivated)
 		MESSAGE_HANDLER(WM_NEED_REFRESH, OnNeedRefresh)
+		CHAIN_MSG_MAP(BaseFrame)
 	END_MSG_MAP()
+
+	void OnFinalMessage(HWND) override {
+		delete this;
+	}
 
 	IMainFrame* GetFrame() {
 		return m_pFrame;

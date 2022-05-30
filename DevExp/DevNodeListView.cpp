@@ -7,6 +7,28 @@
 #include "ClipboardHelper.h"
 #include "SecurityHelper.h"
 
+DWORD CDevNodeListView::OnPrePaint(int, LPNMCUSTOMDRAW cd) {
+	return CDRF_NOTIFYITEMDRAW;
+}
+
+DWORD CDevNodeListView::OnItemPrePaint(int, LPNMCUSTOMDRAW cd) {
+	return CDRF_NOTIFYSUBITEMDRAW;
+}
+
+DWORD CDevNodeListView::OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd) {
+	auto lv = (NMLVCUSTOMDRAW*)cd;
+	if (lv->iSubItem != 1)
+		return CDRF_SKIPPOSTPAINT;
+
+	auto& item = m_Items[(int)cd->dwItemSpec];
+	if ((DeviceNode(item.Data.DevInst).GetStatus() & DeviceNodeStatus::HasProblem) == DeviceNodeStatus::HasProblem) {
+		::DrawIconEx(cd->hdc, 12, cd->rc.top + 4, AtlLoadSysIcon(IDI_WARNING), 16, 16, 0, nullptr, DI_NORMAL);
+	}
+
+	return CDRF_SKIPPOSTPAINT;
+}
+
+
 void CDevNodeListView::Refresh() {
 	bool first = m_Items.empty();
 	m_Items = m_dm->EnumDevices<DeviceItem>(m_ShowHiddenDevices);

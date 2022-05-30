@@ -14,13 +14,6 @@
 #include "DeviceClassesView.h"
 #include "DeviceInterfacesView.h"
 
-#ifdef _DEBUG
-#pragma comment(lib, "../WTLHelper/x64/Debug/WTLHelper.lib")
-#else
-#pragma comment(lib, "../WTLHelper/x64/Release/WTLHelper.lib")
-#endif
-
-
 const int WINDOW_MENU_POSITION = 5;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
@@ -37,7 +30,7 @@ BOOL CMainFrame::OnIdle() {
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	auto& settings = AppSettings::Get();
-	settings.LoadFromKey(L"ScorpioSoftware\\DeviceExplorer");
+	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
 
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -66,11 +59,12 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleStatusBar();
 
 	m_view.m_bTabCloseButton = false;
-
-	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
-	UINT icons[] = { IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE };
+	UINT icons[] = { 
+		IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE 
+	};
 	for(auto icon : icons)
 		images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
 
@@ -82,8 +76,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CReBarCtrl rb(m_hWndToolBar);
 	rb.LockBands(true);
 
-	CMessageLoop* pLoop = _Module.GetMessageLoop();
-	ATLASSERT(pLoop != NULL);
+	auto pLoop = _Module.GetMessageLoop();
+	ATLASSERT(pLoop);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
@@ -142,7 +136,7 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	static BOOL bVisible = TRUE;	// initially visible
+	static bool bVisible = true;	// initially visible
 	bVisible = !bVisible;
 	CReBarCtrl rebar = m_hWndToolBar;
 	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);
@@ -153,22 +147,21 @@ LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
+	auto bVisible = !::IsWindowVisible(m_hWndStatusBar);
 	::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
 	UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
 	UpdateLayout();
 	return 0;
 }
 
-LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const {
 	CAboutDlg dlg;
 	dlg.DoModal();
 	return 0;
 }
 
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int nActivePage = m_view.GetActivePage();
-	if (nActivePage != -1)
+	if (int nActivePage = m_view.GetActivePage(); nActivePage != -1)
 		m_view.RemovePage(nActivePage);
 	else
 		::MessageBeep((UINT)-1);
@@ -255,12 +248,14 @@ CUpdateUIBase& CMainFrame::GetUI() {
 }
 
 LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
-	int page = m_view.GetActivePage();
-	if (m_ActivePage >= 0 && m_ActivePage < m_view.GetPageCount())
-		::PostMessage(m_view.GetPageHWND(m_ActivePage), WM_PAGE_ACTIVATED, 0, 0);
-	m_ActivePage = page;
-	if(page < m_view.GetPageCount())
-		::PostMessage(m_view.GetPageHWND(page), WM_PAGE_ACTIVATED, 1, 0);
+	if (m_view.GetPageCount() > 0) {
+		int page = m_view.GetActivePage();
+		if (m_ActivePage >= 0 && m_ActivePage < m_view.GetPageCount())
+			::PostMessage(m_view.GetPageHWND(m_ActivePage), WM_PAGE_ACTIVATED, 0, 0);
+		m_ActivePage = page;
+		if (page < m_view.GetPageCount())
+			::PostMessage(m_view.GetPageHWND(page), WM_PAGE_ACTIVATED, 1, 0);
+	}
 	return 0;
 }
 
@@ -273,7 +268,7 @@ LRESULT CMainFrame::OnRescanHardware(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
-void CMainFrame::PostMessageToAllTabs(UINT msg, WPARAM wp, LPARAM lp) {
+void CMainFrame::PostMessageToAllTabs(UINT msg, WPARAM wp, LPARAM lp) const {
 	auto count = m_view.GetPageCount();
 	for (int i = 0; i < count; i++)
 		::PostMessage(m_view.GetPageHWND(i), msg, wp, lp);

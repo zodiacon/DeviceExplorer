@@ -89,6 +89,7 @@ BEGIN
     BEGIN
         MENUITEM "&Always On Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Font...",                    ID_OPTIONS_FONT
+        MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
     END
     POPUP "&Tab"
     BEGIN
@@ -162,13 +163,13 @@ IDI_INTERFACE           ICON                    "res\\interface.ico"
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 216, 76
+IDD_ABOUTBOX DIALOGEX 0, 0, 200, 70
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Device Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,83,55,50,14
-    CTEXT           "Device Explorer v0.1\n\n©2021 Pavel Yosifovich",IDC_STATIC,39,8,122,32
+    DEFPUSHBUTTON   "OK",IDOK,75,49,50,14
+    CTEXT           "Device Explorer v0.1\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,39,8,122,32
     ICON            IDR_MAINFRAME,IDC_STATIC,5,4,20,20
 END
 
@@ -184,9 +185,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 209
+        RIGHTMARGIN, 193
         TOPMARGIN, 4
-        BOTTOMMARGIN, 69
+        BOTTOMMARGIN, 63
     END
 END
 #endif    // APSTUDIO_INVOKED

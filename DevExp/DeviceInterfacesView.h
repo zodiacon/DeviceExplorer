@@ -7,12 +7,10 @@
 #include "TreeViewHelper.h"
 
 class CDeviceInterfacesView :
-	public CFrameWindowImpl<CDeviceInterfacesView, CWindow, CControlWinTraits>,
 	public CTreeViewHelper<CDeviceInterfacesView>,
 	public CViewBase<CDeviceInterfacesView>,
 	public CVirtualListView<CDeviceInterfacesView> {
 public:
-	using BaseFrame = CFrameWindowImpl<CDeviceInterfacesView, CWindow, CControlWinTraits>;
 	using CViewBase::CViewBase;
 	DECLARE_WND_CLASS(nullptr)
 
@@ -26,11 +24,10 @@ protected:
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		NOTIFY_CODE_HANDLER(NM_SETFOCUS, OnNotifySetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		CHAIN_MSG_MAP(BaseFrame)
 		CHAIN_MSG_MAP(CVirtualListView<CDeviceInterfacesView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CDeviceInterfacesView>)
 		CHAIN_MSG_MAP(CViewBase)
-		ALT_MSG_MAP(1)
+	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
