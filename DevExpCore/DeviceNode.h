@@ -164,6 +164,8 @@ public:
 	std::vector<DEVPROPKEY> GetPropertyKeys() const;
 	std::wstring GetName() const;
 
+	DEVPROPTYPE GetPropertyType(DEVPROPKEY const& key) const;
+
 	bool Enable();
 	bool Disable();
 	bool Uninstall();
@@ -201,7 +203,7 @@ public:
 	std::vector<std::wstring> GetProperty(DEVPROPKEY const& key) const {
 		DEVPROPTYPE type;
 		ULONG size = 0;
-		if (ERROR_INSUFFICIENT_BUFFER != ::CM_Get_DevNode_Property(m_Inst, &key, &type, nullptr, &size, 0))
+		if(CR_BUFFER_SMALL != ::CM_Get_DevNode_Property(m_Inst, &key, &type, nullptr, &size, 0))
 			return {};
 
 		assert(type == DEVPROP_TYPE_STRING_LIST);

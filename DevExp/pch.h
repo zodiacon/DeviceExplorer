@@ -47,6 +47,7 @@ extern CAppModule _Module;
 #include <unordered_map>
 #include <assert.h>
 #include <wil\resource.h>
+#include <format>
 
 #include <SetupAPI.h>
 #include <cfgmgr32.h>

@@ -5,6 +5,7 @@
 #include <VirtualListView.h>
 #include "DeviceManager.h"
 #include <TreeViewHelper.h>
+#include <CustomSplitterWindow.h>
 
 class CDeviceClassesView :
 	public CTreeViewHelper<CDeviceClassesView>,
@@ -19,6 +20,7 @@ public:
 	CString GetColumnText(HWND h, int row, int col);
 	int GetRowImage(HWND h, int row, int col);
 	void DoSort(SortInfo const* si);
+	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 
 protected:
 	BEGIN_MSG_MAP(CDeviceClassesView)
@@ -71,7 +73,7 @@ private:
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
-	CSplitterWindow m_Splitter;
+	CCustomSplitterWindow m_Splitter;
 	std::vector<Property> m_Items;
 	std::unique_ptr<DeviceManager> m_DevMgr;
 	std::vector<DeviceInfo> m_Devices;

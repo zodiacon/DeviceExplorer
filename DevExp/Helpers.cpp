@@ -15,6 +15,7 @@
 #include <ioevent.h>
 #include <bthdef.h>
 #include "DeviceManager.h"
+#include "MultiStringListDlg.h"
 
 namespace std {
 	template<>
@@ -581,4 +582,69 @@ CString Helpers::DeviceInterfaceToString(GUID const& guid) {
 		return name.c_str();
 
 	return GuidToString(guid);
+}
+
+bool Helpers::DisplayProperty(DEVPROPKEY const& key, DeviceNode const& node, PCWSTR name) {
+	if (key == DEVPKEY_Device_PowerData) {
+		DEVPROPTYPE type;
+		ULONG len;
+		auto value = node.GetPropertyValue(key, type, &len);
+		auto data = (CM_POWER_DATA*)value.get();
+		CMultiStringListDlg dlg(name);
+		std::vector<std::wstring> text;
+		text.emplace_back(std::format(L"Power State: {}", DevicePowerStateToString(data->PD_MostRecentPowerState)));
+		text.push_back({});
+		text.emplace_back(std::format(L"Capabilities: 0x{:X} ({})", data->PD_Capabilities, PowerCapabilitiesToString(data->PD_Capabilities)));
+		if(data->PD_Capabilities & PDCAP_WAKE_FROM_D1_SUPPORTED)
+			text.emplace_back(std::format(L"D1 Latency: {}", data->PD_D1Latency));
+		if (data->PD_Capabilities & PDCAP_WAKE_FROM_D2_SUPPORTED)
+			text.emplace_back(std::format(L"D2 Latency: {}", data->PD_D2Latency));
+		if (data->PD_Capabilities & PDCAP_WAKE_FROM_D3_SUPPORTED)
+			text.emplace_back(std::format(L"D3 Latency: {}", data->PD_D3Latency));
+		text.push_back({});
+		text.emplace_back(L"Power state mappings:");
+		for (int i = 1; i < POWER_SYSTEM_MAXIMUM; i++) {
+			if (data->PD_PowerStateMapping[i] != PowerDeviceUnspecified)
+				text.emplace_back(std::format(L"S{} -> D{}", i - 1, (int)data->PD_PowerStateMapping[i] - 1));
+		}
+		dlg.SetData(text);
+		dlg.DoModal();
+		return true;
+	}
+
+	auto type = node.GetPropertyType(key);
+	switch(type) {
+		case DEVPROP_TYPE_STRING_LIST:
+			CMultiStringListDlg dlg(name);
+			dlg.SetData(node.GetProperty<std::vector<std::wstring>>(key));
+			dlg.DoModal();
+			return true;
+	}
+	return false;
+}
+
+std::wstring Helpers::PowerCapabilitiesToString(DWORD caps) {
+	static const struct {
+		DWORD cap;
+		PCWSTR text;
+	} capabilities[] = {
+		{ PDCAP_D0_SUPPORTED, L"D0" },
+		{ PDCAP_D1_SUPPORTED, L"D1" },
+		{ PDCAP_D2_SUPPORTED, L"D2" },
+		{ PDCAP_D3_SUPPORTED, L"D3" },
+		{ PDCAP_WAKE_FROM_D0_SUPPORTED, L"Wake from D0" },
+		{ PDCAP_WAKE_FROM_D1_SUPPORTED, L"Wake from D1" },
+		{ PDCAP_WAKE_FROM_D2_SUPPORTED, L"Wake from D2" },
+		{ PDCAP_WAKE_FROM_D3_SUPPORTED, L"Wake from D3" },
+		{ PDCAP_WARM_EJECT_SUPPORTED, L"Warm Eject" },
+	};
+
+	std::wstring text;
+	for (auto const& c : capabilities)
+		if ((c.cap & caps) == c.cap)
+			text += c.text + std::wstring(L", ");
+
+	if (!text.empty())
+		text = text.substr(0, text.length() - 2);
+	return text;
 }

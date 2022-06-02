@@ -15,4 +15,6 @@ struct Helpers final {
 	static PCWSTR PciDeviceTypeToString(ULONG type);
 	static PCWSTR DevicePowerStateToString(DEVICE_POWER_STATE state);
 	static CString DeviceInterfaceToString(GUID const& guid);
+	static bool DisplayProperty(DEVPROPKEY const& key, DeviceNode const& node, PCWSTR name);
+	static std::wstring PowerCapabilitiesToString(DWORD caps);
 };

@@ -9,6 +9,7 @@
 #include "DeviceManager.h"
 #include "ViewBase.h"
 #include "resource.h"
+#include <CustomSplitterWindow.h>
 
 class DeviceNode;
 
@@ -30,6 +31,7 @@ public:
 		return col == 0;
 	}
 	void DoSort(SortInfo const*);
+	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 
 	//
 	// tree view callbacks
@@ -89,7 +91,7 @@ private:
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
-	CSplitterWindow m_Splitter;
+	CCustomSplitterWindow m_Splitter;
 	std::unique_ptr<DeviceManager> m_DevMgr;
 	std::vector<DeviceInfo> m_Devices;
 	std::vector<Property> m_Items;

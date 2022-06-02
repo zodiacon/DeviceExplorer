@@ -5,6 +5,7 @@
 #include "VirtualListView.h"
 #include "DeviceManager.h"
 #include "TreeViewHelper.h"
+#include "CustomSplitterWindow.h"
 
 class CDeviceInterfacesView :
 	public CTreeViewHelper<CDeviceInterfacesView>,
@@ -66,7 +67,7 @@ private:
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
-	CSplitterWindow m_Splitter;
+	CCustomSplitterWindow m_Splitter;
 	std::vector<Property> m_Items;
 	std::unique_ptr<DeviceManager> m_DevMgr;
 	std::vector<DeviceInfo> m_Devices;

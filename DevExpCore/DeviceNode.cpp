@@ -72,6 +72,13 @@ bool DeviceNode::IsEnabled() const {
 	return (GetStatus() & DeviceNodeStatus::Started) == DeviceNodeStatus::Started;
 }
 
+DEVPROPTYPE DeviceNode::GetPropertyType(DEVPROPKEY const& key) const {
+	DEVPROPTYPE type;
+	ULONG size = 0;
+	::CM_Get_DevNode_Property(m_Inst, &key, &type, nullptr, &size, 0);
+	return type;
+}
+
 DeviceNodeStatus DeviceNode::GetStatus(DeviceNodeProblem* pProblem) const {
 	ULONG status, problem;
 	if (CR_SUCCESS == ::CM_Get_DevNode_Status(&status, &problem, m_Inst, 0)) {

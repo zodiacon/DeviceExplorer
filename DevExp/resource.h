@@ -19,6 +19,9 @@
 #define IDI_DISABLE_DEVICE              212
 #define IDI_ENABLE_DEVICE               213
 #define IDI_INTERFACE                   214
+#define IDD_STRINGLIST                  215
+#define IDC_EDIT1                       1002
+#define IDC_LIST                        1002
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_FILE_RUNASADMINISTRATOR      32775
@@ -39,9 +42,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        215
+#define _APS_NEXT_RESOURCE_VALUE        217
 #define _APS_NEXT_COMMAND_VALUE         32788
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1003
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

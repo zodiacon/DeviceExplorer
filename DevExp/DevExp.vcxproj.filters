@@ -57,6 +57,9 @@
     <ClCompile Include="DeviceInterfacesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="MultiStringListDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -97,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="DeviceInterfacesView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiStringListDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
