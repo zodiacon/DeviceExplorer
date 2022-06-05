@@ -16,6 +16,8 @@
 #include <bthdef.h>
 #include "DeviceManager.h"
 #include "MultiStringListDlg.h"
+#include "GeneralPropertyPage.h"
+#include "ResourcesPropertyPage.h"
 
 namespace std {
 	template<>
@@ -647,4 +649,32 @@ std::wstring Helpers::PowerCapabilitiesToString(DWORD caps) {
 	if (!text.empty())
 		text = text.substr(0, text.length() - 2);
 	return text;
+}
+
+void Helpers::DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInfo const& di) {
+	CPropertySheet sheet(title);
+	sheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
+	CGeneralPropertyPage general(dm, di);
+	sheet.AddPage(general);
+	auto resources = DeviceNode(di.Data.DevInst).GetResources();
+	CResourcesPropertyPage res(resources);
+	if (!resources.empty())
+		sheet.AddPage(res);
+
+	sheet.DoModal();
+}
+
+PCWSTR Helpers::ResourceTypeToString(ResourceType type) {
+	switch (type & ResourceType::ClassSpecific) {
+		case ResourceType::IO: return L"I/O";
+		case ResourceType::Memory: return L"Memory";
+		case ResourceType::Interrupt: return L"Interrupt";
+		case ResourceType::DMA: return L"DMA";
+		case ResourceType::LargeMemory: return L"Large Memory";
+		case ResourceType::BusNumber: return L"Bus Number";
+		case ResourceType::PCCardConfig: return L"PC Card Config";
+		case ResourceType::Private: return L"Private";
+		case ResourceType::MFCardConfig: return L"MF Card Config";
+	}
+	return L"(Unknown)";
 }

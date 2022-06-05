@@ -21,6 +21,7 @@ public:
 	int GetRowImage(HWND h, int row, int col);
 	void DoSort(SortInfo const* si);
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
+	bool OnTreeDoubleClick(HWND, HTREEITEM hItem);
 
 protected:
 	BEGIN_MSG_MAP(CDeviceClassesView)
@@ -36,12 +37,14 @@ protected:
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWEMPTYCLASSES, OnShowEmptyClasses)
+		COMMAND_ID_HANDLER(ID_DEVICE_PROPERTIES, OnDeviceProperties)
 		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
 		COMMAND_ID_HANDLER(ID_DEVICE_DISABLE, OnEnableDisableDevice)
 	END_MSG_MAP()
 
 	void OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew);
 	bool OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt);
+	bool OnRightClickList(HWND, int row, int col, CPoint const& pt);
 
 	void OnPageActivated(bool active);
 	void UpdateUI(CUpdateUIBase& ui);
@@ -70,6 +73,7 @@ private:
 	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDeviceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;

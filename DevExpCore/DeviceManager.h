@@ -93,13 +93,15 @@ struct DeviceInfo {
 	SP_DEVINFO_DATA Data;
 };
 
-struct DriverInfo {
-	DWORD Type;
+struct DeviceDriverInfo {
 	std::wstring Description;
 	std::wstring ManufactorName;
 	std::wstring ProviderName;
 	FILETIME  DriverDate;
 	DWORDLONG DriverVersion;
+	std::wstring DriverDesc;
+	std::wstring InfFile;
+	DWORD Type;
 };
 
 class DeviceManager final {
@@ -123,7 +125,7 @@ public:
 	static DeviceNode GetRootDeviceNode();
 
 	HDEVINFO InfoSet() {
-		return _hInfoSet.get();
+		return m_hInfoSet.get();
 	}
 
 	// device
@@ -132,8 +134,9 @@ public:
 	template<typename T>
 	T GetDeviceRegistryProperty(const DeviceInfo& di, DeviceRegistryPropertyType type) const;
 	HICON GetDeviceIcon(const DeviceInfo& di, bool big = false) const;
-	std::vector<DriverInfo> EnumDrivers(DeviceInfo const& di, bool compat = false);
-	std::vector<DriverInfo> EnumDrivers();
+	DeviceInfo const& GetDevice(int index) const;
+	std::vector<DeviceDriverInfo> EnumDrivers(DeviceInfo const& di, bool compat = false);
+	//std::vector<DriverInfo> EnumDrivers();
 
 	// device class
 	static std::wstring GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type);
@@ -148,6 +151,14 @@ public:
 	static std::vector<DeviceInterfaceInfo> EnumDeviceInterfaces();
 	static std::vector<GUID> EnumDeviceInterfacesGuids();
 	static std::wstring GetDeviceInterfaceName(GUID const& guid);
+
+	template<typename F>
+	DeviceInfo const* FindDevice(F&& f) const {
+		for (auto const& dev : m_devices)
+			if (f(dev))
+				return &dev;
+		return nullptr;
+	}
 
 	template<typename T>
 	static T GetDeviceInterfaceProperty(GUID const& guid, DEVPROPKEY const& key) {
@@ -189,7 +200,8 @@ private:
 	static std::vector<DEVPROPKEY> GetDeviceClassPropertyKeysCommon(GUID const& guid, bool deviceClass);
 
 private:
-	wil::unique_hinfoset _hInfoSet;
+	wil::unique_hinfoset m_hInfoSet;
+	std::vector<DeviceInfo> m_devices;
 	std::unordered_map<DEVINST, int> _devMap;
 };
 
@@ -198,7 +210,7 @@ inline T DeviceManager::GetDeviceRegistryProperty(const DeviceInfo& di, DeviceRe
 	static_assert(std::is_trivially_copyable<T>());
 	T result{};
 
-	::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, static_cast<DWORD>(type), nullptr,
+	::SetupDiGetDeviceRegistryProperty(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, static_cast<DWORD>(type), nullptr,
 		(BYTE*)&result, sizeof(T), nullptr);
 	return result;
 }
@@ -219,9 +231,10 @@ std::vector<T> DeviceManager::EnumDevices(bool includeHidden) {
 	std::vector<T> devices;
 	SP_DEVINFO_DATA data = { sizeof(data) };
 	_devMap.clear();
+	m_devices.clear();
 
 	for (DWORD i = 0; ; i++) {
-		if (!::SetupDiEnumDeviceInfo(_hInfoSet.get(), i, &data))
+		if (!::SetupDiEnumDeviceInfo(m_hInfoSet.get(), i, &data))
 			break;
 
 		if (!includeHidden && (DeviceNode(data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
@@ -231,6 +244,7 @@ std::vector<T> DeviceManager::EnumDevices(bool includeHidden) {
 		di.Description = DeviceNode(data.DevInst).GetName();
 		di.Data = data;
 		_devMap.insert({ data.DevInst, (int)devices.size() });
+		m_devices.push_back(di);
 		devices.push_back(std::move(di));
 	}
 	return devices;

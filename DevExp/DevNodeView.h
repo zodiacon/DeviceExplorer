@@ -38,6 +38,7 @@ public:
 	//
 	void OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew);
 	bool OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt);
+	bool OnTreeDoubleClick(HWND, HTREEITEM hItem);
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 
@@ -61,6 +62,7 @@ public:
 		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
 		COMMAND_ID_HANDLER(ID_DEVICE_DISABLE, OnEnableDisableDevice)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
+		COMMAND_ID_HANDLER(ID_DEVICE_PROPERTIES, OnViewProperties)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -75,6 +77,7 @@ public:
 	LRESULT OnNotifySetFocus(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	struct Property {

@@ -71,6 +71,12 @@ bool CDevNodeListView::OnRightClickList(HWND, int row, int col, POINT const& pt)
 	return GetFrame()->TrackPopupMenu(menu.GetSubMenu(0), TPM_RIGHTBUTTON, pt.x, pt.y);
 }
 
+bool CDevNodeListView::OnDoubleClickList(HWND, int row, int col, POINT const&) {
+	LRESULT result;
+	ProcessWindowMessage(m_hWnd, WM_COMMAND, ID_DEVICE_PROPERTIES, 0, result, 1);
+	return true;
+}
+
 LRESULT CDevNodeListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_List.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS);
@@ -174,6 +180,8 @@ LRESULT CDevNodeListView::OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 void CDevNodeListView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	int selected = m_List.GetSelectionMark();
+	ui.UIEnable(ID_DEVICE_PROPERTIES, m_List.GetSelectedCount() == 1);
+
 	if (SecurityHelper::IsRunningElevated() && m_List.GetSelectedCount() == 1) {
 		DeviceNode dn(m_Items[selected].Data.DevInst);
 		bool enabled = dn.IsEnabled();
@@ -202,6 +210,12 @@ LRESULT CDevNodeListView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID
 
 LRESULT CDevNodeListView::OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	UpdateUI(GetFrame()->GetUI());
+	return 0;
+}
+
+LRESULT CDevNodeListView::OnDeviceProperties(WORD, WORD, HWND, BOOL&) {
+	auto& item = m_Items[m_List.GetSelectionMark()];
+	Helpers::DisplayProperties(item.Description.c_str(), *m_dm, item);
 	return 0;
 }
 

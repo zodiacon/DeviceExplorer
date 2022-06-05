@@ -10,7 +10,7 @@ SP_CLASSIMAGELIST_DATA g_ClassImageList;
 
 std::unique_ptr<DeviceManager> DeviceManager::Create(const wchar_t* computerName, const GUID* classGuid, const wchar_t* enumerator, InfoSetOptions options) {
 	auto dm = new DeviceManager(computerName, classGuid, enumerator, options);
-	if (dm->_hInfoSet)
+	if (dm->m_hInfoSet)
 		return std::unique_ptr<DeviceManager>(dm);
 	delete dm;
 	return nullptr;
@@ -72,14 +72,12 @@ DeviceNode DeviceManager::GetRootDeviceNode() {
 }
 
 std::wstring DeviceManager::GetDeviceRegistryPropertyString(const DeviceInfo& di, DeviceRegistryPropertyType type) const {
-	std::wstring result;
-	result.resize(256);
-
+	WCHAR value[512];
 	DWORD regType;
-	if (::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, static_cast<DWORD>(type), &regType,
-		(BYTE*)result.data(), DWORD(result.size() * sizeof(wchar_t)), nullptr)) {
+	if (::SetupDiGetDeviceRegistryProperty(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, static_cast<DWORD>(type), &regType,
+		(BYTE*)value, sizeof(value), nullptr)) {
 		assert(regType == REG_SZ);
-		return result;
+		return value;
 	}
 	return L"";
 }
@@ -88,7 +86,7 @@ std::vector<std::wstring> DeviceManager::GetDeviceRegistryPropertyMultiString(co
 	std::vector<std::wstring> result;
 	WCHAR buffer[1 << 11];
 	DWORD regType;
-	auto ok = ::SetupDiGetDeviceRegistryProperty(_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, static_cast<DWORD>(type), &regType, (BYTE*)buffer, sizeof(buffer), nullptr);
+	auto ok = ::SetupDiGetDeviceRegistryProperty(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, static_cast<DWORD>(type), &regType, (BYTE*)buffer, sizeof(buffer), nullptr);
 	if (!ok)
 		return result;
 
@@ -103,8 +101,39 @@ std::vector<std::wstring> DeviceManager::GetDeviceRegistryPropertyMultiString(co
 HICON DeviceManager::GetDeviceIcon(const DeviceInfo& di, bool big) const {
 	HICON hIcon = nullptr;
 	auto size = big ? 32 : 16;
-	::SetupDiLoadDeviceIcon(_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, size, size, 0, &hIcon);
+	::SetupDiLoadDeviceIcon(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, size, size, 0, &hIcon);
 	return hIcon;
+}
+
+std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, bool compat) {
+	auto devinfo = const_cast<PSP_DEVINFO_DATA>(&di.Data);
+	if (!::SetupDiBuildDriverInfoList(m_hInfoSet.get(), devinfo, SPDIT_COMPATDRIVER))
+		return {};
+
+	SP_DRVINFO_DATA dd{ sizeof(dd) };
+	auto buffer = std::make_unique<BYTE[]>(1 << 12);
+	auto ddd = reinterpret_cast<PSP_DRVINFO_DETAIL_DATA>(buffer.get());
+	ddd->cbSize = sizeof(*ddd);
+	std::vector<DeviceDriverInfo> drivers;
+	for (DWORD i = 0; ; i++) {
+		if (!::SetupDiEnumDriverInfo(m_hInfoSet.get(), devinfo, SPDIT_COMPATDRIVER, i, &dd))
+			break;
+
+		DeviceDriverInfo ddi;
+		ddi.Description = dd.Description;
+		ddi.DriverDate = dd.DriverDate;
+		ddi.ManufactorName = dd.MfgName;
+		ddi.ProviderName = dd.ProviderName;
+		ddi.Type = dd.DriverType;
+		ddi.DriverVersion = dd.DriverVersion;
+
+		if (::SetupDiGetDriverInfoDetail(m_hInfoSet.get(), devinfo, &dd, ddd, 1 << 12, nullptr)) {
+			ddi.DriverDesc = ddd->DrvDescription;
+			ddi.InfFile = ddd->InfFileName;
+		}
+		drivers.push_back(std::move(ddi));
+	}
+	return drivers;
 }
 
 std::wstring DeviceManager::GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type) {
@@ -175,15 +204,15 @@ bool DeviceManager::EnumDeviceInterfaces(GUID const& guid, std::vector<DeviceInt
 
 	DWORD i = 0;
 	for (;; i++) {
-		if (!::SetupDiEnumDeviceInterfaces(_hInfoSet.get(), nullptr, &guid, i, &data))
+		if (!::SetupDiEnumDeviceInterfaces(m_hInfoSet.get(), nullptr, &guid, i, &data))
 			break;
 
 		DeviceInterfaceInfo info;
 		info.Guid = data.InterfaceClassGuid;
 		detail->cbSize = sizeof(*detail);
-		if (::SetupDiGetDeviceInterfaceDetail(_hInfoSet.get(), &data, detail, 2048, nullptr, &devData)
+		if (::SetupDiGetDeviceInterfaceDetail(m_hInfoSet.get(), &data, detail, 2048, nullptr, &devData)
 			|| ::GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-			auto hKey = ::SetupDiOpenDeviceInterfaceRegKey(_hInfoSet.get(), &data, 0, KEY_READ);
+			auto hKey = ::SetupDiOpenDeviceInterfaceRegKey(m_hInfoSet.get(), &data, 0, KEY_READ);
 			if (hKey != INVALID_HANDLE_VALUE) {
 				CRegKey key(hKey);
 				ULONG chars = _countof(name);
@@ -215,7 +244,7 @@ std::vector<GUID> DeviceManager::EnumDeviceInterfacesGuids() {
 }
 
 DeviceManager::DeviceManager(const wchar_t* computerName, const GUID* classGuid, const wchar_t* enumerator, InfoSetOptions options) {
-	_hInfoSet.reset(::SetupDiGetClassDevsEx(classGuid, enumerator, nullptr, static_cast<DWORD>(options), nullptr, computerName, nullptr));
+	m_hInfoSet.reset(::SetupDiGetClassDevsEx(classGuid, enumerator, nullptr, static_cast<DWORD>(options), nullptr, computerName, nullptr));
 }
 
 std::vector<DEVPROPKEY> DeviceManager::GetDeviceClassPropertyKeysCommon(GUID const& guid, bool deviceClass) {
@@ -281,3 +310,8 @@ std::wstring DeviceManager::GetDeviceInterfaceName(GUID const& guid) {
 	}
 	return name;
 }
+
+DeviceInfo const& DeviceManager::GetDevice(int index) const {
+	return m_devices[index];
+}
+

@@ -69,6 +69,7 @@ BEGIN
     BEGIN
         MENUITEM "Show &Hidden Devices",        ID_VIEW_SHOWHIDDENDEVICES
         MENUITEM "Show &Empty Classes/Interfaces", ID_VIEW_SHOWEMPTYCLASSES, INACTIVE
+        MENUITEM "&Scan for Hardware Changes",  ID_DEVICE_SCANFORHARDWARECHANGES
         MENUITEM SEPARATOR
         MENUITEM "&Refresh",                    ID_VIEW_REFRESH
         MENUITEM SEPARATOR
@@ -80,8 +81,6 @@ BEGIN
         MENUITEM "&Enable",                     ID_DEVICE_ENABLE
         MENUITEM "&Disable",                    ID_DEVICE_DISABLE
         MENUITEM "&Uninstall",                  ID_DEVICE_UNINSTALL
-        MENUITEM SEPARATOR
-        MENUITEM "&Scan for Hardware Changes",  ID_DEVICE_SCANFORHARDWARECHANGES
         MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_DEVICE_PROPERTIES
     END
@@ -157,6 +156,24 @@ IDI_ENABLE_DEVICE       ICON                    "res\\enable.ico"
 
 IDI_INTERFACE           ICON                    "res\\interface.ico"
 
+IDI_DRIVER              ICON                    "res\\driver.ico"
+
+IDI_DRIVER_KMDF         ICON                    "res\\driver-kmdf.ico"
+
+IDI_GLOBE               ICON                    "res\\globe.ico"
+
+IDI_FLAG                ICON                    "res\\flag.ico"
+
+IDI_POWER               ICON                    "res\\power.ico"
+
+IDI_TEXT                ICON                    "res\\Text.ico"
+
+IDI_BINARY              ICON                    "res\\Binary.ico"
+
+IDI_INTERRUPT           ICON                    "res\\interrupt.ico"
+
+IDI_PORT                ICON                    "res\\LPT-plug.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -176,10 +193,35 @@ END
 IDD_STRINGLIST DIALOGEX 0, 0, 309, 153
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Segoe UI", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,132,50,14
     EDITTEXT        IDC_LIST,7,7,295,116,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL,WS_EX_CLIENTEDGE
+END
+
+IDD_PROP_GENERAL DIALOGEX 0, 0, 291, 181
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 9, "Segoe UI", 400, 0, 0x0
+BEGIN
+    ICON            "",IDC_IMAGE,15,15,20,20
+    EDITTEXT        IDC_NAME,53,24,203,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "Device Type:",IDC_STATIC,26,59,42,8
+    LTEXT           "Manufacturer:",IDC_STATIC,24,76,44,8
+    LTEXT           "Location:",IDC_STATIC,38,93,30,8
+    LTEXT           "Device Status:",IDC_STATIC,22,110,46,8
+    EDITTEXT        IDC_DEVICETYPE,74,59,186,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_MFG,74,77,186,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_LOCATION,75,93,186,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_STATUS,74,110,186,32,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+END
+
+IDD_PROP_RES DIALOGEX 0, 0, 327, 200
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Resources"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_TABSTOP,7,7,313,186,WS_EX_CLIENTEDGE
 END
 
 
@@ -206,6 +248,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 146
     END
+
+    IDD_PROP_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 284
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 174
+    END
+
+    IDD_PROP_RES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 320
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -217,20 +275,21 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
-    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_RETURN,      ID_DEVICE_PROPERTIES,   VIRTKEY, ALT, NOINVERT
 END
 
 
@@ -288,6 +347,16 @@ BEGIN
     0,
     50, 100, 0, 0,
     0, 0, 100, 100
+END
+
+IDD_PROP_GENERAL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PROP_RES AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

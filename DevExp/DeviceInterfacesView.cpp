@@ -82,7 +82,7 @@ LRESULT CDeviceInterfacesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Details", LVCFMT_LEFT, 550, 2);
 	cm->UpdateColumns();
 
-	m_Splitter.SetSplitterPosPct(30);
+	m_Splitter.SetSplitterPosPct(25);
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 
 	Refresh();
@@ -169,6 +169,15 @@ void CDeviceInterfacesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNe
 	UpdateUI(GetFrame()->GetUI());
 }
 
+bool CDeviceInterfacesView::OnTreeDoubleClick(HWND, HTREEITEM hItem) {
+	if (m_Tree.GetItemData(hItem) >= 0x8000)
+		return false;
+
+	LRESULT result;
+	ProcessWindowMessage(m_hWnd, WM_COMMAND, ID_DEVICE_PROPERTIES, 0, result, 1);
+	return true;
+}
+
 void CDeviceInterfacesView::OnPageActivated(bool active) {
 	GetFrame()->GetUI().UIEnable(ID_VIEW_SHOWEMPTYCLASSES, active);
 }
@@ -226,4 +235,46 @@ LRESULT CDeviceInterfacesView::OnItemChanged(int, LPNMHDR, BOOL&) {
 LRESULT CDeviceInterfacesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 	Refresh();
 	return 0;
+}
+
+bool CDeviceInterfacesView::OnRightClickList(HWND, int row, int col, CPoint const& pt) {
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	return GetFrame()->TrackPopupMenu(menu.GetSubMenu(1), TPM_RIGHTBUTTON, pt.x, pt.y);
+}
+
+bool CDeviceInterfacesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
+	if (row < 0)
+		return false;
+
+	auto const& item = m_Items[row];
+	return Helpers::DisplayProperty(item.Key, DeviceNode(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem())), item.Name);
+}
+
+LRESULT CDeviceInterfacesView::OnDeviceProperties(WORD, WORD, HWND, BOOL&) {
+	CString name;
+	m_Tree.GetItemText(m_Tree.GetSelectedItem(), name);
+	auto inst = (DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem());
+	if (inst >= 0x8000)
+		return 0;
+
+	auto index = m_DevMgr->GetDeviceIndex(inst);
+	Helpers::DisplayProperties(name, *m_DevMgr, m_Devices[index]);
+	return 0;
+}
+
+bool CDeviceInterfacesView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
+	m_Tree.SelectItem(hItem);
+	if (m_Tree.GetItemData(hItem) >= 0x8000)
+		return false;
+
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(m_Tree.GetItemData(hItem) < 0x8000 ? 0 : 1),
+		TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y);
+	LRESULT result;
+	if (cmd) {
+		ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+	}
+	return false;
 }

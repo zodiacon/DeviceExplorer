@@ -18,6 +18,10 @@ public:
 	CString GetColumnText(HWND h, int row, int col);
 	//int GetRowImage(HWND h, int row, int col);
 	void DoSort(const SortInfo* si);
+	bool OnRightClickList(HWND, int row, int col, CPoint const& pt);
+	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
+	bool OnTreeDoubleClick(HWND, HTREEITEM hItem);
+	bool OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt);
 
 protected:
 	BEGIN_MSG_MAP(CDeviceInterfacesView)
@@ -29,6 +33,7 @@ protected:
 		CHAIN_MSG_MAP(CTreeViewHelper<CDeviceInterfacesView>)
 		CHAIN_MSG_MAP(CViewBase)
 	ALT_MSG_MAP(1)
+		COMMAND_ID_HANDLER(ID_DEVICE_PROPERTIES, OnDeviceProperties)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
@@ -64,6 +69,7 @@ private:
 	LRESULT OnShowHiddenDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNotifySetFocus(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnDeviceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;

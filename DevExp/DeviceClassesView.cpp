@@ -112,7 +112,7 @@ LRESULT CDeviceClassesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Details", LVCFMT_LEFT, 550, 2);
 	cm->UpdateColumns();
 
-	m_Splitter.SetSplitterPosPct(30);
+	m_Splitter.SetSplitterPosPct(25);
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 
 	Refresh();
@@ -233,6 +233,18 @@ LRESULT CDeviceClassesView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*w
 	return 0;
 }
 
+LRESULT CDeviceClassesView::OnDeviceProperties(WORD, WORD, HWND, BOOL&) {
+	CString name;
+	m_Tree.GetItemText(m_Tree.GetSelectedItem(), name);
+	auto inst = (DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem());
+	if (inst >= 0x8000)
+		return 0;
+	
+	auto index = m_DevMgr->GetDeviceIndex(inst);
+	Helpers::DisplayProperties(name, *m_DevMgr, m_Devices[index]);
+	return 0;
+}
+
 bool CDeviceClassesView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
 	m_Tree.SelectItem(hItem);
 	CMenu menu;
@@ -246,9 +258,26 @@ bool CDeviceClassesView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt
 	return false;
 }
 
+bool CDeviceClassesView::OnRightClickList(HWND, int row, int col, CPoint const& pt) {
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	return GetFrame()->TrackPopupMenu(menu.GetSubMenu(1), TPM_RIGHTBUTTON, pt.x, pt.y);
+}
+
+bool CDeviceClassesView::OnTreeDoubleClick(HWND, HTREEITEM hItem) {
+	if (m_Tree.GetItemData(hItem) >= 0x8000)
+		return false;
+
+	LRESULT result;
+	ProcessWindowMessage(m_hWnd, WM_COMMAND, ID_DEVICE_PROPERTIES, 0, result, 1);
+	return true;
+}
+
 void CDeviceClassesView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	ui.UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
+	ui.UIEnable(ID_DEVICE_PROPERTIES, m_Tree.GetItemData(m_Tree.GetSelectedItem()) < 0x8000);
+
 	int selected = m_List.GetSelectionMark();
 	if (SecurityHelper::IsRunningElevated()) {
 		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));

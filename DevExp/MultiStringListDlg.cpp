@@ -12,7 +12,7 @@ LRESULT CMultiStringListDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetWindowText(m_Title);
     m_List.Attach(GetDlgItem(IDC_LIST));
     CFont font;
-    font.CreatePointFont(110, L"Consolas");
+    font.CreatePointFont(105, L"Consolas");
     m_List.SetFont(font.Detach());
 
     std::wstring text;

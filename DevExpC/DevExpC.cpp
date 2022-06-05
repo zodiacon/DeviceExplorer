@@ -5,6 +5,7 @@
 #include "DeviceManager.h"
 #define INITGUID
 #include <devpkey.h>
+#include "DriverManager.h"
 
 
 std::wstring GuidToString(GUID const& guid) {
@@ -147,21 +148,15 @@ void EnumDevNodes() {
 }
 
 int main() {
-	auto hinf = ::SetupOpenInfFile(LR"(d:\dev\temp\booster\x64\debug\booster.inf)", nullptr, INF_STYLE_WIN4, nullptr);
-	BYTE buffer[1024];
-	auto info = (PSP_INF_INFORMATION)buffer;
-	::SetupGetInfInformation(hinf, INFINFO_INF_SPEC_IS_HINF, info, sizeof(buffer), nullptr);
-	WCHAR version[1000];
-	::SetupQueryInfVersionInformation(info, 0, nullptr, version, _countof(version), nullptr);
-
-	//::SetupInstallFromInfSection(nullptr, hinf, , SPINST_ALL, 
-	::SetupCloseInfFile(hinf);
-
-	GUID clsGuid;
-	WCHAR className[MAX_CLASS_NAME_LEN];
-	SetupDiGetINFClass(LR"(d:\dev\temp\booster\x64\debug\booster.inf)", &clsGuid, className, _countof(className), nullptr);
+	auto drivers = DriverManager::EnumDrivers();
 
 	auto dm = DeviceManager::Create();;
+	for (auto& di : dm->EnumDevices()) {
+		auto res = DeviceNode(di.Data.DevInst).GetResources();
+		if(!res.empty())
+			printf("Inst: %u Resources: %u\n", di.Data.DevInst, (uint32_t)res.size());
+	}
+
 	SetupDiCallClassInstaller(DIF_SELECTDEVICE, dm->InfoSet(), nullptr);
 
 	for (auto g : DeviceManager::BuildClassInfoList(0)) {
@@ -175,9 +170,6 @@ int main() {
 
 	//TestEnum();
 
-	for (auto& di : dm->EnumDevices()) {
-		DeviceNode(di.Data.DevInst).GetResources();
-	}
 
 	return 0;
 }

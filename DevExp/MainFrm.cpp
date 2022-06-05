@@ -63,7 +63,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
 	UINT icons[] = { 
-		IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE 
+		IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE, IDI_DRIVER,
 	};
 	for(auto icon : icons)
 		images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
@@ -197,6 +197,7 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ 0, 0, 0x8000 },
+		{ ID_DEVICE_PROPERTIES, IDI_PROPS },
 		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE, 0x8000 },
 		{ ID_DEVICE_DISABLE, IDI_DISABLE_DEVICE, 0x8000 },
 		{ 0, 0, 0x8000 },
@@ -225,6 +226,7 @@ void CMainFrame::InitCommandBar() {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_EDIT_DELETE, IDI_CANCEL },
+		{ ID_DEVICE_PROPERTIES, IDI_PROPS },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_DEVICE_SCANFORHARDWARECHANGES, IDI_RESCAN },
 		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE },

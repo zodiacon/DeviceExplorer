@@ -107,8 +107,11 @@ enum class ResourceType {
 	DMA = ResType_DMA,
 	Private = ResType_DevicePrivate,
 	PCCardConfig = ResType_PcCardConfig,
-	MFCardConfig = ResType_MfCardConfig
+	MFCardConfig = ResType_MfCardConfig,
+	ClassSpecific = ResType_ClassSpecific,
+
 };
+DEFINE_ENUM_FLAG_OPERATORS(ResourceType);
 
 enum class LogicalConfigurationType {
 	Basic = BASIC_LOG_CONF,
@@ -122,30 +125,30 @@ enum class LogicalConfigurationType {
 struct DeviceResource {
 	ResourceType Type;
 	IO_RESOURCE& IO() const {
-		return *(IO_RESOURCE*)_buffer.get();
+		return *(IO_RESOURCE*)m_buffer.get();
 	}
 	IRQ_RESOURCE& Interrupt() const {
-		return *(IRQ_RESOURCE*)_buffer.get();
+		return *(IRQ_RESOURCE*)m_buffer.get();
 	}
 	MEM_RESOURCE& Memory() const {
-		return *(MEM_RESOURCE*)_buffer.get();
+		return *(MEM_RESOURCE*)m_buffer.get();
 	}
 	MEM_LARGE_RESOURCE& LargeMemory() const {
-		return *(MEM_LARGE_RESOURCE*)_buffer.get();
+		return *(MEM_LARGE_RESOURCE*)m_buffer.get();
 	}
 	BUSNUMBER_RESOURCE& BusNumber() const {
-		return *(BUSNUMBER_RESOURCE*)_buffer.get();
+		return *(BUSNUMBER_RESOURCE*)m_buffer.get();
 	}
 	BYTE* Buffer() const {
-		return _buffer.get();
+		return m_buffer.get();
 	}
 	ULONG Size() const {
-		return _size;
+		return m_size;
 	}
 private:
 	friend class DeviceNode;
-	std::unique_ptr<BYTE[]> _buffer;
-	ULONG _size;
+	std::unique_ptr<BYTE[]> m_buffer;
+	ULONG m_size;
 };
 
 class DeviceNode {
@@ -193,10 +196,9 @@ public:
 		assert(type == DEVPROP_TYPE_STRING);
 		if (type != DEVPROP_TYPE_STRING)
 			return L"";
-		std::wstring value;
-		value.resize(size / sizeof(WCHAR));
-		::CM_Get_DevNode_Property(m_Inst, &key, &type, (PBYTE)value.data(), &size, 0);
-		return value;
+		auto value = std::make_unique<WCHAR[]>(size);
+		::CM_Get_DevNode_Property(m_Inst, &key, &type, (PBYTE)value.get(), &size, 0);
+		return value.get();
 	}
 
 	template<>
@@ -222,7 +224,7 @@ public:
 
 	DeviceNodeStatus GetStatus(DeviceNodeProblem* problem = nullptr) const;
 
-	std::vector<DeviceResource> GetResources(LogicalConfigurationType type = LogicalConfigurationType::Basic);
+	std::vector<DeviceResource> GetResources(LogicalConfigurationType type = LogicalConfigurationType::Allocated);
 
 private:
 	DEVINST m_Inst;

@@ -224,6 +224,7 @@
     <ClCompile Include="DeviceClassesView.cpp" />
     <ClCompile Include="DeviceInterfacesView.cpp" />
     <ClCompile Include="DevNodeListView.cpp" />
+    <ClCompile Include="GeneralPropertyPage.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MultiStringListDlg.cpp" />
@@ -234,6 +235,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="DevNodeView.cpp" />
+    <ClCompile Include="ResourcesPropertyPage.cpp" />
     <ClCompile Include="SecurityHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +244,7 @@
     <ClInclude Include="DeviceClassesView.h" />
     <ClInclude Include="DeviceInterfacesView.h" />
     <ClInclude Include="DevNodeListView.h" />
+    <ClInclude Include="GeneralPropertyPage.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="MainFrm.h" />
@@ -249,6 +252,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="DevNodeView.h" />
+    <ClInclude Include="ResourcesPropertyPage.h" />
     <ClInclude Include="SecurityHelper.h" />
     <ClInclude Include="ViewBase.h" />
   </ItemGroup>
@@ -256,19 +260,28 @@
     <ResourceCompile Include="DevExp.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\Binary.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\delete.ico" />
     <Image Include="res\DevExp.ico" />
     <Image Include="res\devices.ico" />
     <Image Include="res\disable.ico" />
+    <Image Include="res\driver-kmdf.ico" />
+    <Image Include="res\driver.ico" />
     <Image Include="res\enable.ico" />
     <Image Include="res\find.ico" />
+    <Image Include="res\flag.ico" />
     <Image Include="res\gear_refresh.ico" />
+    <Image Include="res\globe.ico" />
     <Image Include="res\interface.ico" />
+    <Image Include="res\interrupt.ico" />
     <Image Include="res\list.ico" />
+    <Image Include="res\LPT-plug.ico" />
     <Image Include="res\memory.ico" />
+    <Image Include="res\power.ico" />
     <Image Include="res\Properties.ico" />
     <Image Include="res\refresh.ico" />
+    <Image Include="res\Text.ico" />
     <Image Include="res\tree.ico" />
   </ItemGroup>
   <ItemGroup>

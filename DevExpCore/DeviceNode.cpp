@@ -95,7 +95,7 @@ std::vector<DeviceResource> DeviceNode::GetResources(LogicalConfigurationType ty
 	if (CR_SUCCESS != ::CM_Get_First_Log_Conf(&log, m_Inst, static_cast<ULONG>(type)))
 		return resources;
 
-	resources.reserve(4);
+	resources.reserve(16);
 	do {
 		RES_DES rd = 0;
 		RESOURCEID r = ResType_All;
@@ -104,10 +104,12 @@ std::vector<DeviceResource> DeviceNode::GetResources(LogicalConfigurationType ty
 			::CM_Get_Res_Des_Data_Size(&size, rd, 0);
 			auto buffer = std::make_unique<BYTE[]>(size);
 			if (CR_SUCCESS == ::CM_Get_Res_Des_Data(rd, buffer.get(), size, 0)) {
+				if (r == ResType_None || r == ResType_DevicePrivate)
+					continue;
 				DeviceResource res;
 				res.Type = (ResourceType)r;
-				res._buffer = std::move(buffer);
-				res._size = size;
+				res.m_buffer = std::move(buffer);
+				res.m_size = size;
 				resources.push_back(std::move(res));
 			}
 		}

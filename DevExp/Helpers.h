@@ -2,6 +2,9 @@
 
 #include "DeviceNode.h"
 
+struct DeviceInfo;
+class DeviceManager;
+
 struct Helpers final {
 	static CString GetPropertyName(DEVPROPKEY const& key);
 	static CString GuidToString(GUID const& guid);
@@ -17,4 +20,6 @@ struct Helpers final {
 	static CString DeviceInterfaceToString(GUID const& guid);
 	static bool DisplayProperty(DEVPROPKEY const& key, DeviceNode const& node, PCWSTR name);
 	static std::wstring PowerCapabilitiesToString(DWORD caps);
+	static void DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInfo const& di);
+	static PCWSTR ResourceTypeToString(ResourceType type);
 };
