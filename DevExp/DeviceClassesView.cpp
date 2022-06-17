@@ -276,11 +276,12 @@ bool CDeviceClassesView::OnTreeDoubleClick(HWND, HTREEITEM hItem) {
 void CDeviceClassesView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	ui.UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
-	ui.UIEnable(ID_DEVICE_PROPERTIES, m_Tree.GetItemData(m_Tree.GetSelectedItem()) < 0x8000);
+	auto dev = GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem());
+	ui.UIEnable(ID_DEVICE_PROPERTIES, dev < 0x8000 && m_Tree.GetSelectedItem() != m_Tree.GetRootItem());
 
 	int selected = m_List.GetSelectionMark();
 	if (SecurityHelper::IsRunningElevated()) {
-		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));
+		DeviceNode dn(dev);
 		bool enabled = dn.IsEnabled();
 		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
 		ui.UIEnable(ID_DEVICE_DISABLE, enabled);

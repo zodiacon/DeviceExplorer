@@ -46,7 +46,7 @@ void CDevNodeListView::Refresh() {
 CString CDevNodeListView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
 	switch (GetColumnManager(m_List)->GetColumnTag<ColumnType>(col)) {
-		case ColumnType::Name: return item.Description.c_str();
+		case ColumnType::Name: return item.Description.empty() ? L"This PC" : item.Description.c_str();
 		case ColumnType::Instance: return std::to_wstring(item.Data.DevInst).c_str();
 		case ColumnType::Class:
 			return GetDeviceClassName(item);
@@ -180,10 +180,11 @@ LRESULT CDevNodeListView::OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 void CDevNodeListView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	int selected = m_List.GetSelectionMark();
-	ui.UIEnable(ID_DEVICE_PROPERTIES, m_List.GetSelectedCount() == 1);
+	auto dev = selected >= 0 ? m_Items[selected].Data.DevInst : 0;
+	ui.UIEnable(ID_DEVICE_PROPERTIES, m_List.GetSelectedCount() == 1 && dev != (DEVINST)m_dm->GetRootDeviceNode());
 
 	if (SecurityHelper::IsRunningElevated() && m_List.GetSelectedCount() == 1) {
-		DeviceNode dn(m_Items[selected].Data.DevInst);
+		DeviceNode dn(dev);
 		bool enabled = dn.IsEnabled();
 		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
 		ui.UIEnable(ID_DEVICE_DISABLE, enabled);

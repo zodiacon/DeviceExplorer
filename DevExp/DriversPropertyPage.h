@@ -1,29 +1,24 @@
 #pragma once
 
-#include "DialogHelper.h"
 #include "resource.h"
 #include <VirtualListView.h>
+#include "DeviceManager.h"
 
-struct DeviceResource;
-
-class CResourcesPropertyPage :
-	public CPropertyPageImpl<CResourcesPropertyPage>,
-	public CVirtualListView< CResourcesPropertyPage>,
-	public CDialogHelper<CResourcesPropertyPage> {
+class CDriversPropertyPage :
+	public CPropertyPageImpl<CDriversPropertyPage>,
+	public CVirtualListView< CDriversPropertyPage> {
 public:
-	enum { IDD = IDD_PROP_RES };
+	enum { IDD = IDD_PROP_DRIVERS };
 
-	explicit CResourcesPropertyPage(std::vector<DeviceResource> const& resources);
+	explicit CDriversPropertyPage(std::vector<DeviceDriverInfo> const& drivers);
 
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int) const;
 
-	BEGIN_MSG_MAP(CResourcesPropertyPage)
+	BEGIN_MSG_MAP(CDriversPropertyPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		CHAIN_MSG_MAP(CVirtualListView<CResourcesPropertyPage>)
+		CHAIN_MSG_MAP(CVirtualListView<CDriversPropertyPage>)
 	END_MSG_MAP()
-
-	static std::wstring ResourceSettingToString(DeviceResource const& res);
 
 	// Handler prototypes (uncomment arguments if needed):
 	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -34,6 +29,6 @@ public:
 
 private:
 	CListViewCtrl m_List;
-	std::vector<DeviceResource> const& m_Items;
+	std::vector<DeviceDriverInfo> const& m_Items;
 };
 

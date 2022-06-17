@@ -130,6 +130,11 @@ std::unique_ptr<BYTE[]> DeviceNode::GetPropertyValue(DEVPROPKEY const& key, DEVP
 	return value;
 }
 
+DeviceNode DeviceNode::GetParent() const {
+	DEVINST parent;
+	return CR_SUCCESS == ::CM_Get_Parent(&parent, m_Inst, 0) ? parent : -1;
+}
+
 ULONG DeviceNode::GetDepth() const {
 	ULONG depth = -1;
 	::CM_Get_Depth(&depth, m_Inst, 0);

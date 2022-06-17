@@ -135,7 +135,7 @@ public:
 	T GetDeviceRegistryProperty(const DeviceInfo& di, DeviceRegistryPropertyType type) const;
 	HICON GetDeviceIcon(const DeviceInfo& di, bool big = false) const;
 	DeviceInfo const& GetDevice(int index) const;
-	std::vector<DeviceDriverInfo> EnumDrivers(DeviceInfo const& di, bool compat = false);
+	std::vector<DeviceDriverInfo> EnumDrivers(DeviceInfo const& di, bool compat = false) const;
 	//std::vector<DriverInfo> EnumDrivers();
 
 	// device class
@@ -202,7 +202,7 @@ private:
 private:
 	wil::unique_hinfoset m_hInfoSet;
 	std::vector<DeviceInfo> m_devices;
-	std::unordered_map<DEVINST, int> _devMap;
+	std::unordered_map<DEVINST, int> m_devMap;
 };
 
 template<typename T>
@@ -230,22 +230,24 @@ template<typename T> requires (std::is_base_of_v<DeviceInfo, T>)
 std::vector<T> DeviceManager::EnumDevices(bool includeHidden) {
 	std::vector<T> devices;
 	SP_DEVINFO_DATA data = { sizeof(data) };
-	_devMap.clear();
+	m_devMap.clear();
 	m_devices.clear();
+	auto root = GetRootDeviceNode();
 
 	for (DWORD i = 0; ; i++) {
 		if (!::SetupDiEnumDeviceInfo(m_hInfoSet.get(), i, &data))
 			break;
 
-		if (!includeHidden && (DeviceNode(data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
+		if (data.DevInst != (DEVINST)root && !includeHidden && (DeviceNode(data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager)
 			continue;
 
 		T di;
 		di.Description = DeviceNode(data.DevInst).GetName();
 		di.Data = data;
-		_devMap.insert({ data.DevInst, (int)devices.size() });
+		m_devMap.insert({ data.DevInst, (int)devices.size() });
 		m_devices.push_back(di);
 		devices.push_back(std::move(di));
 	}
+
 	return devices;
 }

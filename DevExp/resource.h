@@ -22,6 +22,7 @@
 #define IDI_INTERFACE                   214
 #define IDD_STRINGLIST                  215
 #define IDD_PROP_RES                    216
+#define IDD_PROP_DRIVERS                217
 #define IDI_DRIVER                      218
 #define IDI_DRIVER_KMDF                 219
 #define IDI_GLOBE                       220
@@ -31,7 +32,6 @@
 #define IDI_TEXT                        224
 #define IDI_BINARY                      225
 #define IDI_INTERRUPT                   226
-#define IDI_ICON1                       227
 #define IDI_PORT                        227
 #define IDC_LIST                        1002
 #define IDC_NAME                        1003
@@ -39,6 +39,7 @@
 #define IDC_DEVICETYPE                  1006
 #define IDC_MFG                         1007
 #define IDC_LOCATION                    1008
+#define IDC_LIST2                       1008
 #define IDC_LOCATION2                   1009
 #define IDC_STATUS                      1009
 #define ID_WINDOW_CLOSE                 32772
@@ -62,9 +63,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        228
+#define _APS_NEXT_RESOURCE_VALUE        229
 #define _APS_NEXT_COMMAND_VALUE         32791
-#define _APS_NEXT_CONTROL_VALUE         1007
+#define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -98,9 +98,11 @@ BOOL CDevNodeView::PreTranslateMessage(MSG* pMsg) {
 
 void CDevNodeView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
+	auto dev = GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem());
+	ui.UIEnable(ID_DEVICE_PROPERTIES, dev < 0x8000 && m_Tree.GetSelectedItem() != m_Tree.GetRootItem());
 	int selected = m_List.GetSelectionMark();
 	if (SecurityHelper::IsRunningElevated()) {
-		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));
+		DeviceNode dn(dev);
 		bool enabled = dn.IsEnabled();
 		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
 		ui.UIEnable(ID_DEVICE_DISABLE, enabled);

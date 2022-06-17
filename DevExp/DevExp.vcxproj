@@ -224,6 +224,7 @@
     <ClCompile Include="DeviceClassesView.cpp" />
     <ClCompile Include="DeviceInterfacesView.cpp" />
     <ClCompile Include="DevNodeListView.cpp" />
+    <ClCompile Include="DriversPropertyPage.cpp" />
     <ClCompile Include="GeneralPropertyPage.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="DeviceClassesView.h" />
     <ClInclude Include="DeviceInterfacesView.h" />
     <ClInclude Include="DevNodeListView.h" />
+    <ClInclude Include="DriversPropertyPage.h" />
     <ClInclude Include="GeneralPropertyPage.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Interfaces.h" />

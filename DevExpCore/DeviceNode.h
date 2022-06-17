@@ -159,11 +159,16 @@ public:
 		return m_Inst;
 	}
 
+	bool IsValid() const {
+		return m_Inst != -1;
+	}
+
 	static std::vector<DeviceNode> GetChildDevNodes(DeviceNode const& inst);
 	static std::vector<DeviceNode> GetSiblingDevNodes(DeviceNode const& inst);
 
 	std::vector<DeviceNode> GetChildren() const;
 	std::vector<DeviceNode> GetSiblings() const;
+	DeviceNode GetParent() const;
 	std::vector<DEVPROPKEY> GetPropertyKeys() const;
 	std::wstring GetName() const;
 

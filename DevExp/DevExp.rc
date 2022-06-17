@@ -221,7 +221,16 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Resources"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_TABSTOP,7,7,313,186,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_OWNERDATA | LVS_NOSORTHEADER | WS_TABSTOP,7,7,313,186,WS_EX_CLIENTEDGE
+END
+
+IDD_PROP_DRIVERS DIALOGEX 0, 0, 283, 169
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Drivers"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_OWNERDATA | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,7,269,84
+    LTEXT           "Manufacturer:",IDC_STATIC,15,100,47,8
 END
 
 
@@ -263,6 +272,14 @@ BEGIN
         RIGHTMARGIN, 320
         TOPMARGIN, 7
         BOTTOMMARGIN, 193
+    END
+
+    IDD_PROP_DRIVERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 276
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 162
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -319,7 +336,7 @@ BEGIN
             VALUE "FileDescription", "Device Explorer"
             VALUE "FileVersion", "0.1"
             VALUE "InternalName", "DevExp"
-            VALUE "LegalCopyright", "©2021 Pavel Yosifovich"
+            VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
             VALUE "OriginalFilename", "DevExp.exe"
             VALUE "ProductName", "Device Explorer"
             VALUE "ProductVersion", "0.1"
@@ -355,6 +372,11 @@ BEGIN
 END
 
 IDD_PROP_RES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PROP_DRIVERS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

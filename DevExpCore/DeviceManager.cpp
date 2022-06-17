@@ -105,9 +105,9 @@ HICON DeviceManager::GetDeviceIcon(const DeviceInfo& di, bool big) const {
 	return hIcon;
 }
 
-std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, bool compat) {
+std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, bool compat) const {
 	auto devinfo = const_cast<PSP_DEVINFO_DATA>(&di.Data);
-	if (!::SetupDiBuildDriverInfoList(m_hInfoSet.get(), devinfo, SPDIT_COMPATDRIVER))
+	if (!::SetupDiBuildDriverInfoList(m_hInfoSet.get(), devinfo, SPDIT_CLASSDRIVER))
 		return {};
 
 	SP_DRVINFO_DATA dd{ sizeof(dd) };
@@ -116,7 +116,7 @@ std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, b
 	ddd->cbSize = sizeof(*ddd);
 	std::vector<DeviceDriverInfo> drivers;
 	for (DWORD i = 0; ; i++) {
-		if (!::SetupDiEnumDriverInfo(m_hInfoSet.get(), devinfo, SPDIT_COMPATDRIVER, i, &dd))
+		if (!::SetupDiEnumDriverInfo(m_hInfoSet.get(), devinfo, SPDIT_CLASSDRIVER, i, &dd))
 			break;
 
 		DeviceDriverInfo ddi;
@@ -260,7 +260,7 @@ std::vector<DEVPROPKEY> DeviceManager::GetDeviceClassPropertyKeysCommon(GUID con
 }
 
 int DeviceManager::GetDeviceIndex(DEVINST inst) const {
-	if (auto it = _devMap.find(inst); it != _devMap.end())
+	if (auto it = m_devMap.find(inst); it != m_devMap.end())
 		return it->second;
 	return -1;
 }

@@ -192,9 +192,11 @@ LRESULT CDeviceInterfacesView::OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*w
 void CDeviceInterfacesView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	ui.UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
+	auto dev = GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem());
+	ui.UIEnable(ID_DEVICE_PROPERTIES, dev < 0x8000 && m_Tree.GetSelectedItem() != m_Tree.GetRootItem());
 	int selected = m_List.GetSelectionMark();
 	if (SecurityHelper::IsRunningElevated()) {
-		DeviceNode dn(GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem()));
+		DeviceNode dn(dev);
 		bool enabled = dn.IsEnabled();
 		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
 		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
@@ -259,6 +261,8 @@ LRESULT CDeviceInterfacesView::OnDeviceProperties(WORD, WORD, HWND, BOOL&) {
 		return 0;
 
 	auto index = m_DevMgr->GetDeviceIndex(inst);
+	ATLASSERT(index >= 0);
+
 	Helpers::DisplayProperties(name, *m_DevMgr, m_Devices[index]);
 	return 0;
 }

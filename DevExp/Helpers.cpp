@@ -18,6 +18,7 @@
 #include "MultiStringListDlg.h"
 #include "GeneralPropertyPage.h"
 #include "ResourcesPropertyPage.h"
+#include "DriversPropertyPage.h"
 
 namespace std {
 	template<>
@@ -653,13 +654,18 @@ std::wstring Helpers::PowerCapabilitiesToString(DWORD caps) {
 
 void Helpers::DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInfo const& di) {
 	CPropertySheet sheet(title);
-	sheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
+	sheet.m_psh.dwFlags |= PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP | PSH_NOMARGIN;
 	CGeneralPropertyPage general(dm, di);
 	sheet.AddPage(general);
-	auto resources = DeviceNode(di.Data.DevInst).GetResources();
+	DeviceNode dn(di.Data.DevInst);
+	auto resources = dn.GetResources();
 	CResourcesPropertyPage res(resources);
 	if (!resources.empty())
 		sheet.AddPage(res);
+	auto drivers = dm.EnumDrivers(di);
+	CDriversPropertyPage driversPage(drivers);
+	if (!drivers.empty())
+		sheet.AddPage(driversPage);
 
 	sheet.DoModal();
 }

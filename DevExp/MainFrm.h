@@ -7,9 +7,12 @@
 #include "Interfaces.h"
 #include <CustomTabView.h>
 #include "AppSettings.h"
+#include <Theme.h>
+#include <OwnerDrawnMenu.h>
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
+	public COwnerDrawnMenu<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
 	public IMainFrame,
 	public CMessageFilter, 
@@ -23,8 +26,6 @@ public:
 
 protected:
 	BEGIN_MSG_MAP(CMainFrame)
-		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
@@ -38,7 +39,10 @@ protected:
 			if (page >= 0 && ((CMessageMap*)m_view.GetPageData(page))->ProcessWindowMessage(hWnd, WM_COMMAND, wParam, lParam, lResult, 1))
 				return TRUE;
 		}
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
+		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()
 
@@ -49,7 +53,7 @@ protected:
 
 private:
 	void InitToolBar(CToolBarCtrl& tb, int size);
-	void InitCommandBar();
+	void InitMenu();
 
 	// IMainFrame
 	HWND GetHwnd() const override;
@@ -70,7 +74,7 @@ private:
 	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_view;
-	CCommandBarCtrl m_CmdBar;
 	inline static AppSettings s_Settings;
+	Theme m_DarkTheme;
 	int m_ActivePage{ -1 };
 };

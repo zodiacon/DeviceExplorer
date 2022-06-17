@@ -32,30 +32,23 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	auto& settings = AppSettings::Get();
 	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
 
-	// create command bar window
-	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-	m_CmdBar.SetAlphaImages(true);
 	auto hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
 		auto h = CMenuHandle(hMenu).GetSubMenu(0);
 		h.DeleteMenu(0, MF_BYPOSITION);
 		h.DeleteMenu(0, MF_BYPOSITION);
 	}
-	m_CmdBar.AttachMenu(hMenu);
+	InitMenu();
 	UIAddMenu(hMenu);
-	SetMenu(nullptr);
-	InitCommandBar();
+	AddMenu(hMenu);
 
 	CToolBarCtrl tb;
 	tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
 	InitToolBar(tb, 24);
-
 	UIAddToolBar(tb);
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-	AddSimpleReBarBand(m_CmdBar);
-	AddSimpleReBarBand(tb, nullptr, TRUE);
-
+	AddSimpleReBarBand(tb);
 	CreateSimpleStatusBar();
 
 	m_view.m_bTabCloseButton = false;
@@ -87,7 +80,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SetWindowText(text + L" (Administrator)");
 	}
 
-	CMenuHandle menuMain = m_CmdBar.GetMenu();
+	CMenuHandle menuMain = GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 
 	{
@@ -139,8 +132,7 @@ LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	static bool bVisible = true;	// initially visible
 	bVisible = !bVisible;
 	CReBarCtrl rebar = m_hWndToolBar;
-	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);
-	rebar.ShowBand(nBandIndex, bVisible);
+	rebar.ShowBand(0, bVisible);
 	UISetCheck(ID_VIEW_TOOLBAR, bVisible);
 	UpdateLayout();
 	return 0;
@@ -218,9 +210,9 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 	}
 }
 
-void CMainFrame::InitCommandBar() {
+void CMainFrame::InitMenu() {
 	struct {
-		int id, icon;
+		UINT id, icon;
 		HICON hIcon = nullptr;
 	} cmds[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
@@ -233,7 +225,7 @@ void CMainFrame::InitCommandBar() {
 		{ ID_DEVICE_DISABLE, IDI_DISABLE_DEVICE },
 	};
 	for (auto& cmd : cmds) {
-		m_CmdBar.AddIcon(cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon, cmd.id);
+		AddCommand(cmd.id, cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon);
 	}
 }
 
@@ -242,7 +234,7 @@ HWND CMainFrame::GetHwnd() const {
 }
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) {
-	return m_CmdBar.TrackPopupMenu(hMenu, flags, x, y);
+	return ShowContextMenu(hMenu, flags, x, y);
 }
 
 CUpdateUIBase& CMainFrame::GetUI() {
