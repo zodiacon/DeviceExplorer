@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cfgmgr32.h>
+#include <optional>
 #include "DeviceNode.h"
 
 namespace wil {
@@ -123,6 +124,8 @@ public:
 	static std::wstring GetSetupClassDescription(GUID const& guid);
 
 	static DeviceNode GetRootDeviceNode();
+
+	bool GetPropertyPages(PROPSHEETHEADER& header, DeviceInfo const& di, uint32_t maxPages) const;
 
 	HDEVINFO InfoSet() {
 		return m_hInfoSet.get();

@@ -115,6 +115,7 @@ std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, b
 	auto ddd = reinterpret_cast<PSP_DRVINFO_DETAIL_DATA>(buffer.get());
 	ddd->cbSize = sizeof(*ddd);
 	std::vector<DeviceDriverInfo> drivers;
+	drivers.reserve(16);
 	for (DWORD i = 0; ; i++) {
 		if (!::SetupDiEnumDriverInfo(m_hInfoSet.get(), devinfo, SPDIT_CLASSDRIVER, i, &dd))
 			break;
@@ -133,6 +134,7 @@ std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, b
 		}
 		drivers.push_back(std::move(ddi));
 	}
+	::SetupDiDestroyDriverInfoList(m_hInfoSet.get(), devinfo, SPDIT_CLASSDRIVER);
 	return drivers;
 }
 
@@ -315,3 +317,6 @@ DeviceInfo const& DeviceManager::GetDevice(int index) const {
 	return m_devices[index];
 }
 
+bool DeviceManager::GetPropertyPages(PROPSHEETHEADER& header, DeviceInfo const& di, uint32_t maxPages) const {
+	return ::SetupDiGetClassDevPropertySheets(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&di.Data, &header, maxPages, nullptr, DIGCDP_FLAG_ADVANCED);
+}

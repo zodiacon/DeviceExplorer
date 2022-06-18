@@ -22,4 +22,5 @@ struct Helpers final {
 	static std::wstring PowerCapabilitiesToString(DWORD caps);
 	static void DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInfo const& di);
 	static PCWSTR ResourceTypeToString(ResourceType type);
+	static std::wstring FormatDate(FILETIME const& ft);
 };

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "DriverManager.h"
 
-std::vector<DriverInfo> DriverManager::EnumDrivers(bool runningOnly) {
+std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
     wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE));
     if (!hScm)
         return {};

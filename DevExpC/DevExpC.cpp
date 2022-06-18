@@ -148,7 +148,7 @@ void EnumDevNodes() {
 }
 
 int main() {
-	auto drivers = DriverManager::EnumDrivers();
+	auto drivers = DriverManager::EnumKernelDrivers();
 
 	auto dm = DeviceManager::Create();;
 	for (auto& di : dm->EnumDevices()) {

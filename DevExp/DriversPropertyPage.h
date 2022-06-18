@@ -14,6 +14,7 @@ public:
 
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int) const;
+	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 
 	BEGIN_MSG_MAP(CDriversPropertyPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)

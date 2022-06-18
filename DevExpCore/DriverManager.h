@@ -18,6 +18,7 @@ struct DriverInfo {
 
 class DriverManager {
 public:
-	static std::vector<DriverInfo> EnumDrivers(bool runningOnly = false);
+	static std::vector<DriverInfo> EnumKernelDrivers(bool runningOnly = false);
+	static std::vector<DriverInfo> EnumUserDrivers(bool runningOnly = false);
 };
 

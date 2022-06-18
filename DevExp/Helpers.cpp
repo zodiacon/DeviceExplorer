@@ -662,10 +662,22 @@ void Helpers::DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInf
 	CResourcesPropertyPage res(resources);
 	if (!resources.empty())
 		sheet.AddPage(res);
-	auto drivers = dm.EnumDrivers(di);
-	CDriversPropertyPage driversPage(drivers);
-	if (!drivers.empty())
-		sheet.AddPage(driversPage);
+
+	PROPSHEETHEADER header{ sizeof(header) };
+	HPROPSHEETPAGE pages[8];
+	header.phpage = pages;
+	header.nPages = 0;
+	if(dm.GetPropertyPages(header, di, _countof(pages))) {
+		for (uint32_t i = 0; i < header.nPages; i++)
+			sheet.AddPage(header.phpage[i]);
+	}
+	//CWaitCursor wait;
+	//auto drivers = dm.EnumDrivers(di);
+	//wait.Restore();
+	//CDriversPropertyPage driversPage(drivers);
+	//if (!drivers.empty())
+	//	sheet.AddPage(driversPage);
+
 
 	sheet.DoModal();
 }
@@ -683,4 +695,8 @@ PCWSTR Helpers::ResourceTypeToString(ResourceType type) {
 		case ResourceType::MFCardConfig: return L"MF Card Config";
 	}
 	return L"(Unknown)";
+}
+
+std::wstring Helpers::FormatDate(FILETIME const& ft) {
+	return (PCWSTR)CTime(ft).Format(L"%x");
 }
