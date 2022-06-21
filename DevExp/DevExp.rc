@@ -65,6 +65,14 @@ BEGIN
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
     END
+    POPUP "&Explore"
+    BEGIN
+        MENUITEM "Device &Classes",             ID_EXPLORE_DEVICESBYCLASS
+        MENUITEM "Device &Tree",                ID_EXPLORE_DEVICETREE
+        MENUITEM "Device &List",                ID_EXPLORE_DEVICELIST
+        MENUITEM "Device &Interfaces",          ID_EXPLORE_DEVICEINTERFACES
+        MENUITEM "&Drivers",                    ID_EXPLORE_DRIVERS
+    END
     POPUP "&View"
     BEGIN
         MENUITEM "Show &Hidden Devices",        ID_VIEW_SHOWHIDDENDEVICES
@@ -90,9 +98,10 @@ BEGIN
         MENUITEM "&Font...",                    ID_OPTIONS_FONT
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
     END
-    POPUP "&Tab"
+    POPUP "&Window"
     BEGIN
-        MENUITEM "&New Window",                 ID_TAB_NEWWINDOW
+        MENUITEM "&Close",                      ID_WINDOW_CLOSE
+        MENUITEM "Close &All",                  ID_WINDOW_CLOSE_ALL
     END
     POPUP "&Help"
     BEGIN
@@ -186,7 +195,7 @@ CAPTION "About Device Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,75,49,50,14
-    CTEXT           "Device Explorer v0.1\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,39,8,122,32
+    CTEXT           "Device Explorer v0.2\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,39,8,122,32
     ICON            IDR_MAINFRAME,IDC_STATIC,5,4,20,20
 END
 
@@ -317,8 +326,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ FILEVERSION 0,2,0,0
+ PRODUCTVERSION 0,2,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -335,12 +344,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Pavel Yosifovich"
             VALUE "FileDescription", "Device Explorer"
-            VALUE "FileVersion", "0.1"
+            VALUE "FileVersion", "0.2.0.0"
             VALUE "InternalName", "DevExp"
             VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
             VALUE "OriginalFilename", "DevExp.exe"
             VALUE "ProductName", "Device Explorer"
-            VALUE "ProductVersion", "0.1"
+            VALUE "ProductVersion", "0.2.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -390,7 +399,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Device Explorer v0.1 ©Pavel Yosifovich"
+    IDR_MAINFRAME           "Device Explorer v0.2"
     IDS_TITLE               "Device Explorer"
 END
 
@@ -484,6 +493,11 @@ STRINGTABLE
 BEGIN
     ID_VIEW_SHOWEMPTYCLASSES 
                             "Show empty device classes/interfaces\nShowEmpty Classes/Interfaces"
+    ID_EXPLORE_DEVICESBYCLASS "\nDevice Classes"
+    ID_EXPLORE_DEVICETREE   "\nDevice Tree"
+    ID_EXPLORE_DRIVERS      "\nDrivers"
+    ID_EXPLORE_DEVICEINTERFACES "\nDevice Interfaces"
+    ID_EXPLORE_DEVICELIST   "\nDevice List"
 END
 
 #endif    // English (United States) resources

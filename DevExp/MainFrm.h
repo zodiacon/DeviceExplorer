@@ -26,6 +26,12 @@ public:
 
 protected:
 	BEGIN_MSG_MAP(CMainFrame)
+		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICESBYCLASS, OnExploreDeviceClasses)
+		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICEINTERFACES, OnExploreDeviceInterfaces)
+		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICETREE, OnExploreDeviceTree)
+		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICELIST, OnExploreDeviceList)
+		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE, OnWindowClose)
+		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE_ALL, OnWindowCloseAll)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
@@ -54,6 +60,7 @@ protected:
 private:
 	void InitToolBar(CToolBarCtrl& tb, int size);
 	void InitMenu();
+	void UpdateUI();
 
 	// IMainFrame
 	HWND GetHwnd() const override;
@@ -72,6 +79,11 @@ private:
 	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnRescanHardware(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDeviceClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDrivers(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDeviceInterfaces(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDeviceTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDeviceList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_view;
 	inline static AppSettings s_Settings;

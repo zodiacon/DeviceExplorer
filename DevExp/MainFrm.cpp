@@ -14,7 +14,7 @@
 #include "DeviceClassesView.h"
 #include "DeviceInterfacesView.h"
 
-const int WINDOW_MENU_POSITION = 5;
+const int WINDOW_MENU_POSITION = 6;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -83,32 +83,41 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CMenuHandle menuMain = GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 
-	{
-		auto pView = new CDevNodeView(this);
-		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-		m_view.AddPage(pView->m_hWnd, _T("Device Node Tree"), 0, pView);
-	}
-	{
-		auto pView = new CDevNodeListView(this);
-		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-		m_view.AddPage(pView->m_hWnd, _T("Device Node List"), 1, pView);
-	}
-	{
-		auto pView = new CDeviceClassesView(this);
-		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-		m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
-	}
-	{
-		auto pView = new CDeviceInterfacesView(this);
-		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-		m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 3, pView);
-	}
-	m_view.SetActivePage(2);
-
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
+
+	PostMessage(WM_COMMAND, ID_EXPLORE_DEVICESBYCLASS);
 
 	return 0;
 }
+
+LRESULT CMainFrame::OnExploreDeviceClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto pView = new CDeviceClassesView(this);
+	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
+	return 0;
+}
+
+LRESULT CMainFrame::OnExploreDeviceInterfaces(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto pView = new CDeviceInterfacesView(this);
+	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 3, pView);
+	return 0;
+}
+
+LRESULT CMainFrame::OnExploreDeviceTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto pView = new CDevNodeView(this);
+	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView->m_hWnd, _T("Device Tree"), 0, pView);
+	return 0;
+}
+
+LRESULT CMainFrame::OnExploreDeviceList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto pView = new CDevNodeListView(this);
+	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView->m_hWnd, _T("Device List"), 1, pView);
+	return 0;
+}
+
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	AppSettings::Get().Save();
@@ -153,10 +162,11 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (int nActivePage = m_view.GetActivePage(); nActivePage != -1)
+	if (int nActivePage = m_view.GetActivePage(); nActivePage != -1) {
 		m_view.RemovePage(nActivePage);
-	else
-		::MessageBeep((UINT)-1);
+		if (m_view.GetPageCount() == 0)
+			UpdateUI();
+	}
 
 	return 0;
 }
@@ -164,7 +174,21 @@ LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	m_view.RemoveAllPages();
 
+	if (m_view.GetPageCount() == 0)
+		UpdateUI();
+
 	return 0;
+}
+
+void CMainFrame::UpdateUI() {
+	int count = m_view.GetPageCount();
+	if (count == 0) {
+		UIEnable(ID_DEVICE_ENABLE, false);
+		UIEnable(ID_DEVICE_PROPERTIES, false);
+		UIEnable(ID_EDIT_COPY, false);
+		UIEnable(ID_VIEW_REFRESH, false);
+		UIEnable(ID_DEVICE_DISABLE, false);
+	}
 }
 
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -188,6 +212,13 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 	} buttons[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_EDIT_COPY, IDI_COPY },
+		{ 0 },
+		{ ID_EXPLORE_DEVICESBYCLASS, IDI_DEVICES },
+		{ ID_EXPLORE_DEVICETREE, IDI_TREE },
+		{ ID_EXPLORE_DEVICELIST, IDI_LIST },
+		{ ID_EXPLORE_DEVICEINTERFACES, IDI_INTERFACE },
+		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
+		{ 0 },
 		{ 0, 0, 0x8000 },
 		{ ID_DEVICE_PROPERTIES, IDI_PROPS },
 		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE, 0x8000 },
@@ -223,6 +254,11 @@ void CMainFrame::InitMenu() {
 		{ ID_DEVICE_SCANFORHARDWARECHANGES, IDI_RESCAN },
 		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE },
 		{ ID_DEVICE_DISABLE, IDI_DISABLE_DEVICE },
+		{ ID_EXPLORE_DEVICEINTERFACES, IDI_INTERFACE },
+		{ ID_EXPLORE_DEVICESBYCLASS, IDI_DEVICES },
+		{ ID_EXPLORE_DEVICETREE, IDI_TREE },
+		{ ID_EXPLORE_DEVICELIST, IDI_LIST },
+		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
 	};
 	for (auto& cmd : cmds) {
 		AddCommand(cmd.id, cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon);

@@ -43,7 +43,7 @@ std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
         CRegKey key;
         key.Open(HKEY_LOCAL_MACHINE, (LR"(System\CurrentControlSet\Services\)" + di.Name + LR"(\Parameters\WDF)").c_str(), KEY_READ);
         if (key) {
-            di.Type |= DeviceDriverType::WDF;
+            di.Type |= DeviceDriverType::KMDF;
             key.QueryDWORDValue(L"WdfMajorVersion", (DWORD&)di.MajorVersion);
             key.QueryDWORDValue(L"WdfMinorVersion", (DWORD&)di.MinorVersion);
         }

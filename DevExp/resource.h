@@ -41,8 +41,6 @@
 #define IDC_LOCATION                    1008
 #define IDC_LOCATION2                   1009
 #define IDC_STATUS                      1009
-#define IDC_EDIT1                       1009
-#define IDC_NFG                         1009
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_FILE_RUNASADMINISTRATOR      32775
@@ -59,13 +57,19 @@
 #define ID_TAB_NEWWINDOW                32786
 #define ID_OPTIONS_DARKMODE             32787
 #define ID_DEVICE_DRIVERS               32788
+#define ID_TAB_CLOSEALL                 32791
+#define ID_EXPLORE_DEVICESBYCLASS       32792
+#define ID_EXPLORE_DEVICETREE           32793
+#define ID_EXPLORE_DRIVERS              32794
+#define ID_EXPLORE_DEVICEINTERFACES     32795
+#define ID_EXPLORE_DEVICELIST           32796
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        229
-#define _APS_NEXT_COMMAND_VALUE         32791
+#define _APS_NEXT_COMMAND_VALUE         32797
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -67,7 +67,10 @@
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="DriversPropertyPage.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="DriversView.cpp">
+      <Filter>Views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="DriversPropertyPage.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DriversView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

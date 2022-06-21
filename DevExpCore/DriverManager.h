@@ -3,7 +3,8 @@
 enum class DeviceDriverType {
 	Kernel = 1,
 	FileSystem = 2,
-	WDF = 8,
+	KMDF = 8,
+	UMDF = 0x10,
 };
 DEFINE_ENUM_FLAG_OPERATORS(DeviceDriverType);
 

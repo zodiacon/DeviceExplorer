@@ -11,5 +11,5 @@ struct AppSettings : Settings {
 	END_SETTINGS
 
 	DEF_SETTING(AlwaysOnTop, bool)
-
+	DEF_SETTING(SingleInstance, bool)
 };
