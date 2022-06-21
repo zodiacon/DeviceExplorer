@@ -183,6 +183,16 @@ IDI_INTERRUPT           ICON                    "res\\interrupt.ico"
 
 IDI_PORT                ICON                    "res\\LPT-plug.ico"
 
+IDI_DRIVER_UMDF         ICON                    "res\\driver-umdf.ico"
+
+IDI_GO                  ICON                    "res\\Go.ico"
+
+IDI_STOP                ICON                    "res\\Stop.ico"
+
+IDI_CHECK               ICON                    "res\\Check.ico"
+
+IDI_RADIO               ICON                    "res\\radio.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

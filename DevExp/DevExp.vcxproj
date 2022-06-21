@@ -265,18 +265,21 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Binary.ico" />
+    <Image Include="res\Check.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\delete.ico" />
     <Image Include="res\DevExp.ico" />
     <Image Include="res\devices.ico" />
     <Image Include="res\disable.ico" />
     <Image Include="res\driver-kmdf.ico" />
+    <Image Include="res\driver-umdf.ico" />
     <Image Include="res\driver.ico" />
     <Image Include="res\enable.ico" />
     <Image Include="res\find.ico" />
     <Image Include="res\flag.ico" />
     <Image Include="res\gear_refresh.ico" />
     <Image Include="res\globe.ico" />
+    <Image Include="res\Go.ico" />
     <Image Include="res\interface.ico" />
     <Image Include="res\interrupt.ico" />
     <Image Include="res\list.ico" />
@@ -284,7 +287,9 @@
     <Image Include="res\memory.ico" />
     <Image Include="res\power.ico" />
     <Image Include="res\Properties.ico" />
+    <Image Include="res\radio.ico" />
     <Image Include="res\refresh.ico" />
+    <Image Include="res\Stop.ico" />
     <Image Include="res\Text.ico" />
     <Image Include="res\tree.ico" />
   </ItemGroup>

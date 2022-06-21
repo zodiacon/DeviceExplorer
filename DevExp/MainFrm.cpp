@@ -13,6 +13,7 @@
 #include "SecurityHelper.h"
 #include "DeviceClassesView.h"
 #include "DeviceInterfacesView.h"
+#include "DriversView.h"
 
 const int WINDOW_MENU_POSITION = 6;
 
@@ -41,6 +42,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitMenu();
 	UIAddMenu(hMenu);
 	AddMenu(hMenu);
+	SetCheckIcon(IDI_CHECK, IDI_RADIO);
 
 	CToolBarCtrl tb;
 	tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
@@ -94,6 +96,8 @@ LRESULT CMainFrame::OnExploreDeviceClasses(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	auto pView = new CDeviceClassesView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
+	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DEVICES);
+	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -101,6 +105,8 @@ LRESULT CMainFrame::OnExploreDeviceInterfaces(WORD /*wNotifyCode*/, WORD /*wID*/
 	auto pView = new CDeviceInterfacesView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 3, pView);
+	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_INTERFACE);
+	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -108,6 +114,8 @@ LRESULT CMainFrame::OnExploreDeviceTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto pView = new CDevNodeView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Tree"), 0, pView);
+	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_TREE);
+	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -115,9 +123,20 @@ LRESULT CMainFrame::OnExploreDeviceList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto pView = new CDevNodeListView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device List"), 1, pView);
+	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_LIST);
+	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
+LRESULT CMainFrame::OnExploreDrivers(WORD /*wNotifyCode*/, WORD /*id*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto pView = new CDriversView(this);
+	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_view.AddPage(pView->m_hWnd, _T("Drivers"), 4, pView);
+	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DRIVER);
+	AddSubMenu(m_view.m_menu);
+
+	return 0;
+}
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	AppSettings::Get().Save();
@@ -194,7 +213,8 @@ void CMainFrame::UpdateUI() {
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int page = wID - ID_WINDOW_TABFIRST;
 	m_view.SetActivePage(page);
-	
+	AddSubMenu(m_view.m_menu);
+
 	return 0;
 }
 
@@ -218,7 +238,6 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 		{ ID_EXPLORE_DEVICELIST, IDI_LIST },
 		{ ID_EXPLORE_DEVICEINTERFACES, IDI_INTERFACE },
 		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
-		{ 0 },
 		{ 0, 0, 0x8000 },
 		{ ID_DEVICE_PROPERTIES, IDI_PROPS },
 		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE, 0x8000 },

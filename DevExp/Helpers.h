@@ -4,6 +4,9 @@
 
 struct DeviceInfo;
 class DeviceManager;
+enum class DeviceDriverType;
+enum class DriverStartType;
+enum class DriverState;
 
 struct Helpers final {
 	static CString GetPropertyName(DEVPROPKEY const& key);
@@ -23,4 +26,7 @@ struct Helpers final {
 	static void DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInfo const& di);
 	static PCWSTR ResourceTypeToString(ResourceType type);
 	static std::wstring FormatDate(FILETIME const& ft);
+	static PCWSTR DriverStateToString(DriverState state);
+	static std::wstring DriverTypeToString(DeviceDriverType  type);
+	static PCWSTR DriverStartTypeToString(DriverStartType type);
 };

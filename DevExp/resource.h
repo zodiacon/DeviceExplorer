@@ -33,6 +33,12 @@
 #define IDI_BINARY                      225
 #define IDI_INTERRUPT                   226
 #define IDI_PORT                        227
+#define IDI_DRIVER_UMDF                 229
+#define IDI_GO                          230
+#define IDI_STOP                        231
+#define IDI_CHECK                       232
+#define IDI_ICON2                       233
+#define IDI_RADIO                       233
 #define IDC_LIST                        1002
 #define IDC_NAME                        1003
 #define IDC_IMAGE                       1005
@@ -68,7 +74,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        229
+#define _APS_NEXT_RESOURCE_VALUE        234
 #define _APS_NEXT_COMMAND_VALUE         32797
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101

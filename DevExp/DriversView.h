@@ -34,8 +34,10 @@ protected:
 	CString GetColumnText(HWND, int row, int col);
 	int GetRowImage(HWND, int row, int col);
 	void DoSort(const SortInfo* si);
-	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
-	bool OnDoubleClickList(HWND, int row, int col, POINT const&);
+	int GetSaveColumnRange(int&) const;
+
+	//bool OnRightClickList(HWND, int row, int col, POINT const& pt);
+	//bool OnDoubleClickList(HWND, int row, int col, POINT const&);
 
 	// Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -43,14 +45,14 @@ protected:
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 	enum class ColumnType {
-		Name, Type, ImagePath, State, WDFVersion,
+		Name, DisplayName, Type, ImagePath, State, WDFVersion, StartType,
 	};
 
 	//
 	// CViewBase overridables
 	//
-	void UpdateUI(CUpdateUIBase& ui);
-	void OnPageActivated(bool activate);
+	//void UpdateUI(CUpdateUIBase& ui);
+	//void OnPageActivated(bool activate);
 
 private:
 

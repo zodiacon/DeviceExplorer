@@ -19,6 +19,7 @@
 #include "GeneralPropertyPage.h"
 #include "ResourcesPropertyPage.h"
 #include "DriversPropertyPage.h"
+#include "DriverManager.h"
 
 namespace std {
 	template<>
@@ -699,4 +700,42 @@ PCWSTR Helpers::ResourceTypeToString(ResourceType type) {
 
 std::wstring Helpers::FormatDate(FILETIME const& ft) {
 	return (PCWSTR)CTime(ft).Format(L"%x");
+}
+
+PCWSTR Helpers::DriverStateToString(DriverState state) {
+	switch (state) {
+		case DriverState::Running: return L"Running";
+		case DriverState::Stopped: return L"Stopped";
+		case DriverState::StartPending: return L"Start Pending";
+		case DriverState::StopPending: return L"Stop Pending";
+		case DriverState::Paused: return L"Paused";
+		case DriverState::PausePending: return L"Pause Pending";
+		case DriverState::ContinuePending: return L"Continue Pending";
+	}
+	return L"(Unknown)";
+}
+
+std::wstring Helpers::DriverTypeToString(DeviceDriverType type) {
+	std::wstring result;
+	switch (type & DeviceDriverType::TypeMask) {
+		case DeviceDriverType::Kernel: result = L"Kernel"; break;
+		case DeviceDriverType::FileSystem: result = L"File System"; break;
+	}
+	if ((type & DeviceDriverType::KMDF) == DeviceDriverType::KMDF)
+		result += L" (KMDF)";
+	else if ((type & DeviceDriverType::UMDF) == DeviceDriverType::UMDF)
+		result += L" (UMDF)";
+
+	return result;
+}
+
+PCWSTR Helpers::DriverStartTypeToString(DriverStartType type) {
+	switch (type) {
+		case DriverStartType::Boot: return L"Boot (0)";
+		case DriverStartType::System: return L"System (1)";
+		case DriverStartType::Auto: return L"Automatic (2)";
+		case DriverStartType::Demand: return L"Demand (3)";
+		case DriverStartType::Disabled: return L"Disabled (4)";
+	}
+	return PCWSTR();
 }

@@ -2,7 +2,7 @@
 #include "DriverManager.h"
 
 std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
-    wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE));
+    wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_CONNECT));
     if (!hScm)
         return {};
 
@@ -21,7 +21,7 @@ std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
     std::vector<DriverInfo> drivers;
     drivers.reserve(count);
     auto info = (ENUM_SERVICE_STATUS_PROCESS*)buffer.get();
-    auto svcBuffer = std::make_unique<BYTE[]>(2048);
+    auto svcBuffer = std::make_unique<BYTE[]>(1 << 12);
     auto config = (QUERY_SERVICE_CONFIG*)svcBuffer.get();
 
     for (DWORD i = 0; i < count; i++) {
@@ -31,10 +31,14 @@ std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
         di.DisplayName = dinfo.lpDisplayName;
         auto& status = dinfo.ServiceStatusProcess;
         di.Type = (DeviceDriverType)status.dwServiceType;
-        di.State = status.dwCurrentState;
-        wil::unique_schandle hService(::OpenService(hScm.get(), dinfo.lpServiceName, SERVICE_QUERY_CONFIG));
-        if (hService && ::QueryServiceConfig(hService.get(), config, 2048, &size)) {
+        di.State = (DriverState)status.dwCurrentState;
+        wil::unique_schandle hService(::OpenService(hScm.get(), dinfo.lpServiceName, SERVICE_QUERY_CONFIG | SERVICE_QUERY_STATUS));
+        if (hService && ::QueryServiceConfig(hService.get(), config, 1 << 12, &size)) {
             di.ImagePath = config->lpBinaryPathName;
+            di.StartType = (DriverStartType)config->dwStartType;
+        }
+        else {
+            DebugBreak();
         }
 
         //
