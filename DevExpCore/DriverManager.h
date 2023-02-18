@@ -41,5 +41,7 @@ class DriverManager {
 public:
 	static std::vector<DriverInfo> EnumKernelDrivers(bool runningOnly = false);
 	static std::vector<DriverInfo> EnumUserDrivers(bool runningOnly = false);
+	static bool Start(std::wstring_view name);
+	static bool Stop(std::wstring_view name);
 };
 

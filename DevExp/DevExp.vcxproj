@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,7 +157,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -193,7 +193,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DevExpCore;..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -266,6 +266,8 @@
   <ItemGroup>
     <Image Include="res\Binary.ico" />
     <Image Include="res\Check.ico" />
+    <Image Include="res\close-all.ico" />
+    <Image Include="res\close.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\delete.ico" />
     <Image Include="res\DevExp.ico" />
@@ -300,7 +302,7 @@
     <ProjectReference Include="..\DevExpCore\DevExpCore.vcxproj">
       <Project>{d49246fc-7adf-4fe3-a264-48a18397354e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\WTLHelper\WTLHelper.vcxproj">
+    <ProjectReference Include="..\WTLHelper\WTLHelper\WTLHelper.vcxproj">
       <Project>{ae53419f-a769-4548-8e15-e311904df7df}</Project>
     </ProjectReference>
   </ItemGroup>

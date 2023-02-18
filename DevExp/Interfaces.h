@@ -5,6 +5,6 @@ const UINT WM_NEED_REFRESH = WM_PAGE_ACTIVATED + 1;
 
 struct IMainFrame abstract {
 	virtual HWND GetHwnd() const = 0;
-	virtual BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) = 0;
+	virtual BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd = nullptr) = 0;
 	virtual CUpdateUIBase& GetUI() = 0;
 };

@@ -127,6 +127,13 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_DEVICE_PROPERTIES
     END
+    POPUP "driver"
+    BEGIN
+        MENUITEM "&Start",                      ID_DRIVER_START
+        MENUITEM "Sto&p",                       ID_DRIVER_STOP
+        MENUITEM SEPARATOR
+        MENUITEM "&Uninstall",                  ID_DRIVER_UNINSTALL
+    END
 END
 
 
@@ -192,6 +199,10 @@ IDI_STOP                ICON                    "res\\Stop.ico"
 IDI_CHECK               ICON                    "res\\Check.ico"
 
 IDI_RADIO               ICON                    "res\\radio.ico"
+
+IDI_CLOSE               ICON                    "res\\close.ico"
+
+IDI_CLOSEALL            ICON                    "res\\close-all.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -336,8 +347,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,2,0,0
- PRODUCTVERSION 0,2,0,0
+ FILEVERSION 0,2,1,0
+ PRODUCTVERSION 0,2,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -354,12 +365,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Pavel Yosifovich"
             VALUE "FileDescription", "Device Explorer"
-            VALUE "FileVersion", "0.2.0.0"
+            VALUE "FileVersion", "0.2.1.0"
             VALUE "InternalName", "DevExp"
-            VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
+            VALUE "LegalCopyright", "©2021-2023 Pavel Yosifovich"
             VALUE "OriginalFilename", "DevExp.exe"
             VALUE "ProductName", "Device Explorer"
-            VALUE "ProductVersion", "0.2.0.0"
+            VALUE "ProductVersion", "0.2.1.0"
         END
     END
     BLOCK "VarFileInfo"

@@ -278,6 +278,8 @@ void CMainFrame::InitMenu() {
 		{ ID_EXPLORE_DEVICETREE, IDI_TREE },
 		{ ID_EXPLORE_DEVICELIST, IDI_LIST },
 		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
+		{ ID_WINDOW_CLOSE, IDI_CLOSE },
+		{ ID_WINDOW_CLOSE_ALL, IDI_CLOSEALL },
 	};
 	for (auto& cmd : cmds) {
 		AddCommand(cmd.id, cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon);
@@ -288,8 +290,8 @@ HWND CMainFrame::GetHwnd() const {
 	return m_hWnd;
 }
 
-BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) {
-	return ShowContextMenu(hMenu, flags, x, y);
+BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) {
+	return ShowContextMenu(hMenu, flags, x, y, hWnd);
 }
 
 CUpdateUIBase& CMainFrame::GetUI() {

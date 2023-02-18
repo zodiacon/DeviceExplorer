@@ -214,10 +214,16 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\Check.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\close.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\close-all.ico">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\radio.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

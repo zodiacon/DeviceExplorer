@@ -3,10 +3,74 @@
 #include <ClipboardHelper.h>
 #include "Helpers.h"
 #include <SortHelper.h>
+#include <ToolbarHelper.h>
+
+void CDriversView::UpdateUI(CUpdateUIBase& ui) {
+}
+
+void CDriversView::UpdateUI() {
+	int selected = m_List.GetSelectedIndex();
+	auto& item = m_Drivers[selected < 0 ? 0 : selected];
+	UIEnable(ID_DRIVER_START, selected >= 0 && item.State == DriverState::Stopped);
+	UIEnable(ID_DRIVER_STOP, selected >= 0 && item.State == DriverState::Running);
+}
+
+LRESULT CDriversView::OnStartStopDriver(WORD, WORD id, HWND, BOOL&) {
+	int selected = m_List.GetSelectedIndex();
+	ATLASSERT(selected >= 0);
+	auto& item = m_Drivers[selected];
+	struct Data {
+		HWND hWnd;
+		std::wstring Name;
+		bool Start;
+	};
+	auto data = new Data{ m_hWnd, item.Name, id == ID_DRIVER_START };
+	::TrySubmitThreadpoolCallback([](auto, auto param) {
+		auto d = (Data*)param;
+		auto ok = d->Start ? DriverManager::Start(d->Name) : DriverManager::Stop(d->Name);
+		::SendMessage(d->hWnd, WM_UPDATEDRIVER, ok ? 0 : ::GetLastError(), reinterpret_cast<LPARAM>(d->Name.c_str()));
+		delete d;
+		}, data, nullptr);
+
+	return 0;
+}
+
+LRESULT CDriversView::OnUpdateDriver(UINT, WPARAM wp, LPARAM lp, BOOL&) {
+	if (wp) {
+		AtlMessageBox(m_hWnd, L"Error encountered.", IDS_TITLE, MB_ICONERROR);
+	}
+	else {
+		Refresh();
+		UpdateUI();
+	}
+	return 0;
+}
 
 LRESULT CDriversView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
+	ToolBarButtonInfo buttons[] = {
+		{ ID_DRIVER_START, IDI_GO, 0, L"Start" },
+		{ ID_DRIVER_STOP, IDI_STOP, 0, L"Stop" },
+	};
+	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
+	auto tb = ToolbarHelper::CreateAndInitToolBar(m_hWnd, buttons, _countof(buttons), 16);
+	AddSimpleReBarBand(tb);
+	UIAddToolBar(tb);
+	CReBarCtrl rb(m_hWndToolBar);
+	rb.LockBands(true);
+
+	struct {
+		UINT id, icon;
+	} cmds[] = {
+		{ ID_DRIVER_START, IDI_GO },
+		{ ID_DRIVER_STOP, IDI_STOP },
+	};
+	for (auto& cmd : cmds) {
+		AddCommand(cmd.id, AtlLoadIconImage(cmd.icon, 0, 16, 16));
+	}
+	UIAddMenu(IDR_CONTEXT);
+
 	m_hWndClient = m_List.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
-		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS);
+		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SINGLESEL);
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_SUBITEMIMAGES);
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 64, 32);
@@ -25,13 +89,22 @@ LRESULT CDriversView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Image Path", LVCFMT_LEFT, 350, ColumnType::ImagePath);
 	cm->AddColumn(L"WDF Version", LVCFMT_RIGHT, 70, ColumnType::WDFVersion);
 
+	auto pLoop = _Module.GetMessageLoop();
+	pLoop->AddIdleHandler(this);
+
 	Refresh();
 
 	return 0;
 }
 
+LRESULT CDriversView::OnDestroy(UINT, WPARAM, LPARAM, BOOL&) {
+	_Module.GetMessageLoop()->RemoveIdleHandler(this);
+	return 0;
+}
+
 LRESULT CDriversView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.SetFocus();
+	UpdateUI();
 
 	return 0;
 }
@@ -51,13 +124,28 @@ LRESULT CDriversView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 
-LRESULT CDriversView::OnItemChanged(int, LPNMHDR, BOOL&) {
-	return LRESULT();
+void CDriversView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
+	if(newState & LVIS_SELECTED)
+		UpdateUI();
+}
+
+bool CDriversView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	return ShowContextMenu(menu.GetSubMenu(2), 0, pt.x, pt.y);
 }
 
 void CDriversView::Refresh() {
+	bool empty = m_Drivers.empty();
 	m_Drivers.Set(DriverManager::EnumKernelDrivers());
-	m_List.SetItemCount((int)m_Drivers.size());
+	if (!empty)
+		Sort(m_List);
+	m_List.SetItemCountEx((int)m_Drivers.size(), LVSICF_NOSCROLL);
+}
+
+BOOL CDriversView::OnIdle() {
+	UIUpdateToolBar();
+	return FALSE;
 }
 
 CString CDriversView::GetColumnText(HWND, int row, int col) {
@@ -107,6 +195,6 @@ void CDriversView::DoSort(const SortInfo* si) {
 	m_Drivers.Sort(compare);
 }
 
-int CDriversView::GetSaveColumnRange(int&) const {
+int CDriversView::GetSaveColumnRange(HWND, int&) const {
 	return 1;
 }

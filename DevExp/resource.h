@@ -37,8 +37,9 @@
 #define IDI_GO                          230
 #define IDI_STOP                        231
 #define IDI_CHECK                       232
-#define IDI_ICON2                       233
 #define IDI_RADIO                       233
+#define IDI_CLOSE                       234
+#define IDI_CLOSEALL                    235
 #define IDC_LIST                        1002
 #define IDC_NAME                        1003
 #define IDC_IMAGE                       1005
@@ -69,13 +70,16 @@
 #define ID_EXPLORE_DRIVERS              32794
 #define ID_EXPLORE_DEVICEINTERFACES     32795
 #define ID_EXPLORE_DEVICELIST           32796
+#define ID_DRIVER_START                 32797
+#define ID_DRIVER_STOP                  32798
+#define ID_DRIVER_UNINSTALL             32799
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        234
-#define _APS_NEXT_COMMAND_VALUE         32797
+#define _APS_NEXT_RESOURCE_VALUE        236
+#define _APS_NEXT_COMMAND_VALUE         32800
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

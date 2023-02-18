@@ -56,3 +56,28 @@ std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
 
     return drivers;
 }
+
+bool DriverManager::Start(std::wstring_view name) {
+    wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS));
+    if (!hScm)
+        return false;
+
+    wil::unique_schandle hService(::OpenService(hScm.get(), name.data(), SERVICE_START));
+    if (!hScm)
+        return false;
+
+    return ::StartService(hService.get(), 0, nullptr);
+}
+
+bool DriverManager::Stop(std::wstring_view name) {
+    wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS));
+    if (!hScm)
+        return false;
+
+    wil::unique_schandle hService(::OpenService(hScm.get(), name.data(), SERVICE_STOP));
+    if (!hScm)
+        return false;
+
+    SERVICE_STATUS status;
+    return ::ControlService(hService.get(), SERVICE_CONTROL_STOP, &status);
+}

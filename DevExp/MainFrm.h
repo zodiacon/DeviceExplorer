@@ -65,7 +65,7 @@ private:
 
 	// IMainFrame
 	HWND GetHwnd() const override;
-	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) override;
+	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd = nullptr) override;
 	CUpdateUIBase& GetUI() override;
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
