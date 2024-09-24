@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Settings.h"
+#include <Settings.h>
 
 struct AppSettings : Settings {
 	BEGIN_SETTINGS(AppSettings)
@@ -8,8 +8,11 @@ struct AppSettings : Settings {
 		SETTING(Font, LOGFONT{}, SettingType::Binary);
 		SETTING(AlwaysOnTop, 0, SettingType::Bool);
 		SETTING(SingleInstance, 0, SettingType::Bool);
+		SETTING(DarkMode, 0, SettingType::Bool);
 	END_SETTINGS
 
 	DEF_SETTING(AlwaysOnTop, bool)
 	DEF_SETTING(SingleInstance, bool)
+	DEF_SETTING(DarkMode, bool)
+	DEF_SETTING(MainWindowPlacement, WINDOWPLACEMENT)
 };

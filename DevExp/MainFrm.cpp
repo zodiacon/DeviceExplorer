@@ -31,7 +31,7 @@ BOOL CMainFrame::OnIdle() {
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	auto& settings = AppSettings::Get();
-	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
+	bool loaded = settings.LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
 
 	auto hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
@@ -43,6 +43,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UIAddMenu(hMenu);
 	AddMenu(hMenu);
 	SetCheckIcon(IDI_CHECK, IDI_RADIO);
+	InitDarkTheme();
 
 	CToolBarCtrl tb;
 	tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
@@ -86,6 +87,13 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
+
+	if (s_Settings.DarkMode()) {
+		ThemeHelper::SetCurrentTheme(s_DarkTheme, m_hWnd);
+		ThemeHelper::UpdateMenuColors(*this, true);
+		UpdateMenu(GetMenu(), true);
+		UISetCheck(ID_OPTIONS_DARKMODE, true);
+	}
 
 	PostMessage(WM_COMMAND, ID_EXPLORE_DEVICESBYCLASS);
 
@@ -332,3 +340,66 @@ LRESULT CMainFrame::OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	return 0;
 }
 
+LRESULT CMainFrame::OnAlwaysOnTop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto& settings = AppSettings::Get();
+	settings.AlwaysOnTop(!settings.AlwaysOnTop());
+	SetAlwaysOnTop(settings.AlwaysOnTop());
+
+	return 0;
+}
+
+void CMainFrame::SetAlwaysOnTop(bool onTop) {
+	SetWindowPos(onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	UISetCheck(ID_OPTIONS_ALWAYSONTOP, onTop);
+}
+
+LRESULT CMainFrame::OnShowWindow(UINT, WPARAM, LPARAM, BOOL&) {
+	static bool shown = false;
+	if (!shown) {
+		shown = true;
+		auto wp = s_Settings.MainWindowPlacement();
+		if (wp.showCmd)
+			SetWindowPlacement(&wp);
+		SetAlwaysOnTop(s_Settings.AlwaysOnTop());
+	}
+	return 0;
+}
+
+void CMainFrame::InitDarkTheme() const {
+	s_DarkTheme.BackColor = s_DarkTheme.SysColors[COLOR_WINDOW] = RGB(32, 32, 32);
+	s_DarkTheme.TextColor = s_DarkTheme.SysColors[COLOR_WINDOWTEXT] = RGB(248, 248, 248);
+	s_DarkTheme.SysColors[COLOR_HIGHLIGHT] = RGB(10, 10, 160);
+	s_DarkTheme.SysColors[COLOR_HIGHLIGHTTEXT] = RGB(240, 240, 240);
+	s_DarkTheme.SysColors[COLOR_MENUTEXT] = s_DarkTheme.TextColor;
+	s_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = s_DarkTheme.TextColor;
+	s_DarkTheme.SysColors[COLOR_BTNFACE] = s_DarkTheme.BackColor;
+	s_DarkTheme.SysColors[COLOR_BTNTEXT] = s_DarkTheme.TextColor;
+	s_DarkTheme.SysColors[COLOR_3DLIGHT] = RGB(192, 192, 192);
+	s_DarkTheme.SysColors[COLOR_BTNHIGHLIGHT] = RGB(192, 192, 192);
+	s_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = s_DarkTheme.TextColor;
+	s_DarkTheme.SysColors[COLOR_3DSHADOW] = s_DarkTheme.TextColor;
+	s_DarkTheme.SysColors[COLOR_SCROLLBAR] = s_DarkTheme.BackColor;
+	s_DarkTheme.SysColors[COLOR_APPWORKSPACE] = s_DarkTheme.BackColor;
+	s_DarkTheme.StatusBar.BackColor = RGB(16, 0, 16);
+	s_DarkTheme.StatusBar.TextColor = s_DarkTheme.TextColor;
+
+	s_DarkTheme.Name = L"Dark";
+	s_DarkTheme.Menu.BackColor = s_DarkTheme.BackColor;
+	s_DarkTheme.Menu.TextColor = s_DarkTheme.TextColor;
+}
+
+LRESULT CMainFrame::OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto& settings = AppSettings::Get();
+	settings.DarkMode(!settings.DarkMode());
+	UISetCheck(ID_OPTIONS_DARKMODE, settings.DarkMode());
+
+	if (settings.DarkMode())
+		ThemeHelper::SetCurrentTheme(s_DarkTheme, m_hWnd);
+	else
+		ThemeHelper::SetDefaultTheme(m_hWnd);
+
+	ThemeHelper::UpdateMenuColors(*this, settings.DarkMode());
+	UpdateMenu(GetMenu(), true);
+
+	return 0;
+}

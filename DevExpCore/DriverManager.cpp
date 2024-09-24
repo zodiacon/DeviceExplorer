@@ -38,7 +38,7 @@ std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
             di.StartType = (DriverStartType)config->dwStartType;
         }
         else {
-            DebugBreak();
+            continue;
         }
 
         //

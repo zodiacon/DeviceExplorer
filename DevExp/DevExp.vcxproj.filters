@@ -72,6 +72,9 @@
     <ClCompile Include="DriversView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="AppSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
