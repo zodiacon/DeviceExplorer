@@ -60,7 +60,7 @@ void CDevNodeView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
 	for (auto& key : keys) {
 		Property prop;
 		prop.Key = key;
-		prop.Value = node.GetPropertyValue(key, prop.Type, &prop.ValueSize);
+		prop.Value = m_DevMgr->GetPropertyValue(node, key, prop.Type, &prop.ValueSize); //node.GetPropertyValue(key, prop.Type, &prop.ValueSize);
 		prop.ValueAsString = Helpers::GetPropertyValueAsString(prop.Value.get(), prop.Type, prop.ValueSize);
 		prop.Name = Helpers::GetPropertyName(key);
 		m_Items.push_back(std::move(prop));
@@ -139,8 +139,8 @@ LRESULT CDevNodeView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
 	auto cm = GetColumnManager(m_List);
-	cm->AddColumn(L"Property", LVCFMT_LEFT, 250, 0);
-	cm->AddColumn(L"Value", LVCFMT_LEFT, 350, 1);
+	cm->AddColumn(L"Property", LVCFMT_LEFT, 320, 0);
+	cm->AddColumn(L"Value", LVCFMT_LEFT, 360, 1);
 	cm->AddColumn(L"Details", LVCFMT_LEFT, 550, 2);
 	cm->UpdateColumns();
 

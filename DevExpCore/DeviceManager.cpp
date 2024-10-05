@@ -138,6 +138,19 @@ std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, b
 	return drivers;
 }
 
+std::unique_ptr<BYTE[]> DeviceManager::GetPropertyValue(DWORD inst, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len) const {
+	ULONG size = 0;
+	::SetupDiGetDeviceProperty(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&m_devices[m_devMap.at(inst)].Data , &key, &type, nullptr, 0, &size, 0);
+	if (size == 0)
+		return nullptr;
+
+	auto value = std::make_unique<BYTE[]>(size);
+	::SetupDiGetDeviceProperty(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&m_devices[m_devMap.at(inst)].Data, &key, &type, value.get(), size, &size, 0);
+	if (len)
+		*len = size;
+	return value;
+}
+
 std::wstring DeviceManager::GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type) {
 	DWORD regType;
 	std::wstring result;

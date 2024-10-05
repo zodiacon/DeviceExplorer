@@ -140,6 +140,8 @@ public:
 	DeviceInfo const& GetDevice(int index) const;
 	std::vector<DeviceDriverInfo> EnumDrivers(DeviceInfo const& di, bool compat = false) const;
 	//std::vector<DriverInfo> EnumDrivers();
+	
+	std::unique_ptr<BYTE[]> GetPropertyValue(DWORD inst, DEVPROPKEY const& key, DEVPROPTYPE& type, ULONG* len = nullptr) const;
 
 	// device class
 	static std::wstring GetDeviceClassRegistryPropertyString(const GUID* guid, DeviceClassRegistryPropertyType type);
@@ -195,6 +197,29 @@ public:
 	}
 
 	int GetDeviceIndex(DEVINST inst) const;
+
+	template<typename T>
+	T GetProperty(DWORD inst, DEVPROPKEY const& key) const {
+		T value{};
+		ULONG size = sizeof(T);
+		DEVPROPTYPE type;
+		::SetupDiGetDeviceProperty(m_hInfoSet.get(), (PSP_DEVINFO_DATA)&m_devices[m_devMap.at(inst)].Data, &key, &type, &value, size, &size, 0);
+		return value;
+	}
+
+	template<>
+	std::wstring GetProperty(DWORD inst, DEVPROPKEY const& key) const {
+		DEVPROPTYPE type;
+		auto buffer = GetPropertyValue(inst, key, type, nullptr);
+		if (buffer == nullptr)
+			return L"";
+
+		assert(type == DEVPROP_TYPE_STRING);
+		if (type != DEVPROP_TYPE_STRING)
+			return L"";
+
+		return (PCWSTR)buffer.get();
+	}
 
 private:
 	DeviceManager(const wchar_t* computerName = nullptr, const GUID* classGuid = nullptr, const wchar_t* enumerator = nullptr,
