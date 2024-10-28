@@ -236,7 +236,7 @@ void CDevNodeView::BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node)
 		}
 		auto isHidden = (dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
 		if (showHidden || !isHidden) {
-			auto hItem = InsertTreeItem(m_Tree, dn.GetName().c_str(), image, dn, hParent, TVI_SORT);
+			auto hItem = InsertTreeItem(m_Tree, (dn.GetName() + (dn.IsEnabled() ? L"" : L" (Disabled)")).c_str(), image, dn, hParent, TVI_SORT);
 			if(isHidden)
 				m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
 			BuildChildDevNodes(hItem, dn);
@@ -245,8 +245,12 @@ void CDevNodeView::BuildChildDevNodes(HTREEITEM hParent, DeviceNode const& node)
 }
 
 LRESULT CDevNodeView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	DeviceNode dn((DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem()));
+	auto selected = m_Tree.GetSelectedItem();
+	DeviceNode dn((DEVINST)m_Tree.GetItemData(selected));
 	auto result = dn.IsEnabled() ? dn.Disable() : dn.Enable();
+	if (result) {
+		m_Tree.SetItemText(selected, dn.IsEnabled() ? dn.GetName().c_str() : (dn.GetName() + L" (Disabled)").c_str());
+	}
 	return 0;
 }
 

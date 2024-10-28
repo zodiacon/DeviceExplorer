@@ -48,6 +48,7 @@ protected:
 
 	void OnPageActivated(bool active);
 	void UpdateUI(CUpdateUIBase& ui);
+	void UpdateList(HTREEITEM hNew);
 
 private:
 

@@ -53,7 +53,7 @@ std::vector<DEVPROPKEY> DeviceNode::GetPropertyKeys() const {
 }
 
 bool DeviceNode::Enable() {
-	return ::CM_Enable_DevInst(m_Inst, 0) == CR_SUCCESS;
+	return ::CM_Enable_DevNode(m_Inst, 0) == CR_SUCCESS;
 }
 
 bool DeviceNode::Disable() {
@@ -69,7 +69,8 @@ bool DeviceNode::Rescan() {
 }
 
 bool DeviceNode::IsEnabled() const {
-	return (GetStatus() & DeviceNodeStatus::Started) == DeviceNodeStatus::Started;
+	DeviceNodeProblem problem;
+	return !((GetStatus(&problem) & DeviceNodeStatus::HasProblem) == DeviceNodeStatus::HasProblem && problem == DeviceNodeProblem::DISABLED);
 }
 
 DEVPROPTYPE DeviceNode::GetPropertyType(DEVPROPKEY const& key) const {

@@ -74,9 +74,10 @@ void CDeviceClassesView::Refresh() {
 				image = images2.AddIcon(hIcon);
 				::DestroyIcon(hIcon);
 			}
-			auto isHidden = (DeviceNode(di.Data.DevInst).GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
+			DeviceNode dn(di.Data.DevInst);
+			auto isHidden = (dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
 			if (!isHidden || m_ShowHiddenDevices) {
-				auto hItem = InsertTreeItem(m_Tree, di.Description.c_str(), image, di.Data.DevInst, it->second, TVI_SORT);
+				auto hItem = InsertTreeItem(m_Tree, (di.Description + (dn.IsEnabled() ? L"" : L" (Disabled)")).c_str(), image, di.Data.DevInst, it->second, TVI_SORT);
 				if (isHidden)
 					m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
 			}
@@ -121,6 +122,10 @@ LRESULT CDeviceClassesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 }
 
 void CDeviceClassesView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
+	UpdateList(hNew);
+}
+
+void CDeviceClassesView::UpdateList(HTREEITEM hNew) {
 	m_Items.clear();
 	auto inst = GetItemData<DEVINST>(m_Tree, hNew);
 	DeviceNode node(inst);
@@ -228,8 +233,13 @@ LRESULT CDeviceClassesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CDeviceClassesView::OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	DeviceNode dn((DEVINST)m_Tree.GetItemData(m_Tree.GetSelectedItem()));
+	auto selected = m_Tree.GetSelectedItem();
+	DeviceNode dn((DEVINST)m_Tree.GetItemData(selected));
 	auto result = dn.IsEnabled() ? dn.Disable() : dn.Enable();
+	if (result) {
+		m_Tree.SetItemText(selected, dn.IsEnabled() ? dn.GetName().c_str() : (dn.GetName() + L" (Disabled)").c_str());
+		UpdateList(selected);
+	}
 	return 0;
 }
 
