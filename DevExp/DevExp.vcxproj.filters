@@ -228,6 +228,9 @@
     <Image Include="res\radio.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\Install.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

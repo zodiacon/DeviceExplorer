@@ -14,8 +14,11 @@
 #include "DeviceClassesView.h"
 #include "DeviceInterfacesView.h"
 #include "DriversView.h"
+#include <newdev.h>
 
-const int WINDOW_MENU_POSITION = 6;
+#pragma comment(lib, "newdev")
+
+const int WINDOW_MENU_POSITION = 7;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -288,6 +291,7 @@ void CMainFrame::InitMenu() {
 		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
 		{ ID_WINDOW_CLOSE, IDI_CLOSE },
 		{ ID_WINDOW_CLOSE_ALL, IDI_CLOSEALL },
+		{ ID_TOOLS_INSTALLDRIVER, IDI_INSTALL },
 	};
 	for (auto& cmd : cmds) {
 		AddCommand(cmd.id, cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon);
@@ -403,3 +407,26 @@ LRESULT CMainFrame::OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 	return 0;
 }
+
+bool CMainFrame::DoInstallDriver(bool force) {
+	CSimpleFileDialog dlg(TRUE, L"Inf", nullptr, OFN_ENABLESIZING | OFN_EXPLORER,
+		L"INF Files\0*.inf\0", m_hWnd);
+	ThemeHelper::Suspend();
+	auto ok = dlg.DoModal() == IDOK;
+	ThemeHelper::Suspend();
+	if(ok) {
+		return ::DiInstallDriver(m_hWnd, dlg.m_szFileName, force ? DIIRFLAG_FORCE_INF : 0, nullptr);
+	}
+	return false;
+}
+
+LRESULT CMainFrame::OnInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DoInstallDriver(false);
+	return 0;
+}
+
+LRESULT CMainFrame::OnForceInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DoInstallDriver(true);
+	return 0;
+}
+

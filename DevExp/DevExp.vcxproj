@@ -394,6 +394,7 @@
     <Image Include="res\gear_refresh.ico" />
     <Image Include="res\globe.ico" />
     <Image Include="res\Go.ico" />
+    <Image Include="res\Install.ico" />
     <Image Include="res\interface.ico" />
     <Image Include="res\interrupt.ico" />
     <Image Include="res\list.ico" />

@@ -37,6 +37,8 @@ protected:
 		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 		COMMAND_ID_HANDLER(ID_OPTIONS_ALWAYSONTOP, OnAlwaysOnTop)
+		COMMAND_ID_HANDLER(ID_TOOLS_INSTALLDRIVER, OnInstallDriver)
+		COMMAND_ID_HANDLER(ID_TOOLS_FORCEINSTALLDRIVER, OnForceInstallDriver)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(ID_FILE_RUNASADMINISTRATOR, OnRunAsAdmin)
 		COMMAND_ID_HANDLER(ID_DEVICE_SCANFORHARDWARECHANGES, OnRescanHardware)
@@ -68,6 +70,7 @@ private:
 	void UpdateUI();
 	void SetAlwaysOnTop(bool onTop);
 	void InitDarkTheme() const;
+	bool DoInstallDriver(bool force);
 
 	// IMainFrame
 	HWND GetHwnd() const override;
@@ -94,6 +97,8 @@ private:
 	LRESULT OnAlwaysOnTop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowWindow(UINT, WPARAM, LPARAM, BOOL&);
 	LRESULT OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnForceInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_view;
 	inline static AppSettings s_Settings;
