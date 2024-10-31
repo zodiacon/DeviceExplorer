@@ -7,6 +7,7 @@ class DeviceManager;
 enum class DeviceDriverType;
 enum class DriverStartType;
 enum class DriverState;
+enum DXGI_FORMAT;
 
 struct Helpers final {
 	static CString GetPropertyName(DEVPROPKEY const& key);
@@ -29,4 +30,5 @@ struct Helpers final {
 	static PCWSTR DriverStateToString(DriverState state);
 	static std::wstring DriverTypeToString(DeviceDriverType  type);
 	static PCWSTR DriverStartTypeToString(DriverStartType type);
+	static std::wstring DxgiFormatToString(DXGI_FORMAT format);
 };

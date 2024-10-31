@@ -14,6 +14,7 @@
 #include "DeviceClassesView.h"
 #include "DeviceInterfacesView.h"
 #include "DriversView.h"
+#include "DxgiView.h"
 #include <newdev.h>
 
 #pragma comment(lib, "newdev")
@@ -62,7 +63,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
 	UINT icons[] = { 
-		IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE, IDI_DRIVER,
+		IDI_TREE, IDI_LIST, IDI_DEVICES, IDI_INTERFACE, IDI_DRIVER, IDI_DIRECTX
 	};
 	for(auto icon : icons)
 		images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
@@ -108,6 +109,19 @@ LRESULT CMainFrame::OnExploreDeviceClasses(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
 	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DEVICES);
+	AddSubMenu(m_view.m_menu);
+	return 0;
+}
+
+LRESULT CMainFrame::OnExploreDxgi(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto pView = new CDxgiView(this);
+	if (!pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN)) {
+		delete pView;
+		return 0;
+	}
+
+	m_view.AddPage(pView->m_hWnd, _T("DXGI"), 5, pView);
+	//AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DEVICES);
 	AddSubMenu(m_view.m_menu);
 	return 0;
 }
@@ -249,6 +263,7 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 		{ ID_EXPLORE_DEVICELIST, IDI_LIST },
 		{ ID_EXPLORE_DEVICEINTERFACES, IDI_INTERFACE },
 		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
+		{ ID_EXPLORE_DXGI, IDI_DIRECTX },
 		{ 0, 0, 0x8000 },
 		{ ID_DEVICE_PROPERTIES, IDI_PROPS },
 		{ ID_DEVICE_ENABLE, IDI_ENABLE_DEVICE, 0x8000 },
@@ -289,6 +304,7 @@ void CMainFrame::InitMenu() {
 		{ ID_EXPLORE_DEVICETREE, IDI_TREE },
 		{ ID_EXPLORE_DEVICELIST, IDI_LIST },
 		{ ID_EXPLORE_DRIVERS, IDI_DRIVER },
+		{ ID_EXPLORE_DXGI, IDI_DIRECTX },
 		{ ID_WINDOW_CLOSE, IDI_CLOSE },
 		{ ID_WINDOW_CLOSE_ALL, IDI_CLOSEALL },
 		{ ID_TOOLS_INSTALLDRIVER, IDI_INSTALL },
@@ -397,14 +413,24 @@ LRESULT CMainFrame::OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	settings.DarkMode(!settings.DarkMode());
 	UISetCheck(ID_OPTIONS_DARKMODE, settings.DarkMode());
 
+	::EnumThreadWindows(::GetCurrentThreadId(), [](auto hWnd, auto) {
+		::PostMessage(hWnd, WM_UPDATE_DARKMODE, 0, 0);
+		return TRUE;
+		}, 0);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnUpdateDarkMode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	auto& settings = AppSettings::Get();
 	if (settings.DarkMode())
 		ThemeHelper::SetCurrentTheme(s_DarkTheme, m_hWnd);
 	else
 		ThemeHelper::SetDefaultTheme(m_hWnd);
-
 	ThemeHelper::UpdateMenuColors(*this, settings.DarkMode());
-	UpdateMenu(GetMenu(), true);
-
+	UpdateMenuBase(GetMenu(), true);
+	DrawMenuBar();
+	UISetCheck(ID_OPTIONS_DARKMODE, settings.DarkMode());
 	return 0;
 }
 

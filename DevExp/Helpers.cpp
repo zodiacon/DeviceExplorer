@@ -21,6 +21,7 @@
 #include "ResourcesPropertyPage.h"
 #include "DriversPropertyPage.h"
 #include "DriverManager.h"
+#include <dxgiformat.h>
 
 namespace std {
 	template<>
@@ -76,19 +77,19 @@ DEFINE_DEVPROPKEY(DEVPKEY_Device_DriverShimIds, 0xa8b865dd, 0x2e3d, 0x4094, 0xad
 DEFINE_DEVPROPKEY(DEVPKEY_Device_HardwareConfigurationIndex, 0x80497100, 0x8c73, 0x48b9, 0xaa, 0xd9, 0xce, 0x38, 0x7e, 0x19, 0xc5, 0x6e, 6);  // DEVPROP_TYPE_UINT32
 DEFINE_DEVPROPKEY(DEVPKEY_Device_MigrationRank, 0x80497100, 0x8c73, 0x48b9, 0xaa, 0xd9, 0xce, 0x38, 0x7e, 0x19, 0xc5, 0x6e, 7);  // DEVPROP_TYPE_UINT64
 
-DEFINE_DEVPROPKEY(DEVPKEY_Device_WudfHostProcessId,				0x5d274563, 0x8ec, 0x4bf0, 0xad, 0x31, 0xd0, 0xa6, 0xf6, 0xe0, 0xb2, 0xd2, 2);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_InstallInf,					0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 7);     // DEVPROP_TYPE_STRING
-DEFINE_DEVPROPKEY(DEVPKEY_Device_InstallStrongName,				0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 8);     // DEVPROP_TYPE_STRING ;internal
-DEFINE_DEVPROPKEY(DEVPKEY_Device_InstallInProgress,				0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 9);     // DEVPROP_TYPE_BOOLEAN
-DEFINE_DEVPROPKEY(DEVPKEY_Device_LastKnownParent,				0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 10);    // DEVPROP_TYPE_STRING
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PendingConfigurationIds,		0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 11);    // DEVPROP_TYPE_STRING_LIST
-DEFINE_DEVPROPKEY(DEVPKEY_Device_RequestConfigurationIds,		0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 12);    // DEVPROP_TYPE_STRING_LIST
-DEFINE_DEVPROPKEY(DEVPKEY_Device_FirmwareDependencies,			0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 13);    // DEVPROP_TYPE_STRING_LIST
-DEFINE_DEVPROPKEY(DEVPKEY_Device_DependencyBootSession,			0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 14);    // DEVPROP_TYPE_FILETIME
-DEFINE_DEVPROPKEY(DEVPKEY_Device_CompoundUpperFilters,			0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 22);    // DEVPROP_TYPE_STRING_LIST
-DEFINE_DEVPROPKEY(DEVPKEY_Device_CompoundLowerFilters,			0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 23);    // DEVPROP_TYPE_STRING_LIST
-DEFINE_DEVPROPKEY(DEVPKEY_Device_IsConnected,					0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 15);    // DEVPROP_TYPE_BOOLEAN
-DEFINE_DEVPROPKEY(DEVPKEY_Device_Owners,						0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 16);    // DEVPROP_TYPE_STRING_LIST
+DEFINE_DEVPROPKEY(DEVPKEY_Device_WudfHostProcessId, 0x5d274563, 0x8ec, 0x4bf0, 0xad, 0x31, 0xd0, 0xa6, 0xf6, 0xe0, 0xb2, 0xd2, 2);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_InstallInf, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 7);     // DEVPROP_TYPE_STRING
+DEFINE_DEVPROPKEY(DEVPKEY_Device_InstallStrongName, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 8);     // DEVPROP_TYPE_STRING ;internal
+DEFINE_DEVPROPKEY(DEVPKEY_Device_InstallInProgress, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 9);     // DEVPROP_TYPE_BOOLEAN
+DEFINE_DEVPROPKEY(DEVPKEY_Device_LastKnownParent, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 10);    // DEVPROP_TYPE_STRING
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PendingConfigurationIds, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 11);    // DEVPROP_TYPE_STRING_LIST
+DEFINE_DEVPROPKEY(DEVPKEY_Device_RequestConfigurationIds, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 12);    // DEVPROP_TYPE_STRING_LIST
+DEFINE_DEVPROPKEY(DEVPKEY_Device_FirmwareDependencies, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 13);    // DEVPROP_TYPE_STRING_LIST
+DEFINE_DEVPROPKEY(DEVPKEY_Device_DependencyBootSession, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 14);    // DEVPROP_TYPE_FILETIME
+DEFINE_DEVPROPKEY(DEVPKEY_Device_CompoundUpperFilters, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 22);    // DEVPROP_TYPE_STRING_LIST
+DEFINE_DEVPROPKEY(DEVPKEY_Device_CompoundLowerFilters, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 23);    // DEVPROP_TYPE_STRING_LIST
+DEFINE_DEVPROPKEY(DEVPKEY_Device_IsConnected, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 15);    // DEVPROP_TYPE_BOOLEAN
+DEFINE_DEVPROPKEY(DEVPKEY_Device_Owners, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 16);    // DEVPROP_TYPE_STRING_LIST
 DEFINE_DEVPROPKEY(DEVPKEY_Device_ConnectionStateIsAuthoritative, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 17); // DEVPROP_TYPE_BOOLEAN
 DEFINE_DEVPROPKEY(DEVPKEY_Device_DriverNodeStrongName, 0x83da6326, 0x97a6, 0x4088, 0x94, 0x53, 0xa1, 0x92, 0x3f, 0x57, 0x3b, 0x29, 3);
 
@@ -100,21 +101,21 @@ DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_CompoundUpperFilters, 0x6a3433f4, 0x5626, 
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_CompoundLowerFilters, 0x6a3433f4, 0x5626, 0x40e8, 0xa9, 0xb9, 0xdb, 0xd9, 0xec, 0xd2, 0x88, 0x4b, 21);
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceClass_LowerLogoVersion, 0x259abffc, 0x50a7, 0x47ce, 0xaf, 0x8, 0x68, 0xc9, 0xa7, 0xd7, 0x33, 0x66, 13);
 
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelId,			0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 2);     // DEVPROP_TYPE_STRING
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelGroup,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 3);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelSide,			0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 4);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelWidth,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 5);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelHeight,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 6);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelLength,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 7);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelPositionX,	0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 8);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelPositionY,	0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 9);     // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelPositionZ,	0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 10);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelRotationX,	0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 11);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelRotationY,	0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 12);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelRotationZ,	0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 13);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelColor,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 14);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelShape,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 15);    // DEVPROP_TYPE_UINT32
-DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelVisible,		0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 16);    // DEVPROP_TYPE_BOOLEAN
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelId, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 2);     // DEVPROP_TYPE_STRING
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelGroup, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 3);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelSide, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 4);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelWidth, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 5);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelHeight, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 6);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelLength, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 7);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelPositionX, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 8);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelPositionY, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 9);     // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelPositionZ, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 10);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelRotationX, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 11);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelRotationY, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 12);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelRotationZ, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 13);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelColor, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 14);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelShape, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 15);    // DEVPROP_TYPE_UINT32
+DEFINE_DEVPROPKEY(DEVPKEY_Device_PanelVisible, 0x8dbc9c86, 0x97a9, 0x4bff, 0x9b, 0xc6, 0xbf, 0xe9, 0x5d, 0x3e, 0x6d, 0xad, 16);    // DEVPROP_TYPE_BOOLEAN
 
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceSetup_InstallInProgress, 0x3464f7a4, 0x2444, 0x40b1, 0x98, 0x0a, 0xe0, 0x90, 0x3c, 0xb6, 0xd9, 0x12, 2);   // DEVPROP_TYPE_BOOLEAN
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceSetup_UXReady, 0x3464f7a4, 0x2444, 0x40b1, 0x98, 0x0a, 0xe0, 0x90, 0x3c, 0xb6, 0xd9, 0x12, 3);   // DEVPROP_TYPE_BOOLEAN
@@ -132,7 +133,7 @@ DEFINE_DEVPROPKEY(DEVPKEY_DeviceSetup_MetadataPackageId, 0x3464f7a4, 0x2444, 0x4
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceSetup_CostedNetworkPolicyExempt, 0x3464f7a4, 0x2444, 0x40b1, 0x98, 0x0a, 0xe0, 0x90, 0x3c, 0xb6, 0xd9, 0x12, 22);  // DEVPROP_TYPE_BOOLEAN
 DEFINE_DEVPROPKEY(DEVPKEY_DeviceSetup_PairedAutomatically, 0x3464f7a4, 0x2444, 0x40b1, 0x98, 0x0a, 0xe0, 0x90, 0x3c, 0xb6, 0xd9, 0x12, 24);  // DEVPROP_TYPE_BOOLEAN
 
-DEFINE_GUID(GUID_DEVINTERFACE_SMARTCARD_READER,	0x50DD5230, 0xBA8A, 0x11D1, 0xBF, 0x5D, 0x00, 0x00, 0xF8, 0x05, 0xF5, 0x30);
+DEFINE_GUID(GUID_DEVINTERFACE_SMARTCARD_READER, 0x50DD5230, 0xBA8A, 0x11D1, 0xBF, 0x5D, 0x00, 0x00, 0xF8, 0x05, 0xF5, 0x30);
 
 CString Helpers::GetPropertyName(DEVPROPKEY const& key) {
 	static const std::unordered_map<DEVPROPKEY, CString> properties{
@@ -714,7 +715,7 @@ CString Helpers::DeviceInterfaceToString(GUID const& guid) {
 		return it->second;
 
 	auto name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_NAME);
-	if(name.empty())
+	if (name.empty())
 		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterfaceClass_Name);
 	if (name.empty())
 		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterface_FriendlyName);
@@ -738,7 +739,7 @@ bool Helpers::DisplayProperty(DEVPROPKEY const& key, DeviceNode const& node, PCW
 		text.emplace_back(std::format(L"Power State: {}", DevicePowerStateToString(data->PD_MostRecentPowerState)));
 		text.push_back({});
 		text.emplace_back(std::format(L"Capabilities: 0x{:X} ({})", data->PD_Capabilities, PowerCapabilitiesToString(data->PD_Capabilities)));
-		if(data->PD_Capabilities & PDCAP_WAKE_FROM_D1_SUPPORTED)
+		if (data->PD_Capabilities & PDCAP_WAKE_FROM_D1_SUPPORTED)
 			text.emplace_back(std::format(L"D1 Latency: {}", data->PD_D1Latency));
 		if (data->PD_Capabilities & PDCAP_WAKE_FROM_D2_SUPPORTED)
 			text.emplace_back(std::format(L"D2 Latency: {}", data->PD_D2Latency));
@@ -756,7 +757,7 @@ bool Helpers::DisplayProperty(DEVPROPKEY const& key, DeviceNode const& node, PCW
 	}
 
 	auto type = node.GetPropertyType(key);
-	switch(type) {
+	switch (type) {
 		case DEVPROP_TYPE_STRING_LIST:
 			CMultiStringListDlg dlg(name);
 			dlg.SetData(node.GetProperty<std::vector<std::wstring>>(key));
@@ -807,7 +808,7 @@ void Helpers::DisplayProperties(PCWSTR title, DeviceManager const& dm, DeviceInf
 	HPROPSHEETPAGE pages[8];
 	header.phpage = pages;
 	header.nPages = 0;
-	if(dm.GetPropertyPages(header, di, _countof(pages))) {
+	if (dm.GetPropertyPages(header, di, _countof(pages))) {
 		for (uint32_t i = 0; i < header.nPages; i++)
 			sheet.AddPage(header.phpage[i]);
 	}
@@ -877,4 +878,132 @@ PCWSTR Helpers::DriverStartTypeToString(DriverStartType type) {
 		case DriverStartType::Disabled: return L"Disabled (4)";
 	}
 	return PCWSTR();
+}
+
+std::wstring Helpers::DxgiFormatToString(DXGI_FORMAT format) {
+	switch (format) {
+		case DXGI_FORMAT_UNKNOWN: return L"UNKNOWN";
+		case DXGI_FORMAT_R32G32B32A32_TYPELESS: return L"R32G32B32A32_TYPELESS";
+		case DXGI_FORMAT_R32G32B32A32_FLOAT: return L"R32G32B32A32_FLOAT";
+		case DXGI_FORMAT_R32G32B32A32_UINT: return L"R32G32B32A32_UINT";
+		case DXGI_FORMAT_R32G32B32A32_SINT: return L"R32G32B32A32_SINT";
+		case DXGI_FORMAT_R32G32B32_TYPELESS: return L"R32G32B32_TYPELESS";
+		case DXGI_FORMAT_R32G32B32_FLOAT: return L"R32G32B32_FLOAT";
+		case DXGI_FORMAT_R32G32B32_UINT: return L"R32G32B32_UINT";
+		case DXGI_FORMAT_R32G32B32_SINT: return L"R32G32B32_SINT";
+		case DXGI_FORMAT_R16G16B16A16_TYPELESS: return L"R16G16B16A16_TYPELESS";
+		case DXGI_FORMAT_R16G16B16A16_FLOAT: return L"R16G16B16A16_FLOAT";
+		case DXGI_FORMAT_R16G16B16A16_UNORM: return L"R16G16B16A16_UNORM";
+		case DXGI_FORMAT_R16G16B16A16_UINT: return L"R16G16B16A16_UINT";
+		case DXGI_FORMAT_R16G16B16A16_SNORM: return L"R16G16B16A16_SNORM";
+		case DXGI_FORMAT_R16G16B16A16_SINT: return L"R16G16B16A16_SINT";
+		case DXGI_FORMAT_R32G32_TYPELESS: return L"R32G32_TYPELESS";
+		case DXGI_FORMAT_R32G32_FLOAT: return L"R32G32_FLOAT";
+		case DXGI_FORMAT_R32G32_UINT: return L"R32G32_UINT";
+		case DXGI_FORMAT_R32G32_SINT: return L"R32G32_SINT";
+		case DXGI_FORMAT_R32G8X24_TYPELESS: return L"R32G8X24_TYPELESS";
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT: return L"D32_FLOAT_S8X24_UINT";
+		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS: return L"R32_FLOAT_X8X24_TYPELESS";
+		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT: return L"X32_TYPELESS_G8X24_UINT";
+		case DXGI_FORMAT_R10G10B10A2_TYPELESS: return L"R10G10B10A2_TYPELESS";
+		case DXGI_FORMAT_R10G10B10A2_UNORM: return L"R10G10B10A2_UNORM";
+		case DXGI_FORMAT_R10G10B10A2_UINT: return L"R10G10B10A2_UINT";
+		case DXGI_FORMAT_R11G11B10_FLOAT: return L"R11G11B10_FLOAT";
+		case DXGI_FORMAT_R8G8B8A8_TYPELESS: return L"R8G8B8A8_TYPELESS";
+		case DXGI_FORMAT_R8G8B8A8_UNORM: return L"R8G8B8A8_UNORM";
+		case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: return L"R8G8B8A8_UNORM_SRGB";
+		case DXGI_FORMAT_R8G8B8A8_UINT: return L"R8G8B8A8_UINT";
+		case DXGI_FORMAT_R8G8B8A8_SNORM: return L"R8G8B8A8_SNORM";
+		case DXGI_FORMAT_R8G8B8A8_SINT: return L"R8G8B8A8_SINT";
+		case DXGI_FORMAT_R16G16_TYPELESS: return L"R16G16_TYPELESS";
+		case DXGI_FORMAT_R16G16_FLOAT: return L"R16G16_FLOAT";
+		case DXGI_FORMAT_R16G16_UNORM: return L"R16G16_UNORM";
+		case DXGI_FORMAT_R16G16_UINT: return L"R16G16_UINT";
+		case DXGI_FORMAT_R16G16_SNORM: return L"R16G16_SNORM";
+		case DXGI_FORMAT_R16G16_SINT: return L"R16G16_SINT";
+		case DXGI_FORMAT_R32_TYPELESS: return L"R32_TYPELESS";
+		case DXGI_FORMAT_D32_FLOAT: return L"D32_FLOAT";
+		case DXGI_FORMAT_R32_FLOAT: return L"R32_FLOAT";
+		case DXGI_FORMAT_R32_UINT: return L"R32_UINT";
+		case DXGI_FORMAT_R32_SINT: return L"R32_SINT";
+		case DXGI_FORMAT_R24G8_TYPELESS: return L"R24G8_TYPELESS";
+		case DXGI_FORMAT_D24_UNORM_S8_UINT: return L"D24_UNORM_S8_UINT";
+		case DXGI_FORMAT_R24_UNORM_X8_TYPELESS: return L"R24_UNORM_X8_TYPELESS";
+		case DXGI_FORMAT_X24_TYPELESS_G8_UINT: return L"X24_TYPELESS_G8_UINT";
+		case DXGI_FORMAT_R8G8_TYPELESS: return L"R8G8_TYPELESS";
+		case DXGI_FORMAT_R8G8_UNORM: return L"R8G8_UNORM";
+		case DXGI_FORMAT_R8G8_UINT: return L"R8G8_UINT";
+		case DXGI_FORMAT_R8G8_SNORM: return L"R8G8_SNORM";
+		case DXGI_FORMAT_R8G8_SINT: return L"R8G8_SINT";
+		case DXGI_FORMAT_R16_TYPELESS: return L"R16_TYPELESS";
+		case DXGI_FORMAT_R16_FLOAT: return L"R16_FLOAT";
+		case DXGI_FORMAT_D16_UNORM: return L"D16_UNORM";
+		case DXGI_FORMAT_R16_UNORM: return L"R16_UNORM";
+		case DXGI_FORMAT_R16_UINT: return L"R16_UINT";
+		case DXGI_FORMAT_R16_SNORM: return L"R16_SNORM";
+		case DXGI_FORMAT_R16_SINT: return L"R16_SINT";
+		case DXGI_FORMAT_R8_TYPELESS: return L"R8_TYPELESS";
+		case DXGI_FORMAT_R8_UNORM: return L"R8_UNORM";
+		case DXGI_FORMAT_R8_UINT: return L"R8_UINT";
+		case DXGI_FORMAT_R8_SNORM: return L"R8_SNORM";
+		case DXGI_FORMAT_R8_SINT: return L"R8_SINT";
+		case DXGI_FORMAT_A8_UNORM: return L"A8_UNORM";
+		case DXGI_FORMAT_R1_UNORM: return L"R1_UNORM";
+		case DXGI_FORMAT_R9G9B9E5_SHAREDEXP: return L"R9G9B9E5_SHAREDEXP";
+		case DXGI_FORMAT_R8G8_B8G8_UNORM: return L"R8G8_B8G8_UNORM";
+		case DXGI_FORMAT_G8R8_G8B8_UNORM: return L"G8R8_G8B8_UNORM";
+		case DXGI_FORMAT_BC1_TYPELESS: return L"BC1_TYPELESS";
+		case DXGI_FORMAT_BC1_UNORM: return L"BC1_UNORM";
+		case DXGI_FORMAT_BC1_UNORM_SRGB: return L"BC1_UNORM_SRGB";
+		case DXGI_FORMAT_BC2_TYPELESS: return L"BC2_TYPELESS";
+		case DXGI_FORMAT_BC2_UNORM: return L"BC2_UNORM";
+		case DXGI_FORMAT_BC2_UNORM_SRGB: return L"UNORM_SRGB";
+		case DXGI_FORMAT_BC3_TYPELESS: return L"BC3_TYPELESS";
+		case DXGI_FORMAT_BC3_UNORM: return L"BC3_UNORM";
+		case DXGI_FORMAT_BC3_UNORM_SRGB: return L"BC3_UNORM_SRGB";
+		case DXGI_FORMAT_BC4_TYPELESS: return L"BC4_TYPELESS";
+		case DXGI_FORMAT_BC4_UNORM: return L"BC4_UNORM";
+		case DXGI_FORMAT_BC4_SNORM: return L"BC4_SNORM";
+		case DXGI_FORMAT_BC5_TYPELESS: return L"BC5_TYPELESS";
+		case DXGI_FORMAT_BC5_UNORM: return L"BC5_UNORM";
+		case DXGI_FORMAT_BC5_SNORM: return L"BC5_SNORM";
+		case DXGI_FORMAT_B5G6R5_UNORM: return L"B5G6R5_UNORM";
+		case DXGI_FORMAT_B5G5R5A1_UNORM: return L"B5G5R5A1_UNORM";
+		case DXGI_FORMAT_B8G8R8A8_UNORM: return L"B8G8R8A8_UNORM";
+		case DXGI_FORMAT_B8G8R8X8_UNORM: return L"B8G8R8X8_UNORM";
+		case DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM: return L"R10G10B10_XR_BIAS_A2_UNORM";
+		case DXGI_FORMAT_B8G8R8A8_TYPELESS: return L"B8G8R8A8_TYPELESS:";
+		case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: return L"B8G8R8A8_UNORM_SRGB";
+		case DXGI_FORMAT_B8G8R8X8_TYPELESS: return L"B8G8R8X8_TYPELESS";
+		case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB: return L"B8G8R8X8_UNORM_SRGB";
+		case DXGI_FORMAT_BC6H_TYPELESS: return L"BC6H_TYPELESS";
+		case DXGI_FORMAT_BC6H_UF16: return L"BC6H_UF16";
+		case DXGI_FORMAT_BC6H_SF16: return L"BC6H_SF16";
+		case DXGI_FORMAT_BC7_TYPELESS: return L"BC7_TYPELESS";
+		case DXGI_FORMAT_BC7_UNORM: return L"BC7_UNORM";
+		case DXGI_FORMAT_BC7_UNORM_SRGB: return L"BC7_UNORM_SRGB";
+		case DXGI_FORMAT_AYUV: return L"AYUV";
+		case DXGI_FORMAT_Y410: return L"Y410";
+		case DXGI_FORMAT_Y416: return L"Y416";
+		case DXGI_FORMAT_NV12: return L"NV12";
+		case DXGI_FORMAT_P010: return L"P010";
+		case DXGI_FORMAT_P016: return L"P016";
+		case DXGI_FORMAT_420_OPAQUE: return L"420_OPAQU";
+		case DXGI_FORMAT_YUY2: return L"YUY2";
+		case DXGI_FORMAT_Y210: return L"Y210";
+		case DXGI_FORMAT_Y216: return L"Y216";
+		case DXGI_FORMAT_NV11: return L"NV11";
+		case DXGI_FORMAT_AI44: return L"AI44";
+		case DXGI_FORMAT_IA44: return L"IA44";
+		case DXGI_FORMAT_P8: return L"P8";
+		case DXGI_FORMAT_A8P8: return L"A8P8";
+		case DXGI_FORMAT_B4G4R4A4_UNORM: return L"B4G4R4A4_UNORM";
+		case DXGI_FORMAT_P208: return L"P208";
+		case DXGI_FORMAT_V208: return L"V208";
+		case DXGI_FORMAT_V408: return L"V408";
+		case DXGI_FORMAT_SAMPLER_FEEDBACK_MIN_MIP_OPAQUE: return L"SAMPLER_FEEDBACK_MIN_MIP_OPAQUE";
+		case DXGI_FORMAT_SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE: return L"SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE";
+		case DXGI_FORMAT_A4B4G4R4_UNORM: return L"A4B4G4R4_UNORM";
+	}
+	return std::format(L"{} (0x{:X})", (UINT)format, (UINT)format);
 }

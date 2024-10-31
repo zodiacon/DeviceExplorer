@@ -18,19 +18,22 @@ class CMainFrame :
 	public CMessageFilter, 
 	public CIdleHandler {
 public:
-	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
+	DECLARE_FRAME_WND_CLASS(L"DevExpMainWndClass", IDR_MAINFRAME)
 
 	BOOL PreTranslateMessage(MSG* pMsg) override;
 	BOOL OnIdle() override;
 	void PostMessageToAllTabs(UINT msg, WPARAM wp = 0, LPARAM lp = 0) const;
 
 protected:
+	static const UINT WM_UPDATE_DARKMODE = WM_APP + 56;
+
 	BEGIN_MSG_MAP(CMainFrame)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICESBYCLASS, OnExploreDeviceClasses)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICEINTERFACES, OnExploreDeviceInterfaces)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICETREE, OnExploreDeviceTree)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICELIST, OnExploreDeviceList)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DRIVERS, OnExploreDrivers)
+		COMMAND_ID_HANDLER(ID_EXPLORE_DXGI, OnExploreDxgi)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE, OnWindowClose)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE_ALL, OnWindowCloseAll)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
@@ -44,6 +47,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_DEVICE_SCANFORHARDWARECHANGES, OnRescanHardware)
 		NOTIFY_CODE_HANDLER(TBVN_PAGEACTIVATED, OnPageActivated)
 		COMMAND_ID_HANDLER(ID_OPTIONS_DARKMODE, OnToggleDarkMode)
+		MESSAGE_HANDLER(WM_UPDATE_DARKMODE, OnUpdateDarkMode)
 		COMMAND_RANGE_HANDLER(ID_WINDOW_TABFIRST, ID_WINDOW_TABLAST, OnWindowActivate)
 		if (uMsg == WM_COMMAND && ::IsWindow(m_view.m_hWnd)) {
 			auto page = m_view.GetActivePage();
@@ -94,11 +98,13 @@ private:
 	LRESULT OnExploreDeviceInterfaces(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnExploreDeviceTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnExploreDeviceList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDxgi(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAlwaysOnTop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowWindow(UINT, WPARAM, LPARAM, BOOL&);
 	LRESULT OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnForceInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnUpdateDarkMode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_view;
 	inline static AppSettings s_Settings;

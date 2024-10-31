@@ -65,13 +65,14 @@ BEGIN
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
     END
-    POPUP "&Explore"
+    POPUP "E&xplore"
     BEGIN
         MENUITEM "Device &Classes",             ID_EXPLORE_DEVICESBYCLASS
         MENUITEM "Device &Tree",                ID_EXPLORE_DEVICETREE
         MENUITEM "Device &List",                ID_EXPLORE_DEVICELIST
         MENUITEM "Device &Interfaces",          ID_EXPLORE_DEVICEINTERFACES
         MENUITEM "&Drivers",                    ID_EXPLORE_DRIVERS
+        MENUITEM "D&XGI",                       ID_EXPLORE_DXGI
     END
     POPUP "&View"
     BEGIN
@@ -210,6 +211,16 @@ IDI_CLOSE               ICON                    "res\\close.ico"
 IDI_CLOSEALL            ICON                    "res\\close-all.ico"
 
 IDI_INSTALL             ICON                    "res\\Install.ico"
+
+IDI_ADAPTER             ICON                    "res\\Adapter.ico"
+
+IDI_DEVICE              ICON                    "res\\device.ico"
+
+IDI_RECT                ICON                    "res\\rectangle.ico"
+
+IDI_DIRECTX             ICON                    "res\\directx.ico"
+
+IDI_RESOLUTION          ICON                    "res\\resolution.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

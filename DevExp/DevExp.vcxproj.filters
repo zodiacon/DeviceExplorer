@@ -75,6 +75,9 @@
     <ClCompile Include="AppSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DxgiView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -129,6 +132,9 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="DriversView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="DxgiView.h">
       <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
@@ -229,6 +235,21 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\Install.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\device.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\directx.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\rectangle.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\resolution.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Adapter.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
