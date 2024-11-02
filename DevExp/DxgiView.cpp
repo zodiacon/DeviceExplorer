@@ -4,7 +4,8 @@
 
 #pragma comment(lib, "dxgi")
 
-static DWORD TreeNodeMode = 0x1000;
+static constexpr DWORD TreeNodeMode = 0x1000;
+static constexpr DWORD TreeNodeFormat = 0x2000;
 
 LRESULT CDxgiView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CLIPCHILDREN | WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS);
@@ -77,7 +78,7 @@ bool CDxgiView::BuildTree() {
 				output->GetDisplayModeList((DXGI_FORMAT)f, 0, &count, nullptr);
 				if (count) {
 					auto hModes = m_Tree.InsertItem(Helpers::DxgiFormatToString((DXGI_FORMAT)f).c_str(), 3, 3, hOutput, TVI_SORT);
-					m_Tree.SetItemData(hModes, f);
+					m_Tree.SetItemData(hModes, f + TreeNodeFormat);
 					auto modes = std::make_unique<DXGI_MODE_DESC[]>(count);
 					output->GetDisplayModeList((DXGI_FORMAT)f, 0, &count, modes.get());
 					for (UINT i = 0; i < count; i++) {
@@ -100,7 +101,13 @@ bool CDxgiView::BuildTree() {
 }
 
 CString CDxgiView::GetColumnText(HWND, int row, int col) {
-	return CString();
+	auto& item = m_Items[row];
+	switch (col) {
+		case 0: return item.Name;
+		case 1: return item.ValueAsString;
+		case 2: return item.Details;
+	}
+	return L"";
 }
 
 void CDxgiView::DoSort(SortInfo const*) {
@@ -111,10 +118,64 @@ bool CDxgiView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const
 }
 
 void CDxgiView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
+	UpdateList(hNew);
 }
 
 void CDxgiView::UpdateUI(CUpdateUIBase& ui) {
 }
 
 void CDxgiView::OnPageActivated(bool active) {
+}
+
+void CDxgiView::UpdateList(HTREEITEM hItem) {
+	m_Items.clear();
+	if (auto it = m_TreeNodes.find(hItem); it != m_TreeNodes.end()) {
+		auto unk = it->second;
+		if (CComQIPtr<IDXGIAdapter1> adapter(unk); adapter) {
+			DXGI_ADAPTER_DESC1 desc1;
+			adapter->GetDesc1(&desc1);
+			m_Items.emplace_back(L"Description", CString(desc1.Description));
+			m_Items.emplace_back(L"Vendor ID", std::format(L"0x{:X}", desc1.VendorId).c_str());
+			m_Items.emplace_back(L"Device ID", std::format(L"0x{:X}", desc1.DeviceId).c_str());
+			m_Items.emplace_back(L"Subsystem ID", std::format(L"0x{:X}", desc1.SubSysId).c_str());
+			m_Items.emplace_back(L"Revision", std::format(L"0x{:X}", desc1.Revision).c_str());
+			m_Items.emplace_back(L"LUID", std::format(L"0x{:0X}:{:0X}", desc1.AdapterLuid.HighPart, desc1.AdapterLuid.LowPart).c_str());
+			m_Items.emplace_back(L"Dedicated Video Memory", std::format(L"{} MB", desc1.DedicatedVideoMemory >> 20).c_str());
+			m_Items.emplace_back(L"Dedicated System Memory", std::format(L"{} MB", desc1.DedicatedSystemMemory>> 20).c_str());
+			m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", desc1.SharedSystemMemory >> 20).c_str());
+			m_Items.emplace_back(L"Flags", std::format(L"0x{:X}", desc1.Flags).c_str(), Helpers::AdapterFlagsToString(desc1.Flags));
+		}
+		else if (CComQIPtr<IDXGIOutput1> output(unk); output) {
+			DXGI_OUTPUT_DESC desc;
+			output->GetDesc(&desc);
+			m_Items.emplace_back(L"Device Name", CString(desc.DeviceName));
+			m_Items.emplace_back(L"Desktop Coordinates", std::format(L"({},{}) - ({},{})",
+				desc.DesktopCoordinates.left, desc.DesktopCoordinates.top, desc.DesktopCoordinates.right, desc.DesktopCoordinates.bottom).c_str(),
+				std::format(L"{} x {}", desc.DesktopCoordinates.right - desc.DesktopCoordinates.left, desc.DesktopCoordinates.bottom - desc.DesktopCoordinates.top).c_str());
+			m_Items.emplace_back(L"Attached to Desktop", desc.AttachedToDesktop ? L"Yes" : L"No");
+			m_Items.emplace_back(L"Monitor Handle", std::format(L"{}", (PVOID)desc.Monitor).c_str());
+			m_Items.emplace_back(L"Rotation", Helpers::RotationToString(desc.Rotation), L"Degrees");
+
+		}
+	}
+	else {
+		auto data = m_Tree.GetItemData(hItem);
+		if (data >= TreeNodeFormat) {
+			// display format
+			auto hParent = m_Tree.GetParentItem(hItem);
+			if (auto it = m_TreeNodes.find(hParent); it != m_TreeNodes.end()) {
+				CComQIPtr<IDXGIOutput1> output(it->second);
+				ATLASSERT(output);
+				if (output) {
+					UINT count = 0;
+					output->GetDisplayModeList1((DXGI_FORMAT)(data - TreeNodeFormat), 0, &count, nullptr);
+					m_Items.emplace_back(L"Display Modes", std::format(L"{}", count).c_str());
+				}
+			}
+		}
+		else if (data >= TreeNodeMode) {
+			// TODO: display mode properties
+		}
+	}
+	m_List.SetItemCount((int)m_Items.size());
 }

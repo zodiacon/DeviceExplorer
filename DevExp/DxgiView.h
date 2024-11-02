@@ -48,6 +48,7 @@ public:
 	//
 	void UpdateUI(CUpdateUIBase& ui);
 	void OnPageActivated(bool active);
+	void UpdateList(HTREEITEM hItem);
 
 	BEGIN_MSG_MAP(CDxgiView)
 		//MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
@@ -84,7 +85,7 @@ private:
 	struct Property {
 		CString Name;
 		CString ValueAsString;
-		CComPtr<IUnknown> Object;
+		CString Details;
 	};
 
 	bool BuildTree();

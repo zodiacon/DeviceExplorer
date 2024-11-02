@@ -234,7 +234,7 @@ CAPTION "About Device Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,75,49,50,14
-    CTEXT           "Device Explorer v0.3\n\n©2021-2024 Pavel Yosifovich",IDC_STATIC,39,8,122,32
+    CTEXT           "Device Explorer v0.4\n\n©2021-2024 Pavel Yosifovich",IDC_STATIC,39,8,122,32
     ICON            IDR_MAINFRAME,IDC_STATIC,5,4,20,20
 END
 
@@ -365,8 +365,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,0,0
- PRODUCTVERSION 0,3,0,0
+ FILEVERSION 0,4,0,0
+ PRODUCTVERSION 0,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -383,12 +383,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Device Explorer"
-            VALUE "FileVersion", "0.3.0.0"
+            VALUE "FileVersion", "0.4.0.0"
             VALUE "InternalName", "DevExp"
             VALUE "LegalCopyright", "©2021-2024 Pavel Yosifovich"
             VALUE "OriginalFilename", "DevExp.exe"
             VALUE "ProductName", "Device Explorer"
-            VALUE "ProductVersion", "0.3.0.0"
+            VALUE "ProductVersion", "0.4.0.0"
         END
     END
     BLOCK "VarFileInfo"

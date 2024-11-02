@@ -200,6 +200,7 @@ void CDeviceInterfacesView::UpdateUI(CUpdateUIBase& ui) {
 		bool enabled = dn.IsEnabled();
 		ui.UIEnable(ID_DEVICE_ENABLE, !enabled);
 		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
+		ui.UIEnable(ID_DEVICE_DISABLE, enabled);
 		ui.UIEnable(ID_DEVICE_UNINSTALL, true);
 	}
 	else {

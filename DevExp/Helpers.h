@@ -31,4 +31,6 @@ struct Helpers final {
 	static std::wstring DriverTypeToString(DeviceDriverType  type);
 	static PCWSTR DriverStartTypeToString(DriverStartType type);
 	static std::wstring DxgiFormatToString(DXGI_FORMAT format);
+	static CString AdapterFlagsToString(UINT flags);
+	static PCWSTR RotationToString(UINT rotation);
 };

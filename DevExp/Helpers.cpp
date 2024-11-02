@@ -22,6 +22,7 @@
 #include "DriversPropertyPage.h"
 #include "DriverManager.h"
 #include <dxgiformat.h>
+#include <dxgi.h>
 
 namespace std {
 	template<>
@@ -709,6 +710,8 @@ CString Helpers::DeviceInterfaceToString(GUID const& guid) {
 		{ GUID_BTHPORT_DEVICE_INTERFACE, L"Bluetooth Radio" },
 		{ GUID_61883_CLASS, L"61883" },
 		{ BUS1394_CLASS_GUID, L"Firewire (1394)" },
+		{ GUID_DEVINTERFACE_I2C, L"I2C" },
+		{ GUID_DEVINTERFACE_BRIGHTNESS, L"Brightness" },
 	};
 
 	if (auto it = map.find(guid); it != map.end())
@@ -719,8 +722,6 @@ CString Helpers::DeviceInterfaceToString(GUID const& guid) {
 		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterfaceClass_Name);
 	if (name.empty())
 		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceInterface_FriendlyName);
-	if (name.empty())
-		name = DeviceManager::GetDeviceInterfaceProperty<std::wstring>(guid, DEVPKEY_DeviceClass_ClassName);
 
 	if (!name.empty())
 		return name.c_str();
@@ -1006,4 +1007,26 @@ std::wstring Helpers::DxgiFormatToString(DXGI_FORMAT format) {
 		case DXGI_FORMAT_A4B4G4R4_UNORM: return L"A4B4G4R4_UNORM";
 	}
 	return std::format(L"{} (0x{:X})", (UINT)format, (UINT)format);
+}
+
+CString Helpers::AdapterFlagsToString(UINT flags) {
+	CString result;
+	if (flags & DXGI_ADAPTER_FLAG_REMOTE)
+		result += L"Remote, ";
+	if (flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+		result += L"Software, ";
+	if (!result.IsEmpty())
+		result = result.Left(result.GetLength() - 2);
+
+	return result;
+}
+
+PCWSTR Helpers::RotationToString(UINT rotation) {
+	switch (rotation) {
+		case DXGI_MODE_ROTATION_IDENTITY: return L"0";
+		case DXGI_MODE_ROTATION_ROTATE90: return L"90";
+		case DXGI_MODE_ROTATION_ROTATE180: return L"180";
+		case DXGI_MODE_ROTATION_ROTATE270: return L"270";
+	}
+	return L"(Unspecified)";
 }
