@@ -28,6 +28,7 @@ protected:
 	static const UINT WM_UPDATE_DARKMODE = WM_APP + 56;
 
 	BEGIN_MSG_MAP(CMainFrame)
+		MESSAGE_HANDLER(WM_DEVICECHANGE, OnDeviceChange)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICESBYCLASS, OnExploreDeviceClasses)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICEINTERFACES, OnExploreDeviceInterfaces)
 		COMMAND_ID_HANDLER(ID_EXPLORE_DEVICETREE, OnExploreDeviceTree)
@@ -83,6 +84,7 @@ private:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT OnDeviceChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

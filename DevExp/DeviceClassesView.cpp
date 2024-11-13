@@ -6,6 +6,7 @@
 #include "SortHelper.h"
 #include "ClipboardHelper.h"
 #include "ListViewhelper.h"
+#include <newdev.h>
 
 CString CDeviceClassesView::GetColumnText(HWND, int row, int col) {
 	auto& item = m_Items[row];
@@ -40,6 +41,8 @@ LRESULT CDeviceClassesView::OnShowHiddenDevices(WORD, WORD, HWND, BOOL&) {
 
 void CDeviceClassesView::Refresh() {
 	m_Tree.SetRedraw(FALSE);
+	auto selected = m_Tree.GetSelectedItem();
+	m_DataSelected = selected ? m_Tree.GetItemData(selected) : 0;
 
 	CImageList images(DeviceManager::GetClassImageList());
 	auto images2 = images.Duplicate();
@@ -63,6 +66,11 @@ void CDeviceClassesView::Refresh() {
 		auto hItem = InsertTreeItem<int>(m_Tree,
 			DeviceManager::GetDeviceClassDescription(guid).c_str(),
 			DeviceManager::GetClassImageIndex(guid), 0x8000 + c, hRoot, TVI_SORT);
+		if (m_DataSelected && m_Tree.GetItemData(hItem) == m_DataSelected) {
+			m_Tree.SelectItem(hItem);
+			m_DataSelected = 0;
+		}
+
 		c++;
 		m_Guids.insert({ guid, hItem });
 	}
@@ -78,6 +86,10 @@ void CDeviceClassesView::Refresh() {
 			auto isHidden = (dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
 			if (!isHidden || m_ShowHiddenDevices) {
 				auto hItem = InsertTreeItem(m_Tree, (di.Description + (dn.IsEnabled() ? L"" : L" (Disabled)")).c_str(), image, di.Data.DevInst, it->second, TVI_SORT);
+				if (m_DataSelected && m_Tree.GetItemData(hItem) == m_DataSelected) {
+					m_Tree.SelectItem(hItem);
+					m_DataSelected = 0;
+				}
 				if (isHidden)
 					m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
 			}
@@ -197,6 +209,11 @@ LRESULT CDeviceClassesView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
 	return 0;
 }
 
+LRESULT CDeviceClassesView::OnDeviceChange(UINT, WPARAM, LPARAM, BOOL&) {
+	Refresh();
+	return 0;
+}
+
 LRESULT CDeviceClassesView::OnCopy(WORD, WORD, HWND, BOOL&) {
 	if (m_Focus == m_Tree) {
 		auto hItem = m_Tree.GetSelectedItem();
@@ -252,6 +269,19 @@ LRESULT CDeviceClassesView::OnDeviceProperties(WORD, WORD, HWND, BOOL&) {
 	
 	auto index = m_DevMgr->GetDeviceIndex(inst);
 	Helpers::DisplayProperties(name, *m_DevMgr, m_Devices[index]);
+	return 0;
+}
+
+LRESULT CDeviceClassesView::OnDeviceUninstall(WORD, WORD, HWND, BOOL&) {
+	auto selected = m_Tree.GetSelectedItem();
+	auto inst = static_cast<DEVINST>(m_Tree.GetItemData(selected));
+	auto& dev = m_DevMgr->GetDevice(m_DevMgr->GetDeviceIndex(inst));
+	if (::AtlMessageBox(m_hWnd, std::format(L"Uninstall {}?", dev.Description).c_str(), IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL) == IDCANCEL)
+		return 0;
+
+	if (!::DiUninstallDevice(m_hWnd, m_DevMgr->InfoSet(), (PSP_DEVINFO_DATA)&dev.Data, 0, nullptr))
+		AtlMessageBox(m_hWnd, std::format(L"Failed to uninstall device {}.", dev.Description).c_str(), IDS_TITLE, MB_ICONERROR);
+
 	return 0;
 }
 

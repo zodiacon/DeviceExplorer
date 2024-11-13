@@ -28,6 +28,7 @@ protected:
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		NOTIFY_CODE_HANDLER(NM_SETFOCUS, OnNotifySetFocus)
+		MESSAGE_HANDLER(WM_DEVICECHANGE, OnDeviceChange)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CVirtualListView<CDeviceClassesView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CDeviceClassesView>)
@@ -40,6 +41,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_DEVICE_PROPERTIES, OnDeviceProperties)
 		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
 		COMMAND_ID_HANDLER(ID_DEVICE_DISABLE, OnEnableDisableDevice)
+		COMMAND_ID_HANDLER(ID_DEVICE_UNINSTALL, OnDeviceUninstall)
 	END_MSG_MAP()
 
 	void OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew);
@@ -67,6 +69,7 @@ private:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnDeviceChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnNotifySetFocus(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
@@ -75,6 +78,7 @@ private:
 	LRESULT OnShowEmptyClasses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDeviceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDeviceUninstall(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
@@ -85,6 +89,7 @@ private:
 	std::unordered_map<GUID, HTREEITEM> m_Guids;
 	std::vector<GUID> m_Classes;
 	HWND m_Focus{ nullptr };
+	ULONG_PTR m_DataSelected{ 0 };
 	bool m_ShowHiddenDevices{ false };
 	bool m_ShowEmptyClasses{ false };
 };

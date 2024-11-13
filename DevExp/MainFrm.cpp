@@ -456,3 +456,10 @@ LRESULT CMainFrame::OnForceInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	return 0;
 }
 
+LRESULT CMainFrame::OnDeviceChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	int count = m_view.GetPageCount();
+	for(int i = 0; i < count; i++)
+		::PostMessage(m_view.GetPageHWND(i), WM_DEVICECHANGE, 0, 0);
+	return 0;
+}
+
