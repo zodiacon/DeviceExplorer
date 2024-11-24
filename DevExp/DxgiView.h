@@ -13,6 +13,7 @@
 #include "resource.h"
 #include <CustomSplitterWindow.h>
 #include <dxgi1_6.h>
+#include <d3dkmthk.h>
 
 class CDxgiView :
 	public CViewBase<CDxgiView>,
@@ -88,13 +89,18 @@ private:
 		CString Details;
 	};
 
+	struct TreeItem {
+		CComPtr<IUnknown> spUnknown;
+		D3DKMT_HANDLE hAdapter{};
+	};
+
 	bool BuildTree();
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
 	CCustomSplitterWindow m_Splitter;
 	std::vector<Property> m_Items;
-	std::unordered_map<HTREEITEM, CComPtr<IUnknown>> m_TreeNodes;
+	std::unordered_map<HTREEITEM, TreeItem> m_TreeNodes;
 	HWND m_Focus{ nullptr };
 	CComPtr<IDXGIFactory1> m_Factory;
 };

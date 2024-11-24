@@ -58,7 +58,7 @@ protected:
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 	enum class ColumnType {
-		Name, DisplayName, Type, ImagePath, State, WDFVersion, StartType,
+		Name, DisplayName, Type, ImagePath, State, WDFVersion, StartType, ErrorControl
 	};
 
 	//

@@ -86,8 +86,9 @@ LRESULT CDriversView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Type", LVCFMT_LEFT, 100, ColumnType::Type);
 	cm->AddColumn(L"State", LVCFMT_LEFT, 80, ColumnType::State);
 	cm->AddColumn(L"Start", LVCFMT_LEFT, 80, ColumnType::StartType);
+	cm->AddColumn(L"Error Control", LVCFMT_LEFT, 90, ColumnType::ErrorControl);
 	cm->AddColumn(L"Image Path", LVCFMT_LEFT, 350, ColumnType::ImagePath);
-	cm->AddColumn(L"WDF Version", LVCFMT_RIGHT, 70, ColumnType::WDFVersion);
+	cm->AddColumn(L"WDF Ver", LVCFMT_RIGHT, 70, ColumnType::WDFVersion);
 
 	auto pLoop = _Module.GetMessageLoop();
 	pLoop->AddIdleHandler(this);
@@ -159,6 +160,7 @@ CString CDriversView::GetColumnText(HWND, int row, int col) {
 		case ColumnType::Type: return Helpers::DriverTypeToString(item.Type).c_str();
 		case ColumnType::StartType: return Helpers::DriverStartTypeToString(item.StartType);
 		case ColumnType::WDFVersion: return item.MajorVersion == 0 ? L"" : std::format(L"{}.{:02}", item.MajorVersion, item.MinorVersion).c_str();
+		case ColumnType::ErrorControl: return Helpers::DriverErrorControlToString(item.ErrorControl);
 	}
 	return CString();
 }
@@ -173,7 +175,7 @@ int CDriversView::GetRowImage(HWND h, int row, int col) {
 		return 0;
 	}
 	if (GetColumnManager(h)->GetColumnTag<ColumnType>(col) == ColumnType::State)
-		return item.State == DriverState::Running ? 3 :-1;
+		return item.State == DriverState::Running ? 3 : 4;
 	return -1;
 }
 
@@ -187,7 +189,7 @@ void CDriversView::DoSort(const SortInfo* si) {
 			case ColumnType::StartType: return SortHelper::Sort(d1.StartType, d2.StartType, asc);
 			case ColumnType::ImagePath: return SortHelper::Sort(d1.ImagePath, d2.ImagePath, asc);
 			case ColumnType::State: return SortHelper::Sort(d1.State, d2.State, asc);
-			case ColumnType::Type: return SortHelper::Sort(d1.Type, d2.Type, asc);
+			case ColumnType::ErrorControl: return SortHelper::Sort(d1.ErrorControl, d2.ErrorControl, asc);
 			case ColumnType::WDFVersion: return SortHelper::Sort(d1.MajorVersion * 100 + d1.MinorVersion, d2.MajorVersion * 100 + d2.MinorVersion, asc);
 		}
 		return false;

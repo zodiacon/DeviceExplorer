@@ -438,7 +438,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Device Explorer v0.2"
+    IDR_MAINFRAME           "Device Explorer"
     IDS_TITLE               "Device Explorer"
 END
 

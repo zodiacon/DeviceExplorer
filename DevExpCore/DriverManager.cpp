@@ -34,6 +34,7 @@ std::vector<DriverInfo> DriverManager::EnumKernelDrivers(bool runningOnly) {
         di.State = (DriverState)status.dwCurrentState;
         wil::unique_schandle hService(::OpenService(hScm.get(), dinfo.lpServiceName, SERVICE_QUERY_CONFIG | SERVICE_QUERY_STATUS));
         if (hService && ::QueryServiceConfig(hService.get(), config, 1 << 12, &size)) {
+            di.ErrorControl = (DriverErrorControl)config->dwErrorControl;
             di.ImagePath = config->lpBinaryPathName;
             di.StartType = (DriverStartType)config->dwStartType;
         }

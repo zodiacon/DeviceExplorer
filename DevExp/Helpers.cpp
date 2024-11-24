@@ -19,10 +19,10 @@
 #include "MultiStringListDlg.h"
 #include "GeneralPropertyPage.h"
 #include "ResourcesPropertyPage.h"
-#include "DriversPropertyPage.h"
 #include "DriverManager.h"
 #include <dxgiformat.h>
 #include <dxgi.h>
+#include <d3dkmthk.h>
 
 namespace std {
 	template<>
@@ -856,6 +856,11 @@ PCWSTR Helpers::DriverStateToString(DriverState state) {
 	return L"(Unknown)";
 }
 
+PCWSTR Helpers::DriverErrorControlToString(DriverErrorControl ec) {
+	static PCWSTR errors[] = { L"Ignore (0)", L"Normal (1)", L"Severe (2)", L"Critical (3)" };
+	return (unsigned)ec < _countof(errors) ? errors[(int)ec] : L"Unknown";
+}
+
 std::wstring Helpers::DriverTypeToString(DeviceDriverType type) {
 	std::wstring result;
 	switch (type & DeviceDriverType::TypeMask) {
@@ -1005,6 +1010,82 @@ std::wstring Helpers::DxgiFormatToString(DXGI_FORMAT format) {
 		case DXGI_FORMAT_SAMPLER_FEEDBACK_MIN_MIP_OPAQUE: return L"SAMPLER_FEEDBACK_MIN_MIP_OPAQUE";
 		case DXGI_FORMAT_SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE: return L"SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE";
 		case DXGI_FORMAT_A4B4G4R4_UNORM: return L"A4B4G4R4_UNORM";
+	}
+	return std::format(L"{} (0x{:X})", (UINT)format, (UINT)format);
+}
+
+std::wstring Helpers::DdiFormatToString(D3DDDIFORMAT format) {
+	switch (format) {
+		case D3DDDIFMT_R8G8B8:			return L"R8G8B8";
+		case D3DDDIFMT_A8R8G8B8:		return L"A8R8G8B8";
+		case D3DDDIFMT_X8R8G8B8:		return L"X8R8G8B8";
+		case D3DDDIFMT_R5G6B5:			return L"R5G6B5";
+		case D3DDDIFMT_X1R5G5B5:		return L"X1R5G5B5";
+		case D3DDDIFMT_A1R5G5B5:		return L"A1R5G5B5";
+		case D3DDDIFMT_A4R4G4B4:		return L"A4R4G4B4";
+		case D3DDDIFMT_R3G3B2:			return L"R3G3B2";
+		case D3DDDIFMT_A8:				return L"A8";
+		case D3DDDIFMT_A8R3G3B2:		return L"A8R3G3B2";
+		case D3DDDIFMT_X4R4G4B4:		return L"X4R4G4B4";
+		case D3DDDIFMT_A2B10G10R10:		return L"A2B10G10R10";
+		case D3DDDIFMT_A8B8G8R8:		return L"A8B8G8R8";
+		case D3DDDIFMT_X8B8G8R8:		return L"X8B8G8R8";
+		case D3DDDIFMT_G16R16:			return L"G16R16";
+		case D3DDDIFMT_A2R10G10B10:		return L"A2R10G10B10";
+		case D3DDDIFMT_A16B16G16R16:	return L"A16B16G16R16";
+		case D3DDDIFMT_A8P8:			return L"A8P8";
+		case D3DDDIFMT_P8:				return L"P8";
+		case D3DDDIFMT_L8:				return L"L8";
+		case D3DDDIFMT_A8L8:			return L"A8L8";
+		case D3DDDIFMT_A4L4:			return L"A4L4";
+		case D3DDDIFMT_V8U8:			return L"V8U8";
+		case D3DDDIFMT_L6V5U5:
+		case D3DDDIFMT_X8L8V8U8:		
+		case D3DDDIFMT_Q8W8V8U8:		
+		case D3DDDIFMT_V16U16:			
+		case D3DDDIFMT_W11V11U10:		
+		case D3DDDIFMT_A2W10V10U10:		
+		case D3DDDIFMT_UYVY:			
+		case D3DDDIFMT_R8G8_B8G8:
+		case D3DDDIFMT_YUY2:
+		case D3DDDIFMT_G8R8_G8B8:
+		case D3DDDIFMT_DXT1:
+		case D3DDDIFMT_DXT2:
+		case D3DDDIFMT_DXT3:
+		case D3DDDIFMT_DXT4:
+		case D3DDDIFMT_DXT5:
+		case D3DDDIFMT_D16_LOCKABLE:
+		case D3DDDIFMT_D32:
+		case D3DDDIFMT_D15S1:
+		case D3DDDIFMT_D24S8:
+		case D3DDDIFMT_D24X8:
+		case D3DDDIFMT_D24X4S4:
+		case D3DDDIFMT_D16:
+		case D3DDDIFMT_D32F_LOCKABLE:
+		case D3DDDIFMT_D24FS8:
+		case D3DDDIFMT_D32_LOCKABLE:
+		case D3DDDIFMT_S8_LOCKABLE:
+		case D3DDDIFMT_S1D15:
+		case D3DDDIFMT_S8D24:
+		case D3DDDIFMT_X8D24:
+		case D3DDDIFMT_X4S4D24:
+		case D3DDDIFMT_L16:
+		case D3DDDIFMT_G8R8:
+		case D3DDDIFMT_R8:
+		case D3DDDIFMT_VERTEXDATA:
+		case D3DDDIFMT_INDEX16:
+		case D3DDDIFMT_INDEX32:
+		case D3DDDIFMT_Q16W16V16U16:
+		case D3DDDIFMT_MULTI2_ARGB8:
+		case D3DDDIFMT_R16F:
+		case D3DDDIFMT_G16R16F:
+		case D3DDDIFMT_A16B16G16R16F:
+		case D3DDDIFMT_R32F:
+		case D3DDDIFMT_G32R32F:
+		case D3DDDIFMT_A32B32G32R32F:
+		case D3DDDIFMT_CxV8U8:
+		case D3DDDIFMT_A1:
+			break;
 	}
 	return std::format(L"{} (0x{:X})", (UINT)format, (UINT)format);
 }

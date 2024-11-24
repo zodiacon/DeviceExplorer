@@ -7,7 +7,9 @@ class DeviceManager;
 enum class DeviceDriverType;
 enum class DriverStartType;
 enum class DriverState;
+enum class DriverErrorControl;
 enum DXGI_FORMAT;
+typedef enum _D3DDDIFORMAT D3DDDIFORMAT;
 
 struct Helpers final {
 	static CString GetPropertyName(DEVPROPKEY const& key);
@@ -28,9 +30,11 @@ struct Helpers final {
 	static PCWSTR ResourceTypeToString(ResourceType type);
 	static std::wstring FormatDate(FILETIME const& ft);
 	static PCWSTR DriverStateToString(DriverState state);
+	static PCWSTR DriverErrorControlToString(DriverErrorControl ec);
 	static std::wstring DriverTypeToString(DeviceDriverType  type);
 	static PCWSTR DriverStartTypeToString(DriverStartType type);
 	static std::wstring DxgiFormatToString(DXGI_FORMAT format);
+	static std::wstring DdiFormatToString(D3DDDIFORMAT format);
 	static CString AdapterFlagsToString(UINT flags);
 	static PCWSTR RotationToString(UINT rotation);
 };

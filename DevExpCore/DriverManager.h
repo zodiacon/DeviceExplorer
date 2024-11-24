@@ -27,6 +27,13 @@ enum class DriverState {
 	Paused
 };
 
+enum class DriverErrorControl {
+	Ignore,
+	Normal,
+	Severe,
+	Critical,
+};
+
 struct DriverInfo {
 	std::wstring Name;
 	std::wstring DisplayName;
@@ -34,6 +41,7 @@ struct DriverInfo {
 	DeviceDriverType Type;
 	DriverStartType StartType;
 	DriverState State;
+	DriverErrorControl ErrorControl;
 	uint32_t MajorVersion{ 0 }, MinorVersion{ 0 };
 };
 

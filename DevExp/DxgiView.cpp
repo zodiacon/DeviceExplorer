@@ -7,6 +7,18 @@
 static constexpr DWORD TreeNodeMode = 0x1000;
 static constexpr DWORD TreeNodeFormat = 0x2000;
 
+template<typename T>
+T* QueryAdapterInfo(D3DKMT_HANDLE hAdpater, KMTQUERYADAPTERINFOTYPE type, T& data) {
+	D3DKMT_QUERYADAPTERINFO queryInfo;
+	queryInfo.hAdapter = hAdpater;
+	queryInfo.Type = type;
+	queryInfo.pPrivateDriverData = &data;
+	queryInfo.PrivateDriverDataSize = sizeof(T);
+	auto status = ::D3DKMTQueryAdapterInfo(&queryInfo);
+	return status == STATUS_SUCCESS ? &data : nullptr;
+}
+
+
 LRESULT CDxgiView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CLIPCHILDREN | WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
@@ -51,6 +63,9 @@ bool CDxgiView::BuildTree() {
 	if (FAILED(hr))
 		return false;
 
+	D3DKMT_ENUMADAPTERS adapters{};
+	auto status = D3DKMTEnumAdapters(&adapters);
+
 	for (UINT i = 0;; i++) {
 		CComPtr<IDXGIAdapter1> adapter;
 		hr = m_Factory->EnumAdapters1(i, &adapter);
@@ -60,7 +75,11 @@ bool CDxgiView::BuildTree() {
 		DXGI_ADAPTER_DESC1 desc;
 		adapter->GetDesc1(&desc);
 		auto hItem = m_Tree.InsertItem(desc.Description, 1, 1, hRoot, TVI_SORT);
-		m_TreeNodes.insert({ hItem, (IUnknown*)adapter });
+		TreeItem item;
+		item.spUnknown = adapter;
+		item.hAdapter = adapters.Adapters[i].hAdapter;
+
+		m_TreeNodes.insert({ hItem, item });
 
 		for (UINT i = 0;; i++) {
 			CComPtr<IDXGIOutput> output;
@@ -71,7 +90,8 @@ bool CDxgiView::BuildTree() {
 			DXGI_OUTPUT_DESC desc;
 			output->GetDesc(&desc);
 			auto hOutput = m_Tree.InsertItem(desc.DeviceName, 2, 2, hItem, TVI_SORT);
-			m_TreeNodes.insert({ hOutput, (IUnknown*)output});
+			item.spUnknown = output;
+			m_TreeNodes.insert({ hOutput, item});
 
 			for (UINT f = 1; f <= 200; f++) {
 				UINT count = 0;
@@ -130,8 +150,8 @@ void CDxgiView::OnPageActivated(bool active) {
 void CDxgiView::UpdateList(HTREEITEM hItem) {
 	m_Items.clear();
 	if (auto it = m_TreeNodes.find(hItem); it != m_TreeNodes.end()) {
-		auto unk = it->second;
-		if (CComQIPtr<IDXGIAdapter1> adapter(unk); adapter) {
+		auto& item = it->second;
+		if (CComQIPtr<IDXGIAdapter1> adapter(item.spUnknown); adapter) {
 			DXGI_ADAPTER_DESC1 desc1;
 			adapter->GetDesc1(&desc1);
 			m_Items.emplace_back(L"Description", CString(desc1.Description));
@@ -139,13 +159,51 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 			m_Items.emplace_back(L"Device ID", std::format(L"0x{:X}", desc1.DeviceId).c_str());
 			m_Items.emplace_back(L"Subsystem ID", std::format(L"0x{:X}", desc1.SubSysId).c_str());
 			m_Items.emplace_back(L"Revision", std::format(L"0x{:X}", desc1.Revision).c_str());
-			m_Items.emplace_back(L"LUID", std::format(L"0x{:0X}:{:0X}", desc1.AdapterLuid.HighPart, desc1.AdapterLuid.LowPart).c_str());
-			m_Items.emplace_back(L"Dedicated Video Memory", std::format(L"{} MB", desc1.DedicatedVideoMemory >> 20).c_str());
-			m_Items.emplace_back(L"Dedicated System Memory", std::format(L"{} MB", desc1.DedicatedSystemMemory>> 20).c_str());
-			m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", desc1.SharedSystemMemory >> 20).c_str());
+			m_Items.emplace_back(L"LUID", std::format(L"0x{:X}:{:08X}", desc1.AdapterLuid.HighPart, desc1.AdapterLuid.LowPart).c_str());
+			//m_Items.emplace_back(L"Dedicated Video Memory", std::format(L"{} MB", desc1.DedicatedVideoMemory >> 20).c_str());
+			//m_Items.emplace_back(L"Dedicated System Memory", std::format(L"{} MB", desc1.DedicatedSystemMemory>> 20).c_str());
+			//m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", desc1.SharedSystemMemory >> 20).c_str());
 			m_Items.emplace_back(L"Flags", std::format(L"0x{:X}", desc1.Flags).c_str(), Helpers::AdapterFlagsToString(desc1.Flags));
+
+			if (item.hAdapter) {
+				D3DKMT_ADAPTERADDRESS address;
+				if(QueryAdapterInfo(item.hAdapter, KMTQAITYPE_ADAPTERADDRESS, address)) {
+					m_Items.emplace_back(L"Adapter Address", std::format(L"Bus: 0x{:X} Device: 0x{:X} Function: 0x{:X}", 
+						address.BusNumber, address.DeviceNumber, address.FunctionNumber).c_str());
+				}
+				D3DKMT_SEGMENTSIZEINFO segmentInfo;
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_GETSEGMENTSIZE, segmentInfo)) {
+					m_Items.emplace_back(L"Video Memory", std::format(L"{} MB", segmentInfo.DedicatedVideoMemorySize >> 20).c_str());
+					m_Items.emplace_back(L"System Memory", std::format(L"{} MB", segmentInfo.DedicatedSystemMemorySize >> 20).c_str());
+					m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", segmentInfo.SharedSystemMemorySize >> 20).c_str());
+				}
+				D3DKMT_DRIVERVERSION driverVer;
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_DRIVERVERSION, driverVer)) {
+					m_Items.emplace_back(L"Driver Version", std::format(L"{} ", (UINT)driverVer).c_str());
+				}
+				for (UINT src = 0;; src++) {
+					D3DKMT_CURRENTDISPLAYMODE displayMode;
+					displayMode.VidPnSourceId = src;
+					if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_CURRENTDISPLAYMODE, displayMode)) {
+						m_Items.emplace_back(std::format(L"Source {} Resolution", src).c_str(), std::format(L"{} X {}", displayMode.DisplayMode.Width, displayMode.DisplayMode.Height).c_str());
+						m_Items.emplace_back(std::format(L"Source {} Format", src).c_str(), Helpers::DdiFormatToString(displayMode.DisplayMode.Format).c_str());
+						m_Items.emplace_back(std::format(L"Source {} Refresh Rate", src).c_str(), std::format(L"{} Hz", displayMode.DisplayMode.IntegerRefreshRate).c_str());
+					}
+					else
+						break;
+				}
+				D3DKMT_GETPRESENTHISTORY history;
+				D3DKMT_PRESENTHISTORYTOKEN tokens[8];
+				history.hAdapter = item.hAdapter;
+				history.pTokens = tokens;
+				history.ProvidedSize = sizeof(tokens);
+				auto status = D3DKMTGetPresentHistory(&history);
+				if (status == STATUS_SUCCESS) {
+				}
+
+			}
 		}
-		else if (CComQIPtr<IDXGIOutput1> output(unk); output) {
+		else if (CComQIPtr<IDXGIOutput1> output(item.spUnknown); output) {
 			DXGI_OUTPUT_DESC desc;
 			output->GetDesc(&desc);
 			m_Items.emplace_back(L"Device Name", CString(desc.DeviceName));
@@ -164,7 +222,7 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 			// display format
 			auto hParent = m_Tree.GetParentItem(hItem);
 			if (auto it = m_TreeNodes.find(hParent); it != m_TreeNodes.end()) {
-				CComQIPtr<IDXGIOutput1> output(it->second);
+				CComQIPtr<IDXGIOutput1> output(it->second.spUnknown);
 				ATLASSERT(output);
 				if (output) {
 					UINT count = 0;
@@ -179,3 +237,4 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 	}
 	m_List.SetItemCount((int)m_Items.size());
 }
+
