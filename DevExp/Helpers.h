@@ -10,6 +10,8 @@ enum class DriverState;
 enum class DriverErrorControl;
 enum DXGI_FORMAT;
 typedef enum _D3DDDIFORMAT D3DDDIFORMAT;
+typedef struct _D3DKMT_WDDM_1_2_CAPS D3DKMT_WDDM_1_2_CAPS;
+typedef struct _D3DKMT_WDDM_1_3_CAPS D3DKMT_WDDM_1_3_CAPS;
 
 struct Helpers final {
 	static CString GetPropertyName(DEVPROPKEY const& key);
@@ -37,4 +39,6 @@ struct Helpers final {
 	static std::wstring DdiFormatToString(D3DDDIFORMAT format);
 	static CString AdapterFlagsToString(UINT flags);
 	static PCWSTR RotationToString(UINT rotation);
+	static std::wstring Wddm12CapsToString(D3DKMT_WDDM_1_2_CAPS const& caps);
+	static std::wstring Wddm13CapsToString(D3DKMT_WDDM_1_3_CAPS const& caps);
 };

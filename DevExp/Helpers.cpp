@@ -1111,3 +1111,47 @@ PCWSTR Helpers::RotationToString(UINT rotation) {
 	}
 	return L"(Unspecified)";
 }
+
+std::wstring Helpers::Wddm12CapsToString(D3DKMT_WDDM_1_2_CAPS const& caps) {
+	std::wstring text;
+
+#define ADD_BIT(text, value, bit) if(value.Support##bit) text += L#bit L", ";
+
+	ADD_BIT(text, caps, NonVGA);
+	ADD_BIT(text, caps, SmoothRotation);
+	ADD_BIT(text, caps, PerEngineTDR);
+	ADD_BIT(text, caps, KernelModeCommandBuffer);
+	ADD_BIT(text, caps, CCD);
+	ADD_BIT(text, caps, SoftwareDeviceBitmaps);
+	ADD_BIT(text, caps, GammaRamp);
+	ADD_BIT(text, caps, HWCursor);
+	ADD_BIT(text, caps, HWVSync);
+	ADD_BIT(text, caps, SurpriseRemovalInHibernation);
+
+#undef ADD_BIT
+
+	if (!text.empty())
+		text = text.substr(0, text.length() - 2);
+	return text;
+}
+
+std::wstring Helpers::Wddm13CapsToString(D3DKMT_WDDM_1_3_CAPS const& caps) {
+	std::wstring text;
+
+#define ADD_BIT(text, value, bit) if(value.Support##bit) text += L#bit L", ";
+#define ADD_BIT2(text, value, bit) if(value.Is##bit) text += L#bit L", ";
+
+	ADD_BIT(text, caps, Miracast);
+	ADD_BIT2(text, caps, HybridIntegratedGPU);
+	ADD_BIT2(text, caps, HybridDiscreteGPU);
+	ADD_BIT(text, caps, PowerManagementPStates);
+	ADD_BIT(text, caps, VirtualModes);
+	ADD_BIT(text, caps, CrossAdapterResource);
+
+#undef ADD_BIT
+#undef ADD_BIT2
+
+	if (!text.empty())
+		text = text.substr(0, text.length() - 2);
+	return text;
+}

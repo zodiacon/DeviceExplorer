@@ -26,7 +26,7 @@ LRESULT CDxgiView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_Tree.SetExtendedStyle(TVS_EX_DOUBLEBUFFER, 0);
 
 	CImageList images;
-	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 64, 64);
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 8, 8);
 	m_Tree.SetImageList(images);
 
 	UINT ids[] = { IDI_DIRECTX, IDI_ADAPTER, IDI_DEVICE, IDI_RECT, IDI_RESOLUTION };
@@ -38,12 +38,12 @@ LRESULT CDxgiView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
 	auto cm = GetColumnManager(m_List);
-	cm->AddColumn(L"Property", LVCFMT_LEFT, 320, 0);
-	cm->AddColumn(L"Value", LVCFMT_LEFT, 360, 1);
-	cm->AddColumn(L"Details", LVCFMT_LEFT, 550, 2);
+	cm->AddColumn(L"Property", LVCFMT_LEFT, 220, 0);
+	cm->AddColumn(L"Value", LVCFMT_LEFT, 300, 1);
+	cm->AddColumn(L"Details", LVCFMT_LEFT, 690, 2);
 	cm->UpdateColumns();
 
-	m_Splitter.SetSplitterPosPct(30);
+	m_Splitter.SetSplitterPosPct(25);
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 
 	if (!BuildTree()) {
@@ -160,9 +160,6 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 			m_Items.emplace_back(L"Subsystem ID", std::format(L"0x{:X}", desc1.SubSysId).c_str());
 			m_Items.emplace_back(L"Revision", std::format(L"0x{:X}", desc1.Revision).c_str());
 			m_Items.emplace_back(L"LUID", std::format(L"0x{:X}:{:08X}", desc1.AdapterLuid.HighPart, desc1.AdapterLuid.LowPart).c_str());
-			//m_Items.emplace_back(L"Dedicated Video Memory", std::format(L"{} MB", desc1.DedicatedVideoMemory >> 20).c_str());
-			//m_Items.emplace_back(L"Dedicated System Memory", std::format(L"{} MB", desc1.DedicatedSystemMemory>> 20).c_str());
-			//m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", desc1.SharedSystemMemory >> 20).c_str());
 			m_Items.emplace_back(L"Flags", std::format(L"0x{:X}", desc1.Flags).c_str(), Helpers::AdapterFlagsToString(desc1.Flags));
 
 			if (item.hAdapter) {
@@ -181,6 +178,27 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_DRIVERVERSION, driverVer)) {
 					m_Items.emplace_back(L"Driver Version", std::format(L"{} ", (UINT)driverVer).c_str());
 				}
+				D3DKMT_UMD_DRIVER_VERSION umdVersion;
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_UMD_DRIVER_VERSION, umdVersion)) {
+					m_Items.emplace_back(L"User Mode Driver Version", std::format(L"{}.{}.{}.{}", 
+						HIWORD(umdVersion.DriverVersion.HighPart), LOWORD(umdVersion.DriverVersion.HighPart),
+						HIWORD(umdVersion.DriverVersion.LowPart), LOWORD(umdVersion.DriverVersion.LowPart)).c_str());
+				}
+				D3DKMT_ADAPTERREGISTRYINFO registryInfo;
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_ADAPTERREGISTRYINFO, registryInfo)) {
+					m_Items.emplace_back(L"BIOS String", registryInfo.BiosString);
+					m_Items.emplace_back(L"DAC Type", registryInfo.DacType);
+					m_Items.emplace_back(L"Chip Type", registryInfo.ChipType);
+				}
+				D3DKMT_WDDM_1_2_CAPS caps;
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_WDDM_1_2_CAPS, caps)) {
+					m_Items.emplace_back(L"WDDM 1.2 Caps", std::format(L"0x{:04X}", caps.Value).c_str(), Helpers::Wddm12CapsToString(caps).c_str());
+				}
+				D3DKMT_WDDM_1_3_CAPS caps3;
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_WDDM_1_3_CAPS, caps3)) {
+					m_Items.emplace_back(L"WDDM 1.3 Caps", std::format(L"0x{:04X}", caps3.Value).c_str(), Helpers::Wddm13CapsToString(caps3).c_str());
+				}
+
 				for (UINT src = 0;; src++) {
 					D3DKMT_CURRENTDISPLAYMODE displayMode;
 					displayMode.VidPnSourceId = src;
@@ -188,10 +206,18 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 						m_Items.emplace_back(std::format(L"Source {} Resolution", src).c_str(), std::format(L"{} X {}", displayMode.DisplayMode.Width, displayMode.DisplayMode.Height).c_str());
 						m_Items.emplace_back(std::format(L"Source {} Format", src).c_str(), Helpers::DdiFormatToString(displayMode.DisplayMode.Format).c_str());
 						m_Items.emplace_back(std::format(L"Source {} Refresh Rate", src).c_str(), std::format(L"{} Hz", displayMode.DisplayMode.IntegerRefreshRate).c_str());
+						D3DKMT_GETDEVICESTATE state{};
+						state.hDevice = item.hAdapter;
+						state.PresentState.VidPnSourceId = src;
+						state.StateType = D3DKMT_DEVICESTATE_PRESENT;
+						if (STATUS_SUCCESS == D3DKMTGetDeviceState(&state)) {
+							m_Items.emplace_back(std::format(L"Source {} Present Count", src).c_str(), std::format(L"{}", state.PresentState.PresentStats.PresentCount).c_str());
+						}
 					}
 					else
 						break;
 				}
+				/*
 				D3DKMT_GETPRESENTHISTORY history;
 				D3DKMT_PRESENTHISTORYTOKEN tokens[8];
 				history.hAdapter = item.hAdapter;
@@ -200,7 +226,7 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 				auto status = D3DKMTGetPresentHistory(&history);
 				if (status == STATUS_SUCCESS) {
 				}
-
+				*/
 			}
 		}
 		else if (CComQIPtr<IDXGIOutput1> output(item.spUnknown); output) {
