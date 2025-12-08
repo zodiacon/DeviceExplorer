@@ -111,7 +111,7 @@ bool CDxgiView::BuildTree() {
 				}
 			}
 		}
-
+		m_Tree.Expand(hItem, TVE_EXPAND);
 	}
 
 	m_Tree.Expand(hRoot, TVE_EXPAND);

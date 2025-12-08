@@ -480,12 +480,14 @@ CString Helpers::GetPropertyValueAsString(PBYTE value, DEVPROPTYPE type, ULONG s
 			return GuidToString(*(GUID*)value);
 
 		case DEVPROP_TYPE_FILETIME:
+		{
 			auto ft = *(FILETIME*)value;
 			if (ft.dwHighDateTime == 0 && ft.dwLowDateTime == 0)
 				return L"";
 
 			::SHFormatDateTime(&ft, nullptr, text.GetBufferSetLength(64), 64);
 			break;
+		}
 
 		case DEVPROP_TYPE_DATE:
 		{

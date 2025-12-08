@@ -81,6 +81,7 @@ enum class DeviceRegistryPropertyType {
 };
 
 enum class InfoSetOptions {
+	None = 0,
 	AllClasses = DIGCF_ALLCLASSES,
 	Profile = DIGCF_PROFILE,
 	Present = DIGCF_PRESENT,
@@ -96,7 +97,7 @@ struct DeviceInfo {
 
 struct DeviceDriverInfo {
 	std::wstring Description;
-	std::wstring ManufactorName;
+	std::wstring ManufacturerName;
 	std::wstring ProviderName;
 	FILETIME  DriverDate;
 	DWORDLONG DriverVersion;

@@ -22,7 +22,7 @@ int CDriversPropertyPage::GetRowImage(HWND, int row, int) const {
 void CDriversPropertyPage::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
 	if (newState & LVIS_SELECTED) {
 		auto& item = m_Items[from];
-		SetDlgItemText(IDC_MFG, item.ManufactorName.c_str());
+		SetDlgItemText(IDC_MFG, item.ManufacturerName.c_str());
 	}
 }
 

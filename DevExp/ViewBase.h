@@ -3,8 +3,7 @@
 #include "Interfaces.h"
 
 template<typename T>
-struct CViewBase 	
-	: public CFrameWindowImpl<T, CWindow, CControlWinTraits> {
+struct CViewBase : public CFrameWindowImpl<T, CWindow, CControlWinTraits> {
 	using BaseFrame = CFrameWindowImpl<T, CWindow, CControlWinTraits>;
 	
 	CViewBase(IMainFrame* frame) : m_pFrame(frame) {}

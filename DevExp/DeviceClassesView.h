@@ -37,6 +37,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWHIDDENDEVICES, OnShowHiddenDevices)
+		COMMAND_ID_HANDLER(ID_VIEW_SHOWNONPRESENT, OnShowNonPresentDevices)
 		COMMAND_ID_HANDLER(ID_VIEW_SHOWEMPTYCLASSES, OnShowEmptyClasses)
 		COMMAND_ID_HANDLER(ID_DEVICE_PROPERTIES, OnDeviceProperties)
 		COMMAND_ID_HANDLER(ID_DEVICE_ENABLE, OnEnableDisableDevice)
@@ -79,6 +80,7 @@ private:
 	LRESULT OnEnableDisableDevice(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDeviceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDeviceUninstall(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnShowNonPresentDevices(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	CTreeViewCtrl m_Tree;
@@ -92,4 +94,5 @@ private:
 	ULONG_PTR m_DataSelected{ 0 };
 	bool m_ShowHiddenDevices{ false };
 	bool m_ShowEmptyClasses{ false };
+	bool m_ShowNonPresentDevices{ false };
 };

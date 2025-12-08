@@ -45,7 +45,6 @@
 #define IDI_DEVICE                      238
 #define IDI_RECT                        239
 #define IDI_DIRECTX                     240
-#define IDI_ICON1                       241
 #define IDI_RESOLUTION                  241
 #define IDC_LIST                        1002
 #define IDC_NAME                        1003
@@ -84,13 +83,15 @@
 #define ID_Menu                         32801
 #define ID_TOOLS_FORCEINSTALLDRIVER     32802
 #define ID_EXPLORE_DXGI                 32803
+#define ID_VIEW_SHOWNON                 32804
+#define ID_VIEW_SHOWNONPRESENT          32805
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        242
-#define _APS_NEXT_COMMAND_VALUE         32804
+#define _APS_NEXT_COMMAND_VALUE         32806
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

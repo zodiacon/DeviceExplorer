@@ -50,7 +50,7 @@ void CDeviceClassesView::Refresh() {
 	m_Tree.DeleteAllItems();
 	m_Tree.SetImageList(images2);
 
-	m_DevMgr = DeviceManager::Create();
+	m_DevMgr = DeviceManager::Create(nullptr, nullptr, nullptr, InfoSetOptions::AllClasses | (m_ShowNonPresentDevices ? InfoSetOptions::None : InfoSetOptions::Present));
 	m_Devices = m_DevMgr->EnumDevices(m_ShowHiddenDevices);
 	auto root = DeviceManager::GetRootDeviceNode();
 	WCHAR name[MAX_COMPUTERNAME_LENGTH + 1];
@@ -285,6 +285,15 @@ LRESULT CDeviceClassesView::OnDeviceUninstall(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 
+LRESULT CDeviceClassesView::OnShowNonPresentDevices(WORD, WORD, HWND, BOOL&) {
+	m_ShowNonPresentDevices = !m_ShowNonPresentDevices;
+	GetFrame()->GetUI().UISetCheck(ID_VIEW_SHOWNONPRESENT, m_ShowNonPresentDevices);
+
+	Refresh();
+
+	return 0;
+}
+
 bool CDeviceClassesView::OnTreeRightClick(HWND, HTREEITEM hItem, POINT const& pt) {
 	m_Tree.SelectItem(hItem);
 	CMenu menu;
@@ -316,6 +325,7 @@ bool CDeviceClassesView::OnTreeDoubleClick(HWND, HTREEITEM hItem) {
 void CDeviceClassesView::UpdateUI(CUpdateUIBase& ui) {
 	ui.UISetCheck(ID_VIEW_SHOWHIDDENDEVICES, m_ShowHiddenDevices);
 	ui.UISetCheck(ID_VIEW_SHOWEMPTYCLASSES, m_ShowEmptyClasses);
+	ui.UISetCheck(ID_VIEW_SHOWNONPRESENT, m_ShowNonPresentDevices);
 	auto dev = GetItemData<DEVINST>(m_Tree, m_Tree.GetSelectedItem());
 	ui.UIEnable(ID_DEVICE_PROPERTIES, dev < 0x8000 && m_Tree.GetSelectedItem() != m_Tree.GetRootItem());
 

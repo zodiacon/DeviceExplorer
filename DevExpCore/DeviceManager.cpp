@@ -123,7 +123,7 @@ std::vector<DeviceDriverInfo> DeviceManager::EnumDrivers(DeviceInfo const& di, b
 		DeviceDriverInfo ddi;
 		ddi.Description = dd.Description;
 		ddi.DriverDate = dd.DriverDate;
-		ddi.ManufactorName = dd.MfgName;
+		ddi.ManufacturerName = dd.MfgName;
 		ddi.ProviderName = dd.ProviderName;
 		ddi.Type = dd.DriverType;
 		ddi.DriverVersion = dd.DriverVersion;
