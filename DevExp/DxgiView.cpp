@@ -30,7 +30,7 @@ LRESULT CDxgiView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_Tree.SetImageList(images);
 
 	UINT ids[] = { IDI_DIRECTX, IDI_ADAPTER, IDI_DEVICE, IDI_RECT, IDI_RESOLUTION };
-	for(auto id : ids)
+	for (auto id : ids)
 		images.AddIcon(AtlLoadIconImage(id, 0, 16, 16));
 
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
@@ -91,7 +91,7 @@ bool CDxgiView::BuildTree() {
 			output->GetDesc(&desc);
 			auto hOutput = m_Tree.InsertItem(desc.DeviceName, 2, 2, hItem, TVI_SORT);
 			item.spUnknown = output;
-			m_TreeNodes.insert({ hOutput, item});
+			m_TreeNodes.insert({ hOutput, item });
 
 			for (UINT f = 1; f <= 200; f++) {
 				UINT count = 0;
@@ -104,7 +104,7 @@ bool CDxgiView::BuildTree() {
 					for (UINT i = 0; i < count; i++) {
 						auto& mode = modes[i];
 						auto hMode = m_Tree.InsertItem(std::format(L"{}x{} {:.0f} Hz", mode.Width, mode.Height,
-							mode.RefreshRate.Numerator / (float)mode.RefreshRate.Denominator).c_str(), 
+							mode.RefreshRate.Numerator / (float)mode.RefreshRate.Denominator).c_str(),
 							4, 4, hModes, TVI_LAST);
 						m_Tree.SetItemData(hMode, i + TreeNodeMode);
 					}
@@ -162,10 +162,27 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 			m_Items.emplace_back(L"LUID", std::format(L"0x{:X}:{:08X}", desc1.AdapterLuid.HighPart, desc1.AdapterLuid.LowPart).c_str());
 			m_Items.emplace_back(L"Flags", std::format(L"0x{:X}", desc1.Flags).c_str(), Helpers::AdapterFlagsToString(desc1.Flags));
 
+			CComQIPtr<IDXGIAdapter3> adapter3(adapter);
+			if (adapter3) {
+				DXGI_QUERY_VIDEO_MEMORY_INFO info;
+				if (S_OK == adapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &info)) {
+					m_Items.emplace_back(L"Local Budget", std::format(L"{} MB", info.Budget >> 20).c_str());
+					m_Items.emplace_back(L"Local Current Usage", std::format(L"{} MB", info.CurrentUsage >> 20).c_str());
+					m_Items.emplace_back(L"Local Available Reserved", std::format(L"{} MB", info.AvailableForReservation >> 20).c_str());
+					m_Items.emplace_back(L"Local Current Reserved", std::format(L"{} MB", info.CurrentReservation>> 20).c_str());
+				}
+				if (S_OK == adapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &info)) {
+					m_Items.emplace_back(L"System Budget", std::format(L"{} MB", info.Budget >> 20).c_str());
+					m_Items.emplace_back(L"System Current Usage", std::format(L"{} MB", info.CurrentUsage >> 20).c_str());
+					m_Items.emplace_back(L"System Available Reserved", std::format(L"{} MB", info.AvailableForReservation >> 20).c_str());
+					m_Items.emplace_back(L"System Current Reserved", std::format(L"{} MB", info.CurrentReservation >> 20).c_str());
+				}
+			}
+
 			if (item.hAdapter) {
 				D3DKMT_ADAPTERADDRESS address;
-				if(QueryAdapterInfo(item.hAdapter, KMTQAITYPE_ADAPTERADDRESS, address)) {
-					m_Items.emplace_back(L"Adapter Address", std::format(L"Bus: 0x{:X} Device: 0x{:X} Function: 0x{:X}", 
+				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_ADAPTERADDRESS, address)) {
+					m_Items.emplace_back(L"Adapter Address", std::format(L"Bus: 0x{:X} Device: 0x{:X} Function: 0x{:X}",
 						address.BusNumber, address.DeviceNumber, address.FunctionNumber).c_str());
 				}
 				D3DKMT_SEGMENTSIZEINFO segmentInfo;
@@ -180,7 +197,7 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 				}
 				D3DKMT_UMD_DRIVER_VERSION umdVersion;
 				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_UMD_DRIVER_VERSION, umdVersion)) {
-					m_Items.emplace_back(L"User Mode Driver Version", std::format(L"{}.{}.{}.{}", 
+					m_Items.emplace_back(L"User Mode Driver Version", std::format(L"{}.{}.{}.{}",
 						HIWORD(umdVersion.DriverVersion.HighPart), LOWORD(umdVersion.DriverVersion.HighPart),
 						HIWORD(umdVersion.DriverVersion.LowPart), LOWORD(umdVersion.DriverVersion.LowPart)).c_str());
 				}

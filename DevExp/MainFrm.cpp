@@ -35,7 +35,6 @@ BOOL CMainFrame::OnIdle() {
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	auto& settings = AppSettings::Get();
-	bool loaded = settings.LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
 
 	auto hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
@@ -43,11 +42,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		h.DeleteMenu(0, MF_BYPOSITION);
 		h.DeleteMenu(0, MF_BYPOSITION);
 	}
-	InitMenu();
+	InitMenu(hMenu);
 	UIAddMenu(hMenu);
-	AddMenu(hMenu);
-	SetCheckIcon(IDI_CHECK, IDI_RADIO);
-	InitDarkTheme();
 
 	CToolBarCtrl tb;
 	tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
@@ -93,9 +89,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 
 	if (s_Settings.DarkMode()) {
-		ThemeHelper::SetCurrentTheme(s_DarkTheme, m_hWnd);
-		ThemeHelper::UpdateMenuColors(*this, true);
-		UpdateMenu(GetMenu(), true);
+		WTLHelper::SwitchToMode(DarkMode::DarkModeType::dark, m_hWnd);
 		UISetCheck(ID_OPTIONS_DARKMODE, true);
 	}
 
@@ -108,8 +102,6 @@ LRESULT CMainFrame::OnExploreDeviceClasses(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	auto pView = new CDeviceClassesView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Classes"), 2, pView);
-	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DEVICES);
-	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -121,8 +113,6 @@ LRESULT CMainFrame::OnExploreDxgi(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 
 	m_view.AddPage(pView->m_hWnd, _T("DXGI"), 5, pView);
-	//AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DEVICES);
-	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -130,8 +120,6 @@ LRESULT CMainFrame::OnExploreDeviceInterfaces(WORD /*wNotifyCode*/, WORD /*wID*/
 	auto pView = new CDeviceInterfacesView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Interfaces"), 3, pView);
-	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_INTERFACE);
-	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -139,8 +127,6 @@ LRESULT CMainFrame::OnExploreDeviceTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto pView = new CDevNodeView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device Tree"), 0, pView);
-	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_TREE);
-	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -148,8 +134,6 @@ LRESULT CMainFrame::OnExploreDeviceList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto pView = new CDevNodeListView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Device List"), 1, pView);
-	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_LIST);
-	AddSubMenu(m_view.m_menu);
 	return 0;
 }
 
@@ -157,8 +141,6 @@ LRESULT CMainFrame::OnExploreDrivers(WORD /*wNotifyCode*/, WORD /*id*/, HWND /*h
 	auto pView = new CDriversView(this);
 	pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_view.AddPage(pView->m_hWnd, _T("Drivers"), 4, pView);
-	AddCommand(ID_WINDOW_TABFIRST + m_view.GetPageCount() - 1, IDI_DRIVER);
-	AddSubMenu(m_view.m_menu);
 
 	return 0;
 }
@@ -238,7 +220,6 @@ void CMainFrame::UpdateUI() {
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int page = wID - ID_WINDOW_TABFIRST;
 	m_view.SetActivePage(page);
-	AddSubMenu(m_view.m_menu);
 
 	return 0;
 }
@@ -286,11 +267,8 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb, int size) {
 	}
 }
 
-void CMainFrame::InitMenu() {
-	struct {
-		UINT id, icon;
-		HICON hIcon = nullptr;
-	} cmds[] = {
+void CMainFrame::InitMenu(HMENU hmenu) {
+	MenuItemData cmds[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_EDIT_DELETE, IDI_CANCEL },
@@ -309,9 +287,7 @@ void CMainFrame::InitMenu() {
 		{ ID_WINDOW_CLOSE_ALL, IDI_CLOSEALL },
 		{ ID_TOOLS_INSTALLDRIVER, IDI_INSTALL },
 	};
-	for (auto& cmd : cmds) {
-		AddCommand(cmd.id, cmd.icon ? AtlLoadIconImage(cmd.icon, 0, 16, 16) : cmd.hIcon);
-	}
+	WTLHelper::InitMenu(hmenu, cmds, _countof(cmds));
 }
 
 HWND CMainFrame::GetHwnd() const {
@@ -319,7 +295,8 @@ HWND CMainFrame::GetHwnd() const {
 }
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) {
-	return ShowContextMenu(hMenu, flags, x, y, hWnd);
+	InitMenu(hMenu);
+	return TrackPopupMenuEx(hMenu, flags, x, y, hWnd, nullptr);
 }
 
 CUpdateUIBase& CMainFrame::GetUI() {
@@ -385,50 +362,20 @@ LRESULT CMainFrame::OnShowWindow(UINT, WPARAM, LPARAM, BOOL&) {
 	return 0;
 }
 
-void CMainFrame::InitDarkTheme() const {
-	s_DarkTheme.BackColor = s_DarkTheme.SysColors[COLOR_WINDOW] = RGB(32, 32, 32);
-	s_DarkTheme.TextColor = s_DarkTheme.SysColors[COLOR_WINDOWTEXT] = RGB(248, 248, 248);
-	s_DarkTheme.SysColors[COLOR_HIGHLIGHT] = RGB(10, 10, 160);
-	s_DarkTheme.SysColors[COLOR_HIGHLIGHTTEXT] = RGB(240, 240, 240);
-	s_DarkTheme.SysColors[COLOR_MENUTEXT] = s_DarkTheme.TextColor;
-	s_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = s_DarkTheme.TextColor;
-	s_DarkTheme.SysColors[COLOR_BTNFACE] = s_DarkTheme.BackColor;
-	s_DarkTheme.SysColors[COLOR_BTNTEXT] = s_DarkTheme.TextColor;
-	s_DarkTheme.SysColors[COLOR_3DLIGHT] = RGB(192, 192, 192);
-	s_DarkTheme.SysColors[COLOR_BTNHIGHLIGHT] = RGB(192, 192, 192);
-	s_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = s_DarkTheme.TextColor;
-	s_DarkTheme.SysColors[COLOR_3DSHADOW] = s_DarkTheme.TextColor;
-	s_DarkTheme.SysColors[COLOR_SCROLLBAR] = s_DarkTheme.BackColor;
-	s_DarkTheme.SysColors[COLOR_APPWORKSPACE] = s_DarkTheme.BackColor;
-	s_DarkTheme.StatusBar.BackColor = RGB(16, 0, 16);
-	s_DarkTheme.StatusBar.TextColor = s_DarkTheme.TextColor;
-
-	s_DarkTheme.Name = L"Dark";
-	s_DarkTheme.Menu.BackColor = s_DarkTheme.BackColor;
-	s_DarkTheme.Menu.TextColor = s_DarkTheme.TextColor;
-}
-
 LRESULT CMainFrame::OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto& settings = AppSettings::Get();
-	settings.DarkMode(!settings.DarkMode());
-	UISetCheck(ID_OPTIONS_DARKMODE, settings.DarkMode());
-
-	::EnumThreadWindows(::GetCurrentThreadId(), [](auto hWnd, auto) {
-		::PostMessage(hWnd, WM_UPDATE_DARKMODE, 0, 0);
-		return TRUE;
-		}, 0);
+	WTLHelper::SwitchToMode(WTLHelper::IsDarkMode() ? DarkMode::DarkModeType::light : DarkMode::DarkModeType::dark, m_hWnd);
+	DrawMenuBar();
+	InitMenu(GetMenu());
+	AppSettings::Get().DarkMode(WTLHelper::IsDarkMode());
+	UISetCheck(ID_OPTIONS_DARKMODE, WTLHelper::IsDarkMode());
 
 	return 0;
 }
 
 LRESULT CMainFrame::OnUpdateDarkMode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	auto& settings = AppSettings::Get();
-	if (settings.DarkMode())
-		ThemeHelper::SetCurrentTheme(s_DarkTheme, m_hWnd);
-	else
-		ThemeHelper::SetDefaultTheme(m_hWnd);
-	ThemeHelper::UpdateMenuColors(*this, settings.DarkMode());
-	UpdateMenuBase(GetMenu(), true);
+	WTLHelper::SwitchToMode(settings.DarkMode() ? DarkMode::DarkModeType::light : DarkMode::DarkModeType::dark, m_hWnd);
+
 	DrawMenuBar();
 	UISetCheck(ID_OPTIONS_DARKMODE, settings.DarkMode());
 	return 0;

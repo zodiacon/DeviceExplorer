@@ -2,9 +2,10 @@
 //
 
 #include "pch.h"
-#include "resource.h"
 #include "MainFrm.h"
-#include <ThemeHelper.h>
+#include <WTLHelper.h>
+
+#include "DarkMode/DarkModeSubclass.h"
 
 CAppModule _Module;
 
@@ -36,7 +37,13 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	ThemeHelper::Init();
+	auto loaded = AppSettings::Get().LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
+	if (loaded)
+		WTLHelper::InitDarkMode(AppSettings::Get().DarkMode() ? DarkMode::DarkModeType::dark : DarkMode::DarkModeType::classic);
+	else
+		WTLHelper::InitDarkMode();
+
+	//ThemeHelper::Init();
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 

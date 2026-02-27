@@ -5,14 +5,12 @@
 #pragma once
 
 #include "Interfaces.h"
-#include <CustomTabView.h>
+#include <NativeCustomTabView.h>
 #include "AppSettings.h"
-#include <Theme.h>
-#include <OwnerDrawnMenu.h>
+#include "resource.h"
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
-	public COwnerDrawnMenu<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
 	public IMainFrame,
 	public CMessageFilter, 
@@ -59,7 +57,6 @@ protected:
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
-		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()
 
@@ -69,9 +66,8 @@ protected:
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 private:
-	void SetDarkMode(bool dark);
 	void InitToolBar(CToolBarCtrl& tb, int size);
-	void InitMenu();
+	void InitMenu(HMENU);
 	void UpdateUI();
 	void SetAlwaysOnTop(bool onTop);
 	void InitDarkTheme() const;
@@ -108,9 +104,7 @@ private:
 	LRESULT OnForceInstallDriver(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnUpdateDarkMode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	CCustomTabView m_view;
+	CNativeCustomTabView m_view;
 	inline static AppSettings s_Settings;
-	Theme m_DarkTheme;
 	int m_ActivePage{ -1 };
-	inline static Theme s_DarkTheme;
 };
