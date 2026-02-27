@@ -22,7 +22,7 @@ T* QueryAdapterInfo(D3DKMT_HANDLE hAdpater, KMTQUERYADAPTERINFOTYPE type, T& dat
 LRESULT CDxgiView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CLIPCHILDREN | WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
-		TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS);
+		TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_LINESATROOT);
 	m_Tree.SetExtendedStyle(TVS_EX_DOUBLEBUFFER, 0);
 
 	CImageList images;
@@ -63,6 +63,7 @@ bool CDxgiView::BuildTree() {
 	if (FAILED(hr))
 		return false;
 
+	// BUG? adapter handles order is not the same as DXGI adapter enumeration order!
 	D3DKMT_ENUMADAPTERS adapters{};
 	auto status = D3DKMTEnumAdapters(&adapters);
 
@@ -72,18 +73,22 @@ bool CDxgiView::BuildTree() {
 		if (FAILED(hr))
 			break;
 
-		DXGI_ADAPTER_DESC1 desc;
-		adapter->GetDesc1(&desc);
-		auto hItem = m_Tree.InsertItem(desc.Description, 1, 1, hRoot, TVI_SORT);
+		DXGI_ADAPTER_DESC1 desc1;
+		adapter->GetDesc1(&desc1);
+		auto hItem = m_Tree.InsertItem(desc1.Description, 1, 1, hRoot, TVI_SORT);
 		TreeItem item;
 		item.spUnknown = adapter;
-		item.hAdapter = adapters.Adapters[i].hAdapter;
+		for (ULONG n = 0; n < adapters.NumAdapters; n++)
+			if (*(DWORD64*)&adapters.Adapters[n].AdapterLuid == *(DWORD64*)&desc1.AdapterLuid) {
+				item.hAdapter = adapters.Adapters[n].hAdapter;
+				break;
+			}
 
 		m_TreeNodes.insert({ hItem, item });
 
-		for (UINT i = 0;; i++) {
+		for (UINT j = 0;; j++) {
 			CComPtr<IDXGIOutput> output;
-			hr = adapter->EnumOutputs(i, &output);
+			hr = adapter->EnumOutputs(j, &output);
 			if (FAILED(hr))
 				break;
 
@@ -162,6 +167,10 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 			m_Items.emplace_back(L"LUID", std::format(L"0x{:X}:{:08X}", desc1.AdapterLuid.HighPart, desc1.AdapterLuid.LowPart).c_str());
 			m_Items.emplace_back(L"Flags", std::format(L"0x{:X}", desc1.Flags).c_str(), Helpers::AdapterFlagsToString(desc1.Flags));
 
+			m_Items.emplace_back(L"Video Memory", std::format(L"{} MB", desc1.DedicatedVideoMemory >> 20).c_str());
+			m_Items.emplace_back(L"System Memory", std::format(L"{} MB", desc1.DedicatedSystemMemory >> 20).c_str());
+			m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", desc1.SharedSystemMemory >> 20).c_str());
+
 			CComQIPtr<IDXGIAdapter3> adapter3(adapter);
 			if (adapter3) {
 				DXGI_QUERY_VIDEO_MEMORY_INFO info;
@@ -169,7 +178,7 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 					m_Items.emplace_back(L"Local Budget", std::format(L"{} MB", info.Budget >> 20).c_str());
 					m_Items.emplace_back(L"Local Current Usage", std::format(L"{} MB", info.CurrentUsage >> 20).c_str());
 					m_Items.emplace_back(L"Local Available Reserved", std::format(L"{} MB", info.AvailableForReservation >> 20).c_str());
-					m_Items.emplace_back(L"Local Current Reserved", std::format(L"{} MB", info.CurrentReservation>> 20).c_str());
+					m_Items.emplace_back(L"Local Current Reserved", std::format(L"{} MB", info.CurrentReservation >> 20).c_str());
 				}
 				if (S_OK == adapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &info)) {
 					m_Items.emplace_back(L"System Budget", std::format(L"{} MB", info.Budget >> 20).c_str());
@@ -179,17 +188,12 @@ void CDxgiView::UpdateList(HTREEITEM hItem) {
 				}
 			}
 
+
 			if (item.hAdapter) {
 				D3DKMT_ADAPTERADDRESS address;
 				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_ADAPTERADDRESS, address)) {
 					m_Items.emplace_back(L"Adapter Address", std::format(L"Bus: 0x{:X} Device: 0x{:X} Function: 0x{:X}",
 						address.BusNumber, address.DeviceNumber, address.FunctionNumber).c_str());
-				}
-				D3DKMT_SEGMENTSIZEINFO segmentInfo;
-				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_GETSEGMENTSIZE, segmentInfo)) {
-					m_Items.emplace_back(L"Video Memory", std::format(L"{} MB", segmentInfo.DedicatedVideoMemorySize >> 20).c_str());
-					m_Items.emplace_back(L"System Memory", std::format(L"{} MB", segmentInfo.DedicatedSystemMemorySize >> 20).c_str());
-					m_Items.emplace_back(L"Shared System Memory", std::format(L"{} MB", segmentInfo.SharedSystemMemorySize >> 20).c_str());
 				}
 				D3DKMT_DRIVERVERSION driverVer;
 				if (QueryAdapterInfo(item.hAdapter, KMTQAITYPE_DRIVERVERSION, driverVer)) {
