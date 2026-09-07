@@ -17,11 +17,15 @@ std::unique_ptr<DeviceManager> DeviceManager::Create(const wchar_t* computerName
 }
 
 std::wstring DeviceManager::GetDeviceClassDescription(GUID const& guid, const wchar_t* computerName) {
-	wchar_t desc[256];
+	static wchar_t desc[LINE_LEN];
+	//DWORD len = _countof(desc);
+	//if (CR_SUCCESS == CM_Get_Class_Name((GUID*)&guid, desc, &len, 0))
+	//	return desc;
+
 	if (::SetupDiGetClassDescriptionEx(&guid, desc, _countof(desc), nullptr, computerName, nullptr)) {
 		return desc;
 	}
-	return L"";
+	return L"Other Devices";
 }
 
 HIMAGELIST DeviceManager::GetClassImageList() {
@@ -188,10 +192,11 @@ std::vector<DeviceClassInfo> DeviceManager::EnumDeviceClasses() {
 			break;
 
 		ULONG len = _countof(name);
-		::CM_Get_Class_Name(&guid, name, &len, 0);
 		DeviceClassInfo info;
+		if (CR_SUCCESS == ::CM_Get_Class_Name(&guid, name, &len, 0)) {
+			info.Name = name;
+		}
 		info.Guid = guid;
-		info.Name = name;
 		classes.push_back(std::move(info));
 	}
 	return classes;
@@ -207,6 +212,7 @@ std::vector<GUID> DeviceManager::EnumDeviceClassesGuids() {
 
 		classes.push_back(guid);
 	}
+	classes.push_back(GUID_NULL);
 	return classes;
 }
 

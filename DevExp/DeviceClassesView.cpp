@@ -61,6 +61,7 @@ void CDeviceClassesView::Refresh() {
 	m_Guids.clear();
 	m_Guids.reserve(64);
 	m_Classes = DeviceManager::EnumDeviceClassesGuids();
+
 	int c = 0;
 	for (auto& guid : m_Classes) {
 		auto hItem = InsertTreeItem<int>(m_Tree,
@@ -85,6 +86,7 @@ void CDeviceClassesView::Refresh() {
 			DeviceNode dn(di.Data.DevInst);
 			auto isHidden = (dn.GetStatus() & DeviceNodeStatus::NoShowInDeviceManager) == DeviceNodeStatus::NoShowInDeviceManager;
 			if (!isHidden || m_ShowHiddenDevices) {
+				ATLASSERT(!di.Description.empty());
 				auto hItem = InsertTreeItem(m_Tree, (di.Description + (dn.IsEnabled() ? L"" : L" (Disabled)")).c_str(), image, di.Data.DevInst, it->second, TVI_SORT);
 				if (m_DataSelected && m_Tree.GetItemData(hItem) == m_DataSelected) {
 					m_Tree.SelectItem(hItem);
@@ -93,6 +95,9 @@ void CDeviceClassesView::Refresh() {
 				if (isHidden)
 					m_Tree.SetItemState(hItem, TVIS_CUT, TVIS_CUT);
 			}
+		}
+		else {
+			ATLASSERT(false);
 		}
 	}
 

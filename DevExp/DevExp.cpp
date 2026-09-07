@@ -39,11 +39,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	auto loaded = AppSettings::Get().LoadFromKey(L"Software\\ScorpioSoftware\\DeviceExplorer");
 	if (loaded)
-		WTLHelper::InitDarkMode(AppSettings::Get().DarkMode() ? DarkMode::DarkModeType::dark : DarkMode::DarkModeType::classic);
+		WTLHelper::InitDarkMode(AppSettings::Get().DarkMode() ? DarkModeKind::Dark : DarkModeKind::Classic);
 	else
 		WTLHelper::InitDarkMode();
-
-	//ThemeHelper::Init();
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 

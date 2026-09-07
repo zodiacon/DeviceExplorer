@@ -16,13 +16,14 @@
 #include "DriversView.h"
 #include "DxgiView.h"
 #include <newdev.h>
+#include <WtlHelper.h>
 
 #pragma comment(lib, "newdev")
 
 const int WINDOW_MENU_POSITION = 7;
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
-	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
+	if (CFrameWindowImpl::PreTranslateMessage(pMsg))
 		return TRUE;
 
 	return m_view.PreTranslateMessage(pMsg);
@@ -89,11 +90,12 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UIEnable(ID_DEVICE_SCANFORHARDWARECHANGES, SecurityHelper::IsRunningElevated());
 
 	if (s_Settings.DarkMode()) {
-		WTLHelper::SwitchToMode(DarkMode::DarkModeType::dark, m_hWnd);
+		WTLHelper::SwitchToMode(DarkModeKind::Dark, m_hWnd);
 		UISetCheck(ID_OPTIONS_DARKMODE, true);
 	}
 
-	PostMessage(WM_COMMAND, ID_EXPLORE_DEVICESBYCLASS);
+	SendMessage(WM_COMMAND, ID_EXPLORE_DEVICESBYCLASS);
+	//DarkMode::setDarkWndNotifySafe(m_hWnd);
 
 	return 0;
 }
@@ -363,7 +365,7 @@ LRESULT CMainFrame::OnShowWindow(UINT, WPARAM, LPARAM, BOOL&) {
 }
 
 LRESULT CMainFrame::OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WTLHelper::SwitchToMode(WTLHelper::IsDarkMode() ? DarkMode::DarkModeType::light : DarkMode::DarkModeType::dark, m_hWnd);
+	WTLHelper::SwitchToMode(WTLHelper::IsDarkMode() ? DarkModeKind::Light : DarkModeKind::Dark, m_hWnd);
 	DrawMenuBar();
 	InitMenu(GetMenu());
 	AppSettings::Get().DarkMode(WTLHelper::IsDarkMode());
@@ -374,7 +376,7 @@ LRESULT CMainFrame::OnToggleDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 LRESULT CMainFrame::OnUpdateDarkMode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	auto& settings = AppSettings::Get();
-	WTLHelper::SwitchToMode(settings.DarkMode() ? DarkMode::DarkModeType::light : DarkMode::DarkModeType::dark, m_hWnd);
+	WTLHelper::SwitchToMode(settings.DarkMode() ? DarkModeKind::Light : DarkModeKind::Dark, m_hWnd);
 
 	DrawMenuBar();
 	UISetCheck(ID_OPTIONS_DARKMODE, settings.DarkMode());
